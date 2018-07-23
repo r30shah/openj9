@@ -58,6 +58,16 @@ class TR_JProfilingValue : public TR::Optimization
       TR::Node *optionalTest = NULL,
       bool extendBlocks = true,
       bool trace = false);
+   
+   static bool addProfilingTrees_1(
+      TR::Compilation *comp,
+      TR::TreeTop *insertionPoint,
+      TR::Node *value,
+      TR_AbstractHashTableProfilerInfo *table,
+      TR::Node *optionalTest = NULL,
+      TR::Node *fallBackValue = NULL,
+      bool extendBlocks = true,
+      bool trace = false);
 
    private:
    static TR::Node *computeHash(TR::Compilation *comp, TR_AbstractHashTableProfilerInfo *table, TR::Node *value, TR::Node *baseAddr);

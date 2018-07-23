@@ -299,6 +299,7 @@ TR_JProfilingValue::addVFTProfiling(TR::Node *address, TR::TreeTop *tt, bool add
 void
 TR_JProfilingValue::lowerCalls()
    {
+   static bool useOldJProfilingTrees = feGetEnv("TR_UseOldJProfilingTrees") != NULL;
    TR::TreeTop *cursor = comp()->getStartTree();
    TR_BitVector *backwardAnalyzedAddressNodesToCheck = new (comp()->trStackMemory()) TR_BitVector();
    while (cursor)
@@ -343,7 +344,10 @@ TR_JProfilingValue::lowerCalls()
          // Extract the arguments and add the profiling trees
          TR::Node *value = child->getFirstChild();
          TR_AbstractHashTableProfilerInfo *table = (TR_AbstractHashTableProfilerInfo*) child->getSecondChild()->getAddress();
-         addProfilingTrees(comp(), cursor, value, table, NULL, true, trace());
+         if (useOldJProfilingTrees)
+            addProfilingTrees_1(comp(), cursor, value, table, NULL, NULL, true, trace());
+         else
+            addProfilingTrees(comp(), cursor, value, table, NULL, true, trace());
 
          // Remove the original trees and continue from the tree after the profiling
          TR::TransformUtil::removeTree(comp(), cursor);
@@ -634,6 +638,266 @@ TR_JProfilingValue::addProfilingTrees(
 
    return true;
    }
+
+bool
+TR_JProfilingValue::addProfilingTrees_1(
+    TR::Compilation *comp,
+    TR::TreeTop *insertionPoint,
+    TR::Node *value,
+    TR_AbstractHashTableProfilerInfo *table,
+    TR::Node *optionalTest,
+    TR::Node *fallbackValue,
+    bool extendBlocks,
+    bool trace)
+   {
+   // Common types used in calculation
+   TR::DataType counterType = TR::Int32;
+   TR::DataType lockType    = TR::Int16;
+   TR::DataType systemType  = TR::Compiler->target.is64Bit() ? TR::Int64 : TR::Int32;
+
+   // Type to use in calculations and table access
+   TR::DataType roundedType    = value->getType();
+   if (roundedType == TR::Int8 || roundedType == TR::Int16)
+      roundedType = TR::Int32;
+   if (roundedType == TR::Address)
+      roundedType = systemType;
+
+   if (trace)
+      {
+      traceMsg(comp, "Inserting value profiling trees:\n  Value n%dn At n%dn\n  Table: %p\n",
+         value->getGlobalIndex(),
+         insertionPoint->getNode()->getGlobalIndex(),
+         table);
+      table->dumpInfo(comp->getOutFile());
+      traceMsg(comp, "  Test: %p Fallback: %p\n", optionalTest, fallbackValue);
+      }
+
+   TR::Block *originalBlock = insertionPoint->getEnclosingBlock();
+   TR::Block *extendedBlock = originalBlock;
+   while (extendedBlock->isExtensionOfPreviousBlock())
+      extendedBlock = extendedBlock->getPrevBlock();
+
+   if (trace)
+      {
+      traceMsg(comp, "  Modifying block_%d", originalBlock->getNumber());
+      if (extendedBlock && extendedBlock != originalBlock)
+         traceMsg(comp, " extending block_%d", extendedBlock->getNumber());
+      traceMsg(comp, " with profiling\n");
+      }
+
+   // Cache the last treetop in the CFG
+   TR::CFG *cfg = comp->getFlowGraph();
+   cfg->setStructure(0);
+   TR::Block *cursor = originalBlock, *prev = originalBlock;
+   while (cursor && cursor != cfg->getEnd() && cursor != cfg->getStart() && cursor->getNumber())
+      {
+      prev = cursor;
+      cursor = cursor->getNextBlock();
+      }
+   TR::TreeTop *lastTreeTop = prev->getExit();
+
+   // Example node to use when constructing others 
+   TR::Node *example = value;
+
+   /********************* original Block *********************/
+   if (trace)
+      traceMsg(comp, " Profiled value n%dn into temp\n", value->getGlobalIndex());
+
+   // Store the value and replace references to it, if no fallback value can overwrite its value
+   TR::SymbolReference *storedValueSymRef = NULL;
+   TR::TreeTop *storeValue = TR::TreeTop::create(comp, insertionPoint, storeNode(comp, value, storedValueSymRef));
+   if (!optionalTest)
+      replaceNode(comp, extendedBlock->getEntry(), storeValue->getNextTreeTop(),
+         value, TR::Node::createLoad(example, storeValue->getNode()->getSymbolReference()));
+
+   // Split after the store
+   TR::Block *quickTest = originalBlock->split(storeValue->getNextTreeTop(), cfg, true, true);
+
+   /********************* fallback Block *********************/
+
+   // Insert the optional test and split after it
+   if (optionalTest)
+      {
+      TR_ASSERT_FATAL(fallbackValue, "If introducing an optional test, a fallback value must be specified");
+      TR::TreeTop *testTree = TR::TreeTop::create(comp, insertionPoint, optionalTest);
+
+      TR::Block *mapping = originalBlock->split(testTree->getNextTreeTop(), cfg, true, true);
+      if (extendBlocks)
+         mapping->setIsExtensionOfPreviousBlock();
+      
+      // Create the fallback block and link it to the optional test
+      TR::Block *fallback = TR::Block::createEmptyBlock(comp, MAX_COLD_BLOCK_COUNT + 1);
+      fallback->setIsCold();
+      lastTreeTop->join(fallback->getEntry());
+      lastTreeTop = fallback->getExit();
+      cfg->addNode(fallback);
+      cfg->addEdge(originalBlock, fallback);
+      cfg->addEdge(fallback, quickTest);
+      testTree->getNode()->setBranchDestination(fallback->getEntry());     
+
+      if (trace)
+         traceMsg(comp, "  Fallback block_%d store to symRef #%d of node %p in \n", fallback->getNumber(),
+            storedValueSymRef->getReferenceNumber(), fallback);
+
+      // Store and return to the mainline
+      TR::TreeTop::create(comp, fallback->getEntry(), TR::Node::create(example, TR::Goto, 0, quickTest->getEntry()));
+      TR::TreeTop::create(comp, fallback->getEntry(), storeNode(comp, fallbackValue, storedValueSymRef));
+      }
+   else if (extendBlocks)
+      quickTest->setIsExtensionOfPreviousBlock();
+
+   /********************* quickTest Block *********************/
+   // If blocks aren't being extended, its necessary to create a load
+   TR::Node *quickTestValue = value;
+   if (!extendBlocks || optionalTest)
+      quickTestValue = TR::Node::createLoad(example, storedValueSymRef);
+   quickTestValue = convertType(quickTestValue, roundedType);
+
+   if (trace)
+      traceMsg(comp, "  Hash calculation in block_%d\n", quickTest->getNumber());
+
+   // Base address for the table accesses, simplifies codegen
+   TR::Node *address = TR::Node::aconst(example, table->getBaseAddress());
+   TR::Node *index = convertType(computeHash(comp, table, quickTestValue, address), systemType);
+   
+   if (trace)
+      traceMsg(comp, "  Key test based on index n%dn\n", quickTest->getNumber(), index->getGlobalIndex());
+
+   // Generate the check to ensure the value is already in the chosen slot
+   TR::Node *checkKey = TR::Node::createif(comp->il.opCodeForIfCompareNotEquals(roundedType), quickTestValue,
+      loadValue(comp, roundedType, address, index, systemConst(example, table->getKeysOffset())));
+   TR::TreeTop *checkKeyTree = TR::TreeTop::create(comp, quickTest->getEntry(), checkKey);
+
+   /********************* quickInc Block *********************/
+   // If we aren't extending the blocks, anchor stores for the table address and the value
+   TR::Node *quickIncAddress = address;
+   TR::Node *quickIncIndex = index;
+   if (!extendBlocks)
+      {
+      TR::SymbolReference *storedIndexSymRef = NULL;
+      TR::SymbolReference *storedAddressSymRef = NULL;
+      TR::TreeTop::create(comp, quickTest->getEntry(), storeNode(comp, index, storedIndexSymRef));
+      TR::TreeTop::create(comp, quickTest->getEntry(), storeNode(comp, address, storedAddressSymRef));
+      storedAddressSymRef->getSymbol()->setNotCollected();
+
+      quickIncIndex = TR::Node::createLoad(example, storedIndexSymRef);
+      quickIncAddress = TR::Node::createLoad(example, storedAddressSymRef);
+      }
+
+   // Split the block, creating a new block to hold the successful quick increment
+   TR::Block *quickInc = quickTest->split(checkKeyTree->getNextTreeTop(), cfg, true, true);
+   if (extendBlocks)
+      quickInc->setIsExtensionOfPreviousBlock();
+
+   if (trace)
+      traceMsg(comp, "  Quick increment in block_%d\n", quickInc->getNumber());
+
+   TR::Node *counterOffset = systemConst(example, table->getFreqOffset());
+   TR::TreeTop *incTree = TR::TreeTop::create(comp, quickInc->getEntry(),
+      incrementMemory(comp, counterType, effectiveAddress(counterType, quickIncAddress, quickIncIndex, counterOffset)));
+
+   // Split the block again, after the increment, so cold paths can merge back
+   TR::Block *mainlineReturn = quickInc->split(incTree->getNextTreeTop(), cfg, true, true);
+
+   static bool disableJProfilingRecompQueueTest = (feGetEnv("TR_DontGenerateJProfilingRecompQueueTest") != NULL);
+   if (comp->isProfilingCompilation() && !disableJProfilingRecompQueueTest)
+      {
+      TR_PersistentProfileInfo *profileInfo = comp->getRecompilationInfo()->findOrCreateProfileInfo();
+      TR_BlockFrequencyInfo *bfi = TR_BlockFrequencyInfo::get(profileInfo);
+      TR::Node *loadIsQueuedForRecompilation = TR::Node::createWithSymRef(value, TR::iload, 0, comp->getSymRefTab()->createKnownStaticDataSymbolRef(bfi->getIsQueuedForRecompilation(), TR::Int32));
+      TR::Node *checkIfQueueForRecompilation = TR::Node::createif(TR::ificmpeq, loadIsQueuedForRecompilation, TR::Node::iconst(value, -1), mainlineReturn->getEntry());
+      TR::TreeTop *checkIfNeedToProfileValue = TR::TreeTop::create(comp, checkIfQueueForRecompilation);
+      originalBlock->append(checkIfNeedToProfileValue);
+      cfg->addEdge(originalBlock, mainlineReturn);
+      }
+   /********************* slowTest Block *********************/
+   TR::Block *slowTest = TR::Block::createEmptyBlock(comp, MAX_COLD_BLOCK_COUNT + 1);
+   slowTest->setIsCold();
+   lastTreeTop->join(slowTest->getEntry());
+   lastTreeTop = slowTest->getExit();
+   cfg->addNode(slowTest);
+   cfg->addEdge(quickTest, slowTest);
+   cfg->addEdge(slowTest, mainlineReturn);
+   checkKey->setBranchDestination(slowTest->getEntry());
+
+   if (trace)
+      traceMsg(comp, "  Lock test in block_%d\n", slowTest->getNumber());
+
+   // Load the lock and test if its set
+   TR::Node *lockAddress = TR::Node::aconst(example, table->getBaseAddress() + table->getLockOffset());
+   TR::Node *lock = loadValue(comp, lockType, lockAddress);
+   TR::Node *checkTableLock = TR::Node::createif(TR::ifscmplt, lock, TR::Node::sconst(example, 0));
+   TR::TreeTop::create(comp, slowTest->getEntry(), checkTableLock);
+
+   /********************* slowInc Block *********************/
+   TR::Node *slowIncIndex = convertType(lock, systemType, false);
+   if (!extendBlocks)
+      {
+      TR::SymbolReference *storedLockSymRef = NULL;
+      TR::TreeTop::create(comp, slowTest->getEntry(), storeNode(comp, slowIncIndex, storedLockSymRef));
+      slowIncIndex = TR::Node::createLoad(example, storedLockSymRef);
+      }
+
+   // Split the block, creating a new block to hold the other increment
+   TR::Block *slowInc = slowTest->split(slowTest->getExit(), cfg, true, true);
+   lastTreeTop = slowInc->getExit();
+   if (extendBlocks)
+      slowInc->setIsExtensionOfPreviousBlock();
+
+   if (trace)
+      traceMsg(comp, "  Slow increment in block_%d\n", slowInc->getNumber());
+
+   // Add the other increment and return to mainline
+   TR::TreeTop::create(comp, slowInc->getEntry(), TR::Node::create(example, TR::Goto, 0, mainlineReturn->getEntry()));
+   TR::Node *counterAddress = TR::Node::aconst(example, table->getBaseAddress() + table->getFreqOffset());
+   TR::TreeTop::create(comp, slowInc->getEntry(), incrementMemory(comp, counterType,
+      effectiveAddress(counterType, counterAddress, slowIncIndex)));
+
+   /********************* helper Block *********************/
+   // Build the helper call path
+   TR::Block *helper = TR::Block::createEmptyBlock(comp, MAX_COLD_BLOCK_COUNT + 1);
+   helper->setIsCold();
+   lastTreeTop->join(helper->getEntry());
+   lastTreeTop = helper->getExit();
+   cfg->addNode(helper);
+   cfg->addEdge(slowTest, helper);
+   cfg->addEdge(helper, mainlineReturn);
+   checkTableLock->setBranchDestination(helper->getEntry());
+
+   if (trace)
+      traceMsg(comp, "  Helper call in block_%d\n", helper->getNumber());
+
+   // Add the call to the helper and return to the mainline
+   TR::TreeTop::create(comp, helper->getEntry(), TR::Node::create(example, TR::Goto, 0, mainlineReturn->getEntry()));
+   TR::TreeTop *helperCallTreeTop = TR::TreeTop::create(comp, helper->getEntry(), createHelperCall(comp,
+      convertType(TR::Node::createLoad(example, storedValueSymRef), roundedType),
+      TR::Node::aconst(example, table->getBaseAddress())));
+
+   // Set profiling code flags
+   TR::NodeChecklist checklist(comp);
+   checklist.add(value);
+   TR::TreeTop *tt = quickTest->getEntry(), *end = mainlineReturn->getEntry(); 
+   while (tt && tt != end)
+      {
+      TR::Node *node = tt->getNode();
+      if (node->getOpCodeValue() != TR::BBStart && node->getOpCodeValue() != TR::BBEnd)
+         setProfilingCode(node, checklist);
+      tt = tt->getNextTreeTop();
+      }
+   tt = slowTest->getEntry();
+   while (tt)
+      {
+      TR::Node *node = tt->getNode();
+      if (node->getOpCodeValue() != TR::BBStart && node->getOpCodeValue() != TR::BBEnd)
+         setProfilingCode(node, checklist);
+      tt = tt->getNextTreeTop();
+      }
+
+   return true;
+   }
+
+
+
 
 /*
  * Recursive call to replace origNode with newNode underneath a target node.
