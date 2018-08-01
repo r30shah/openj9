@@ -260,8 +260,8 @@ TR::Register * TR::S390CHelperLinkage::buildDirectDispatch(TR::Node * callNode, 
    {
    RealRegisterManager RealRegisters(cg());
    bool isHelperCallWithinICF = deps != NULL;
-   // TODO: Currently only jitInstanceOf is fast path helper. Need to modify following condition if we add support for other fast path only helpers
-   bool isFastPathOnly = callNode->getOpCodeValue() == TR::instanceof;
+   // TODO: Currently only jitInstanceOf and IFA helper calls are fast path helpers. Need to modify following condition if we add support for other fast path only helpers
+   // Having a fast path helper call also implies that there is no environment pointer setup in GPR5
    traceMsg(comp(),"%s: Internal Control Flow in OOL : %s\n",callNode->getOpCode().getName(),isHelperCallWithinICF  ? "true" : "false" );
    for (int i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastHPR; i++)
       {
@@ -291,7 +291,7 @@ TR::Register * TR::S390CHelperLinkage::buildDirectDispatch(TR::Node * callNode, 
    * Following line will use the System linkage's return address register for fast path
    * And for regular dual mode helper, private linkage's return address register
    */ 
-   TR::RealRegister::RegNum regRANum = isFastPathOnly ? self()->getReturnAddressRegister() : cg()->getReturnAddressRegister();
+   TR::RealRegister::RegNum regRANum = self()->getReturnAddressRegister();
    TR::Register *regRA = RealRegisters.use(regRANum);
 #if defined(J9ZOS390)
    TR::Register *DSAPointerReg = NULL;
@@ -327,70 +327,76 @@ TR::Register * TR::S390CHelperLinkage::buildDirectDispatch(TR::Node * callNode, 
     * #endif      
     */
 
-   if (isFastPathOnly)
-      {
-      // Storing Java Stack Pointer
-      javaStackPointerRegister = cg()->getStackPointerRealRegister();
-      cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), callNode, javaStackPointerRegister, generateS390MemoryReference(vmThreadRegister, offsetJ9SP, cg()));
+   // Storing Java Stack Pointer
+   javaStackPointerRegister = cg()->getStackPointerRealRegister();
+   cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), callNode, javaStackPointerRegister, generateS390MemoryReference(vmThreadRegister, offsetJ9SP, cg()));
+
 #if defined(J9ZOS390)
-      padding += 2;
-      // Loading DSAPointer Register
-      DSAPointerReg = RealRegisters.use(getDSAPointerRegister());
-      generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), callNode, DSAPointerReg, generateS390MemoryReference(vmThreadRegister, offsetOfSSP, cg()));
-      generateSS1Instruction(cg(), TR::InstOpCode::XC, callNode, pointerSize,
-         generateS390MemoryReference(vmThreadRegister, offsetOfSSP, cg()),
-	 generateS390MemoryReference(vmThreadRegister, offsetOfSSP, cg()));
+   padding += 2;
+   // Loading DSAPointer Register
+   DSAPointerReg = RealRegisters.use(getDSAPointerRegister());
+   generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), callNode, DSAPointerReg, generateS390MemoryReference(vmThreadRegister, offsetOfSSP, cg()));
+   generateSS1Instruction(cg(), TR::InstOpCode::XC, callNode, pointerSize,
+      generateS390MemoryReference(vmThreadRegister, offsetOfSSP, cg()),
+	generateS390MemoryReference(vmThreadRegister, offsetOfSSP, cg()));
 #if defined(TR_HOST_32BIT)
-      padding += 2;
-      // Loading CAA Pointer Register
-      TR::Register *CAAPointerReg = RealRegisters.use(getCAAPointerRegister());
-      TR_J9VMBase *fej9 = (TR_J9VMBase *) cg()->comp()->fe();
-      int32_t J9TR_CAA_save_offset = fej9->getCAASaveOffset();
-      generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), callNode, CAAPointerReg, generateS390MemoryReference(DSAPointerReg, J9TR_CAA_save_offset, cg()));
+   padding += 2;
+   // Loading CAA Pointer Register
+   TR::Register *CAAPointerReg = RealRegisters.use(getCAAPointerRegister());
+   TR_J9VMBase *fej9 = (TR_J9VMBase *) cg()->comp()->fe();
+   int32_t J9TR_CAA_save_offset = fej9->getCAASaveOffset();
+   generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), callNode, CAAPointerReg, generateS390MemoryReference(DSAPointerReg, J9TR_CAA_save_offset, cg()));
 #endif
 #endif
-      }
    TR::SymbolReference * callSymRef = callNode->getSymbolReference();
    void * destAddr = callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->getMethodAddress();
+#if defined(J9ZOS390)
+   // Fast path helper calls are real C function calls, whereas non-fast-path calls jump to picBuilder glue code
+   // glue code does its own environment handling and does not need a environment loading here.
+   TR_RuntimeHelper helperIndex = static_cast<TR_RuntimeHelper>(callNode->getSymbolReference()->getReferenceNumber());
+   TR_ASSERT_FATAL(helperIndex < TR_S390numRuntimeHelpers, "Invalid helper index in c helper node\n");
+
+   // XPLINK GPR5 is an environment register.
+   intptrj_t environment = reinterpret_cast<intptrj_t>(TOC_UNWRAP_ENV(runtimeHelpers.getFunctionPointer(helperIndex)));
+   genLoadAddressConstant(cg(), callNode, environment, javaStackPointerRegister);
+#endif
+
    cursor = new (cg()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, regRA, destAddr, callSymRef, cg());
    cursor->setDependencyConditions(preDeps);
-   if (isFastPathOnly)
-      {
-#if defined(J9ZOS390)
-      /**
-       * Same as SystemLinkage call builder class, a NOP padding is needed because returning from XPLINK functions
-       * skips the XPLink eyecatcher and always return to a point that's 2 or 4 bytes after the return address.
-       *
-       * In 64 bit XPLINK, the caller returns with a 'branch relative on condition' instruction with a 2 byte offset:
-       *
-       *   0x47F07002                    B        2(,r7)
-       *
-       * In 31-bit XPLINK, this offset is 4-byte.
-       *
-       * As a result of this, JIT'ed code that does XPLINK calls needs 2 or 4-byte NOP paddings to ensure entry to valid instruction.
-       *
-       * The BASR and NOP padding must stick together and can't have reverse spills in the middle.
-       * Hence, splitting the dependencies to avoid spill instructions.
-       */
-
-      cursor = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, padding, callNode, cursor, cg());
-      // Storing DSA Register back
-      cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), callNode, DSAPointerReg, generateS390MemoryReference(vmThreadRegister, offsetOfSSP, cg()), cursor);
-#endif
-      // Reloading Java Stack pointer
-      cursor = generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), callNode, javaStackPointerRegister, generateS390MemoryReference(vmThreadRegister, offsetJ9SP, cg()), cursor);
-      }
-   else
-      {
-      // Fastpath helper do not expects GC call in-between so only attaching them for normal dual mode helpers
-      // As GC map is attached to instruction after RA is done, it is guaranteed that all the non-preserved register by system linkage are either stored in preserved register
-      // Or spilled to stack. We only need to mark preserved register in GC map. Only possiblity of non-preserved register containing a live object is in argument to helper which should be a clobberable copy of actual object. 
+   // Fastpath helper do not expects GC call in-between so only attaching them for normal dual mode helpers
+   // As GC map is attached to instruction after RA is done, it is guaranteed that all the non-preserved register by system linkage are either stored in preserved register
+   // Or spilled to stack. We only need to mark preserved register in GC map. Only possiblity of non-preserved register containing a live object is in argument to helper which should be a clobberable copy of actual object. 
+   if (callSymRef->canCauseGC())
       cursor->setNeedsGCMap(getPreservedRegisterMapForGC());
-      }
+#if defined(J9ZOS390)
+   /**
+    * Same as SystemLinkage call builder class, a NOP padding is needed because returning from XPLINK functions
+    * skips the XPLink eyecatcher and always return to a point that's 2 or 4 bytes after the return address.
+    *
+    * In 64 bit XPLINK, the caller returns with a 'branch relative on condition' instruction with a 2 byte offset:
+    *
+    *   0x47F07002                    B        2(,r7)
+    *
+    * In 31-bit XPLINK, this offset is 4-byte.
+    *
+    * As a result of this, JIT'ed code that does XPLINK calls needs 2 or 4-byte NOP paddings to ensure entry to valid instruction.
+    *
+    * The BASR and NOP padding must stick together and can't have reverse spills in the middle.
+    * Hence, splitting the dependencies to avoid spill instructions.
+    */
+
+   cursor = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, padding, callNode, cursor, cg());
+   // Storing DSA Register back
+   cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), callNode, DSAPointerReg, generateS390MemoryReference(vmThreadRegister, offsetOfSSP, cg()), cursor);
+#endif
+   // Reloading Java Stack pointer
+   cursor = generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), callNode, javaStackPointerRegister, generateS390MemoryReference(vmThreadRegister, offsetJ9SP, cg()), cursor);
 
    // If helper call is fast path helper call and is not within ICF,
    // We need to attach post dependency to the restoring of java stack pointer.
    // This will assure that reverse spilling occurs after restoring of java stack pointer
+   TR::LabelSymbol *mergeLabel = generateLabelSymbol(cg());
+   cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::LABEL, callNode, mergeLabel);
    if (!isHelperCallWithinICF)
       cursor->setDependencyConditions(postDeps);
    preDeps->stopUsingDepRegs(cg());
@@ -423,7 +429,7 @@ TR::Register * TR::S390CHelperLinkage::buildDirectDispatch(TR::Node * callNode, 
       }
    // We need to fill returnReg only if it requested by evaluator or node returns value or address
    if (returnReg != NULL)
-      generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), callNode, returnReg,  RealRegisters.use(isFastPathOnly ? getIntegerReturnRegister():getLongHighReturnRegister()), cursor);
+      generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), callNode, returnReg,  RealRegisters.use(getIntegerReturnRegister()), cursor);
    
    return returnReg;
    }
