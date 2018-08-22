@@ -1,4 +1,4 @@
-; Copyright (c) 2000, 2016 IBM Corp. and others
+; Copyright (c) 2000, 2018 IBM Corp. and others
 ;
 ; This program and the accompanying materials are made available under
 ; the terms of the Eclipse Public License 2.0 which accompanies this
@@ -69,6 +69,7 @@ ifndef TR_HOST_64BIT
       public         interpreterUnresolvedStaticFieldSetterGlue
       public         interpreterUnresolvedFieldGlue
       public         interpreterUnresolvedFieldSetterGlue
+      public         interpreterUnresolvedConstantDynamicGlue
 
       public         MTUnresolvedInt32Load
       public         MTUnresolvedInt64Load
@@ -757,6 +758,13 @@ interpreterUnresolvedStringGlue proc near
       jmp commonUnresolvedCode
 interpreterUnresolvedStringGlue endp
 
+      align 16
+interpreterUnresolvedConstantDynamicGlue proc near
+      DataResolvePrologue
+      DispatchUnresolvedDataHelper jitResolveConstantDynamic
+;      int 3
+      jmp commonUnresolvedCode
+interpreterUnresolvedConstantDynamicGlue endp
 
       align 16
 interpreterUnresolvedMethodTypeGlue proc near
@@ -1151,6 +1159,7 @@ _TEXT   segment para 'CODE'
       public         interpreterUnresolvedStaticFieldSetterGlue
       public         interpreterUnresolvedFieldGlue
       public         interpreterUnresolvedFieldSetterGlue
+      public         interpreterUnresolvedConstantDynamicGlue
 
       public         MTUnresolvedInt32Load
       public         MTUnresolvedInt64Load
@@ -1773,6 +1782,13 @@ interpreterUnresolvedStringGlue proc
       jmp commonUnresolvedCode
 interpreterUnresolvedStringGlue endp
 
+      align 16
+interpreterUnresolvedConstantDynamicGlue proc
+      DataResolvePrologue
+      DispatchUnresolvedDataHelper jitResolveConstantDynamic
+;      int 3
+      jmp commonUnresolvedCode
+interpreterUnresolvedConstantDynamicGlue endp
 
       align 16
 interpreterUnresolvedMethodTypeGlue proc
