@@ -1561,6 +1561,7 @@ cpType2trType(UDATA cpType)
       case J9CPTYPE_ANNOTATION_UTF8:
       case J9CPTYPE_METHOD_TYPE:
       case J9CPTYPE_METHODHANDLE:
+      case J9CPTYPE_CONSTANT_DYNAMIC:
          return TR::Address;
       case J9CPTYPE_INT:
          return TR::Int32;
@@ -5837,6 +5838,44 @@ uint64_t
 TR_ResolvedJ9Method::longConstant(I_32 cpIndex)
    {
    return *((uint64_t *) & romLiterals()[cpIndex]);
+   }
+
+void *
+TR_ResolvedJ9Method::getConstantDynamicTypeFromCP(I_32 cpIndex)
+   {
+   return jitGetConstantDynamicTypeFromCP(fej9()->vmThread(), cp(), cpIndex);
+   }
+
+bool
+TR_ResolvedJ9Method::isConstantDynamic(I_32 cpIndex)
+   {
+   TR_ASSERT(cpIndex != -1, "cpIndex shouldn't be -1");
+   UDATA cpType = J9_CP_TYPE(J9ROMCLASS_CPSHAPEDESCRIPTION(cp()->ramClass->romClass), cpIndex);
+   return (J9CPTYPE_CONSTANT_DYNAMIC == cpType);
+   }
+
+// If first slot is non null, the CP entry is resolved to a non-null value.
+// Else if second slot is Void.class, the CP entry is resolved to null (0) value.
+// Other casese, the CP entry is considered unresolved.
+bool
+TR_ResolvedJ9Method::isUnresolvedConstantDynamic(I_32 cpIndex)
+   {
+   TR_ASSERT(cpIndex != -1, "cpIndex shouldn't be -1");
+   if (((J9RAMConstantDynamicRef *) literals())[cpIndex].value != 0)
+      return false;
+   if (((J9RAMConstantDynamicRef *) literals())[cpIndex].exception == 0)
+      return true;
+   TR_OpaqueClassBlock * voidClassBlock = fej9()->getClassFromSignature("java/lang/Void", 14, this);
+   void *voidClazzPtr = TR::Compiler->cls.convertClassOffsetToClassPtr(voidClassBlock);
+   void *slot2 = (void *)(((J9RAMConstantDynamicRef *) literals())[cpIndex].exception);
+   return (voidClazzPtr != slot2);
+   }
+
+void *
+TR_ResolvedJ9Method::dynamicConstant(I_32 cpIndex)
+   {
+   TR_ASSERT(cpIndex != -1, "cpIndex shouldn't be -1");
+   return &((J9RAMConstantDynamicRef *) literals())[cpIndex].value;
    }
 
 bool

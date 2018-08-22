@@ -1039,6 +1039,25 @@ J9::SymbolReferenceTable::findOrCreateStringSymbol(TR::ResolvedMethodSymbol * ow
    return symRef;
    }
 
+TR::SymbolReference *
+J9::SymbolReferenceTable::findOrCreateConstantDynamicSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t cpIndex)
+   {
+   TR_ResolvedMethod * owningMethod = owningMethodSymbol->getResolvedMethod();
+   void * dynamicConst = owningMethod->dynamicConstant(cpIndex);
+   TR::SymbolReference * symRef;
+   if (owningMethod->isUnresolvedConstantDynamic(cpIndex))
+      {
+      symRef = findOrCreateCPSymbol(owningMethodSymbol, cpIndex, TR::Address, false, 0);
+      symRef->setOffset((uintptrj_t)dynamicConst);
+      }
+   else
+      {
+      symRef = findOrCreateCPSymbol(owningMethodSymbol, cpIndex, TR::Address, true, dynamicConst);
+      }
+   TR::StaticSymbol * sym = (TR::StaticSymbol *)symRef->getSymbol();
+   sym->setConstantDynamic();
+   return symRef;
+   }
 
 TR::SymbolReference *
 J9::SymbolReferenceTable::findOrCreateMethodMonitorEntrySymbolRef(TR::ResolvedMethodSymbol *)

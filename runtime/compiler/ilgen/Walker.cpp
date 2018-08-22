@@ -6372,7 +6372,156 @@ TR_J9ByteCodeIlGenerator::loadFromCP(TR::DataType type, int32_t cpIndex)
             loadSymbol(TR::dload, symRefTab()->findOrCreateDoubleSymbol(_methodSymbol, cpIndex));
          break;
       case TR::Address:
-         if (method()->isClassConstant(cpIndex))
+         if (method()->isConstantDynamic(cpIndex))
+            {
+            bool isCondyUnresolved = _methodSymbol->getResolvedMethod()->isUnresolvedConstantDynamic(cpIndex);
+            J9UTF8 *returnTypeUtf8 = (J9UTF8 *)_methodSymbol->getResolvedMethod()->getConstantDynamicTypeFromCP(cpIndex);
+            int returnTypeUtf8Length = J9UTF8_LENGTH(returnTypeUtf8);
+            char* returnTypeUtf8Data = (char *)J9UTF8_DATA(returnTypeUtf8);
+            bool isCondyPrimitive = (1 == returnTypeUtf8Length);
+
+            TR_OpaqueClassBlock * typeClassBlock = NULL;
+            int32_t valueOffset = 0;
+
+            // If condy is primitive type and resolved, load the primitive constant;
+            // Otherwise, load using a CP symol (for resolved and unresolved object type),
+            // and generate subsequent loadi for the unresolved primitive 'value' field if needed (because
+            // for unresolved primitive the resovle helper only returns an autobox'd object).
+            if (isCondyPrimitive)
+               {
+               switch (returnTypeUtf8Data[0])
+                  {
+                  case 'I':
+                     typeClassBlock = comp()->fej9()->getClassFromSignature("Ljava/lang/Integer;", 19, method());
+                     valueOffset = comp()->fej9()->getObjectHeaderSizeInBytes()
+                                          + comp()->fej9()->getInstanceFieldOffset(typeClassBlock, "value", 5, "I", 1);
+                     break;
+                  case 'J':
+                     typeClassBlock = comp()->fej9()->getClassFromSignature("Ljava/lang/Long;", 16, method());
+                     valueOffset = comp()->fej9()->getObjectHeaderSizeInBytes()
+                                          + comp()->fej9()->getInstanceFieldOffset(typeClassBlock, "value", 5, "J", 1);
+                     break;
+                  case 'F':
+                     typeClassBlock = comp()->fej9()->getClassFromSignature("Ljava/lang/Float;", 17, method());
+                     valueOffset = comp()->fej9()->getObjectHeaderSizeInBytes()
+                                          + comp()->fej9()->getInstanceFieldOffset(typeClassBlock, "value", 5, "F", 1);
+                     break;
+                  case 'D':
+                     typeClassBlock = comp()->fej9()->getClassFromSignature("Ljava/lang/Double;", 18, method());
+                     valueOffset = comp()->fej9()->getObjectHeaderSizeInBytes()
+                                          + comp()->fej9()->getInstanceFieldOffset(typeClassBlock, "value", 5, "D", 1);
+                     break;
+                  case 'B':
+                     typeClassBlock = comp()->fej9()->getClassFromSignature("Ljava/lang/Byte;", 16, method());
+                     valueOffset = comp()->fej9()->getObjectHeaderSizeInBytes()
+                                          + comp()->fej9()->getInstanceFieldOffset(typeClassBlock, "value", 5, "B", 1);
+                     break;
+                  case 'C':
+                     typeClassBlock = comp()->fej9()->getClassFromSignature("Ljava/lang/Character;", 21, method());
+                     valueOffset = comp()->fej9()->getObjectHeaderSizeInBytes()
+                                          + comp()->fej9()->getInstanceFieldOffset(typeClassBlock, "value", 5, "C", 1);
+                     break;
+                  case 'S':
+                     typeClassBlock = comp()->fej9()->getClassFromSignature("Ljava/lang/Short;", 17, method());
+                     valueOffset = comp()->fej9()->getObjectHeaderSizeInBytes()
+                                          + comp()->fej9()->getInstanceFieldOffset(typeClassBlock, "value", 5, "S", 1);
+                     break;
+                  case 'Z':
+                     typeClassBlock = comp()->fej9()->getClassFromSignature("Ljava/lang/Boolean;", 19, method());
+                     valueOffset = comp()->fej9()->getObjectHeaderSizeInBytes()
+                                          + comp()->fej9()->getInstanceFieldOffset(typeClassBlock, "value", 5, "Z", 1);
+                     break;
+                  default:
+                     break;
+                  }
+               if(!isCondyUnresolved)
+                  {
+                  TR::VMAccessCriticalSection primitiveCondyCriticalSection(comp()->fej9(),
+                                                            TR::VMAccessCriticalSection::tryToAcquireVMAccess,
+                                                            comp());
+                  if (primitiveCondyCriticalSection.hasVMAccess())
+                     {
+                     uintptrj_t* objLocation = (uintptrj_t*)_methodSymbol->getResolvedMethod()->dynamicConstant(cpIndex);
+                     uintptrj_t obj = *objLocation;
+                     TR_ASSERT(obj, "Resolved primitive Constant Dynamic-type CP entry %d must have autobox object", cpIndex);
+                     switch (returnTypeUtf8Data[0])
+                        {
+                        case 'I':
+                        case 'Z':
+                        case 'C':
+                        case 'S':
+                        case 'B':
+                           loadConstant(TR::iconst, *(int32_t*)(obj+valueOffset));
+                           break;
+                        case 'J':
+                           loadConstant(TR::lconst, *(int64_t*)(obj+valueOffset));
+                           break;
+                        case 'F':
+                           loadConstant(TR::fconst, *(float*)(obj+valueOffset));
+                           break;
+                        case 'D':
+                           loadConstant(TR::dconst, *(double*)(obj+valueOffset));
+                           break;
+                        default:
+                           break;
+                        }
+                     return;
+                     }
+                  }
+               }
+            TR::Node * loadObjNode = loadSymbol(TR::aload, symRefTab()->findOrCreateConstantDynamicSymbol(_methodSymbol, cpIndex));
+            // Condy is primitive type, emit indirect load of the value field from the autobox object.
+            if (isCondyPrimitive)
+               {
+               char *recogFieldName = NULL;
+               TR::Symbol::RecognizedField valueRecogField= TR::Symbol::UnknownField;
+               TR::DataType dt = TR::NoType;
+               switch (returnTypeUtf8Data[0])
+                  {
+                  case 'I':
+                     recogFieldName = "java/lang/Integer.value I";
+                     valueRecogField = TR::Symbol::Java_lang_Integer_value;
+                     dt = TR::Int32;
+                  case 'J':
+                     recogFieldName = "java/lang/Long.value J";
+                     valueRecogField = TR::Symbol::Java_lang_Long_value;
+                     dt = TR::Int64;
+                  case 'F':
+                     recogFieldName = "java/lang/Float.value F";
+                     valueRecogField = TR::Symbol::Java_lang_Float_value;
+                     dt = TR::Float;
+                  case 'D':
+                     recogFieldName = "java/lang/Double.value D";
+                     valueRecogField = TR::Symbol::Java_lang_Double_value;
+                     dt = TR::Double;
+                  case 'B':
+                     recogFieldName = "java/lang/Byte.value B";
+                     valueRecogField = TR::Symbol::Java_lang_Byte_value;
+                     dt = TR::Int8;
+                  case 'C':
+                     recogFieldName = "java/lang/Character.value C";
+                     valueRecogField = TR::Symbol::Java_lang_Character_value;
+                     dt = TR::Int16;
+                  case 'S':
+                     recogFieldName = "java/lang/Short.value S";
+                     valueRecogField = TR::Symbol::Java_lang_Short_value;
+                     dt = TR::Int16;
+                  case 'Z':
+                     recogFieldName = "java/lang/Boolean.value Z";
+                     valueRecogField = TR::Symbol::Java_lang_Boolean_value;
+                     dt = TR::Int32;
+                  default:
+                     break;
+                  }
+               TR::SymbolReference *valueSymRef = comp()->getSymRefTab()->findOrFabricateShadowSymbol(_methodSymbol,
+                     valueRecogField, dt, valueOffset, false, true, true, recogFieldName);
+               TR::Node *primitiveValueNode = TR::Node::createWithSymRef(comp()->il.opCodeForIndirectLoad(dt),
+                     1, 1, pop(), valueSymRef);
+               primitiveValueNode->copyByteCodeInfo(loadObjNode);
+               push(primitiveValueNode);
+               }
+            }
+         else if (method()->isClassConstant(cpIndex))
             {
             if (TR::Compiler->cls.classesOnHeap())
                loadClassObjectAndIndirect(cpIndex);
