@@ -1703,6 +1703,31 @@ LABEL(L_virtualDispatchExit)
     END_FUNC(_virtualUnresolvedHelper,virUH,7)
 
 
+ZZ ================================================
+ZZ  PICBuilderRoutine : _jitResolveConstantDynamic
+ZZ ================================================
+    START_FUNC(_jitResolveConstantDynamic,jRCD)
+
+LABEL(_jitResolveConstantDynamicBody)
+    SaveRegs
+    L_GPR r1,eq_cp_inDataSnippet(,r14) // Load Constant Pool Address for the helper
+    LGF_GPR r2,eq_cpindex_incDataSnippet(,r14) // Load cpIndex for the helper
+    L_GPR r3,eq_codeRA_inDataSnippet(,r14) // Load Return Address (jitEIP) for helper
+
+    LOAD_ADDR_FROM_TOC(rEP,TR_S390jitResolveConstantDynamic)
+    LR_GPR r0,r14 # Restore R14 - Location of the snippet from where it is called
+    BASR r14,rEP # Call JITHelper (Should go to glue in znathelp.m4)
+    LR_GPR r14,r0 # Restore original address of snippet from where this is called
+    L_GPR r2,e1_codeRA_inDataSnippet(,r14) # Return address in JIT Mainline
+    AHI_GPR r2,-6 # BRCL instruction to be patched
+    LHI r1,-16380 # Opcode for always branch to NOP
+    STH r1,0(r2) # Patch Branch instruction
+    RestoreRegs # Restore Regs
+    L_GPR r14,eq_codeRA_inDataSnippet(,r14) # Return address to mainline JIT (Loading constant dynamic)
+    BR r14 # Return 
+    END_FUNC(_jitResolveConstantDynamic)
+
+
 ZZ ===================================================================
 ZZ  PICBuider routine - _interfaceCallHelper
 ZZ

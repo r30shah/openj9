@@ -228,6 +228,9 @@ J9::Z::UnresolvedDataSnippet::emitSnippetBody()
          }
       }
 
+   if (getDataSymbol()->isConstantDynamic())
+      glueRef = cg()->symRefTab()->findOrCreateRuntimeHelper(TR_S390jitResolveConstantDynamic, false, false, false);
+
 #if !defined(PUBLIC_BUILD)
    // Generate RIOFF if RI is supported.
    cursor = generateRuntimeInstrumentationOnOffInstruction(cg(), cursor, TR::InstOpCode::RIOFF);
