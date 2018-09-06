@@ -1702,6 +1702,29 @@ LABEL(L_virtualDispatchExit)
 
     END_FUNC(_virtualUnresolvedHelper,virUH,7)
 
+ZZ ================================================
+ZZ  PICBuilderRoutine : _jitResolveConstantDynamic
+ZZ ================================================
+    START_FUNC(_jitResolveConstantDynamic,jRCD)
+
+LABEL(_jitResolveConstantDynamicBody)
+    L_GPR r1,eq_cp_inDataSnippet(,r14)
+    LGF_GPR r2,eq_cpindex_inDataSnippet(,r14)
+    L_GPR r3,eq_codeRA_inDataSnippet(,r14)
+    
+LOAD_ADDR_FROM_TOC(rEP,TR_S390jitResolveConstantDynamic)
+    LR_GPR r0,r14
+    BASR r14,rEP 
+    LR_GPR r14,r0
+    L_GPR   r1,eq_literalPoolAddr_inDataSnippet(r14)
+    ST_GPR  r2,0(,r1)
+    L_GPR r2,eq_codeRA_inDataSnippet(,r14)
+    AHI_GPR r2,-6
+    LHI r1,-16380
+    STH r1,0(r2) 
+    L_GPR r14,eq_codeRA_inDataSnippet(,r14)
+    BR r14 
+    END_FUNC(_jitResolveConstantDynamic)
 
 ZZ ===================================================================
 ZZ  PICBuider routine - _interfaceCallHelper
