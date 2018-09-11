@@ -1735,9 +1735,9 @@ ZZ into the Literal Pool
     L_GPR   r1,eq_literalPoolAddr_inDataSnippet(r14)
     ST_GPR  r2,0(,r1)
 
-    L_GPR r2,eq_codeRA_inDataSnippet(,r14) # Get mainline return address
+    L_GPR r2,eq_codeRA_inDataSnippet(,r14) # Get mainline RA
     AHI_GPR r2,-6 # Address of the Branch instruction in mainline
-    LHI r1,HEX(C004) # BRCL 0x0 
+    LHI r1,-16380 # HEX(C004), patching BRCL 0x0 
     STH r1,0(r2) # Patch mainline branch instruction
     L_GPR r14,eq_codeRA_inDataSnippet(,r14) 
     BR r14 # Return
