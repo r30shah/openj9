@@ -1736,9 +1736,11 @@ ZZ into the Literal Pool
     ST_GPR  r2,0(,r1)
 
     L_GPR r2,eq_codeRA_inDataSnippet(,r14) # Get mainline RA
-    AHI_GPR r2,-6 # Address of the Branch instruction in mainline
-    LHI r1,-16380 # HEX(C004), patching BRCL 0x0 
-    STH r1,0(r2) # Patch mainline branch instruction
+
+ZZ Branch instruction in mainline will be patched here with NOP
+    LHI r1,HEX(04)
+    STCY r1,-5(r2)
+
     L_GPR r14,eq_codeRA_inDataSnippet(,r14) 
     BR r14 # Return
     END_FUNC(_jitResolveConstantDynamic)
