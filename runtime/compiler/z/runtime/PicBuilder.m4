@@ -1743,7 +1743,7 @@ ZZ Branch instruction in mainline will be patched here with NOP
 
     L_GPR r14,eq_codeRA_inDataSnippet(,r14) 
     BR r14 # Return
-    END_FUNC(_jitResolveConstantDynamic)
+    END_FUNC(_jitResolveConstantDynamic,jRCD,6)
 
 ZZ ===================================================================
 ZZ  PICBuider routine - _interfaceCallHelper
