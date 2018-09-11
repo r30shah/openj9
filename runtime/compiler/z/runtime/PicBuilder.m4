@@ -4,7 +4,7 @@ define(`ZZ',`**')
 define(`ZZ',`##')
 ')dnl
 
-ZZ Copyright (c) 2000, 2017 IBM Corp. and others
+ZZ Copyright (c) 2000, 2018 IBM Corp. and others
 ZZ
 ZZ This program and the accompanying materials are made 
 ZZ available under the terms of the Eclipse Public License 2.0 
@@ -1708,22 +1708,39 @@ ZZ ================================================
     START_FUNC(_jitResolveConstantDynamic,jRCD)
 
 LABEL(_jitResolveConstantDynamicBody)
+ZZ Loading arguments for JIT helper
+ZZ R1 - Address of Constant Pool
+ZZ R2 - CPIndex
+ZZ R3 - JIT'd code Return Address
     L_GPR r1,eq_cp_inDataSnippet(,r14)
     LGF_GPR r2,eq_cpindex_inDataSnippet(,r14)
     L_GPR r3,eq_codeRA_inDataSnippet(,r14)
-    
+
+ZZ Following snippet prepares JIT helper call sequence
+ZZ which needs r14 to be free which holds address of
+ZZ Snippet from where this is called. 
+ZZ As jitResolveConstantDynamic is called via 
+ZZ SLOW_PATH_ONLY_HELPER glue, it is guranteed that
+ZZ all the registers (volatile and non-volatile) are preserved.
+ZZ This allows us to use R0 to preserve R14 
 LOAD_ADDR_FROM_TOC(rEP,TR_S390jitResolveConstantDynamic)
     LR_GPR r0,r14
-    BASR r14,rEP 
+    BASR r14,rEP
     LR_GPR r14,r0
+
+ZZ Load the address of literal pool
+ZZ Store the return value of helper call which
+ZZ is address of resolved constant dynamic 
+ZZ into the Literal Pool 
     L_GPR   r1,eq_literalPoolAddr_inDataSnippet(r14)
     ST_GPR  r2,0(,r1)
-    L_GPR r2,eq_codeRA_inDataSnippet(,r14)
-    AHI_GPR r2,-6
-    LHI r1,-16380
-    STH r1,0(r2) 
-    L_GPR r14,eq_codeRA_inDataSnippet(,r14)
-    BR r14 
+
+    L_GPR r2,eq_codeRA_inDataSnippet(,r14) # Get mainline return address
+    AHI_GPR r2,-6 # Address of the Branch instruction in mainline
+    LHI r1,HEX(C004) # BRCL 0x0 
+    STH r1,0(r2) # Patch mainline branch instruction
+    L_GPR r14,eq_codeRA_inDataSnippet(,r14) 
+    BR r14 # Return
     END_FUNC(_jitResolveConstantDynamic)
 
 ZZ ===================================================================
