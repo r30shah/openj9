@@ -66,9 +66,9 @@ print "os   is set to $os\n";
 # Define a a hash for each dependent jar
 # Contents in the hash should be: url => , fname =>, sha1 =>
 my %asm_all = (
-	url => 'http://central.maven.org/maven2/org/ow2/asm/asm-all/6.0_BETA/asm-all-6.0_BETA.jar',
+	url => 'https://repository.ow2.org/nexus/content/repositories/snapshots/org/ow2/asm/asm/7.0-beta-SNAPSHOT/asm-7.0-beta-20180911.182645-11.jar',
 	fname => 'asm-all.jar',
-	sha1 => '535f141f6c8fc65986a3469839a852a3266d1025'
+	sha1 => 'a5cd898ac5f15b99bc6b76167556a19fcea5c757'
 );
 my %commons_cli = (
 	url => 'http://central.maven.org/maven2/commons-cli/commons-cli/1.2/commons-cli-1.2.jar',
