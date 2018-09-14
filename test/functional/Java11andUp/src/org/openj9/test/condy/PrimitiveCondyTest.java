@@ -29,43 +29,43 @@ public class PrimitiveCondyTest {
 	 
 	@Test(groups = { "level.sanity" })
 	public void testCondyNull() {
-		Assert.assertNull(PrimitiveCondyMethods.condy_return_null());
-		Assert.assertNull(PrimitiveCondyMethods.condy_return_null());
+		//Assert.assertNull(PrimitiveCondyMethods.condy_return_null());
+		//Assert.assertNull(PrimitiveCondyMethods.condy_return_null());
 		Assert.assertNull(PrimitiveCondyMethods.condy_return_null());
 	}
 
 	@Test(groups = { "level.sanity" })
 	public void testCondyInt() {
-		Assert.assertEquals(PrimitiveCondyMethods.condy_return_int(), 123432);
-		Assert.assertEquals(PrimitiveCondyMethods.condy_return_int(), 123432);
+		//Assert.assertEquals(PrimitiveCondyMethods.condy_return_int(), 123432);
+		//Assert.assertEquals(PrimitiveCondyMethods.condy_return_int(), 123432);
 		Assert.assertEquals(PrimitiveCondyMethods.condy_return_int(), 123432);
 	}
 
 	@Test(groups = { "level.sanity" })
 	public void testCondyFloat() {
-		Assert.assertEquals(PrimitiveCondyMethods.condy_return_float(), 10.12F);
-		Assert.assertEquals(PrimitiveCondyMethods.condy_return_float(), 10.12F);
+		//Assert.assertEquals(PrimitiveCondyMethods.condy_return_float(), 10.12F);
+		//Assert.assertEquals(PrimitiveCondyMethods.condy_return_float(), 10.12F);
 		Assert.assertEquals(PrimitiveCondyMethods.condy_return_float(), 10.12F);
 	}
 
 	@Test(groups = { "level.sanity" })
 	public void testCondyLong() {
-		Assert.assertEquals(PrimitiveCondyMethods.condy_return_long(), 100000000000L);
-		Assert.assertEquals(PrimitiveCondyMethods.condy_return_long(), 100000000000L);
+		//Assert.assertEquals(PrimitiveCondyMethods.condy_return_long(), 100000000000L);
+		//Assert.assertEquals(PrimitiveCondyMethods.condy_return_long(), 100000000000L);
 		Assert.assertEquals(PrimitiveCondyMethods.condy_return_long(), 100000000000L);
 	}
 
 	@Test(groups = { "level.sanity" })
 	public void testCondyDouble() {
-		Assert.assertEquals(PrimitiveCondyMethods.condy_return_double(), 1111111.12D);
-		Assert.assertEquals(PrimitiveCondyMethods.condy_return_double(), 1111111.12D);
+		//Assert.assertEquals(PrimitiveCondyMethods.condy_return_double(), 1111111.12D);
+		//Assert.assertEquals(PrimitiveCondyMethods.condy_return_double(), 1111111.12D);
 		Assert.assertEquals(PrimitiveCondyMethods.condy_return_double(), 1111111.12D);
 	}
 
 	@Test(groups = { "level.sanity" })
 	public void testCondyString() {
-		Assert.assertEquals(PrimitiveCondyMethods.condy_return_string(), "world");
-		Assert.assertEquals(PrimitiveCondyMethods.condy_return_string(), "world");
+		//Assert.assertEquals(PrimitiveCondyMethods.condy_return_string(), "world");
+		//Assert.assertEquals(PrimitiveCondyMethods.condy_return_string(), "world");
 		Assert.assertEquals(PrimitiveCondyMethods.condy_return_string(), "world");
 	}
 }

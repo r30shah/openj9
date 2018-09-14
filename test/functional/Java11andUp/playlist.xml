@@ -104,7 +104,7 @@
 	<!--
 		Following test covers scenario for both type of constant dynamics (Object and Primitives)
 		Variation 1:
-			This variation runs test in completely interpreted mode.
+			This variation runs tests in default mode.
 		Variation 2:
 			This variation runs test under -Xjit:count=1 option which makes sure that ConstantDynamic is resoleved before we compile a method
 			to test JIT's handling of resolved constant dynamic
@@ -115,8 +115,8 @@
 	<test>
 		<testCaseName>CondyPrimitive</testCaseName>
 		<variations>
-			<variation>'-Xint'</variation>
-			<variation>'-Xjit:count=1,disableAsyncCompilation'</variation>
+			<variation>NoOptions</variation>
+			<variation>'-Xjit:count=0,disableAsyncCompilation,rtResolve'</variation>
 			<variation>'-Xjit:count=0,disableAsyncCompilation'</variation>
 		</variations>
 		<command>$(JAVA_COMMAND) $(JVM_OPTIONS) \
