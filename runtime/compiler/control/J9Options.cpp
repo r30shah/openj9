@@ -376,6 +376,32 @@ J9::Options::limitfileOption(char * option, void * base, TR::OptionTable *entry)
    }
 
 char *
+J9::Options::generalUseFileOption(char * option, void * base, TR::OptionTable *entry)
+   {
+   if (!J9::Options::getDebug() && !J9::Options::createDebug())
+      return 0;
+
+   J9JITConfig * jitConfig = (J9JITConfig*)base;
+   TR_PseudoRandomNumbersListElement **pseudoRandomNumbersListPtr = NULL;
+   if (jitConfig != 0)
+      {
+      TR::CompilationInfo * compInfo = TR::CompilationInfo::get(jitConfig);
+      pseudoRandomNumbersListPtr = compInfo->getPersistentInfo()->getPseudoRandomNumbersListPtr();
+      }
+
+   if (J9::Options::getJITCmdLineOptions() == NULL)
+      {
+      // if JIT options are NULL, means we're processing AOT options now
+      return J9::Options::getDebug()->generalUseFileOption(option, base, entry, TR::Options::getAOTCmdLineOptions(), false, pseudoRandomNumbersListPtr);
+      }
+   else
+      {
+      // otherwise, we're processing JIT options
+      return J9::Options::getDebug()->generalUseFileOption(option, base, entry, TR::Options::getJITCmdLineOptions(), false, pseudoRandomNumbersListPtr);
+      }
+   }
+
+char *
 J9::Options::inlinefileOption(char * option, void * base, TR::OptionTable *entry)
    {
    if (!J9::Options::getDebug() && !J9::Options::createDebug())
@@ -660,6 +686,9 @@ TR::OptionTable OMR::Options::_feOptions[] = {
         TR::Options::setStaticNumeric, (intptrj_t)&TR::Options::_aotMethodThreshold, 0, " %d", NOT_IN_SUBSET},
    {"aotWarmSCCThreshold=", "R<nnn>\tNumber of methods found in shared cache at startup to declare SCC as warm",
         TR::Options::setStaticNumeric, (intptrj_t)&TR::Options::_aotWarmSCCThreshold, 0, " %d", NOT_IN_SUBSET },
+   {"generalUseFile=",         "D<filename>\tfilter method compilation as defined in filename.  "
+                          "Use limitfile=(filename,firstLine,lastLine) to limit lines considered from firstLine to lastLine",
+        TR::Options::generalUseFileOption, 0, 0, "F%s"},
    {"availableCPUPercentage=", "M<nnn>\tUse it when java process has a fraction of a CPU. Number 1..99 ",
         TR::Options::setStaticNumeric, (intptrj_t)&TR::Options::_availableCPUPercentage, 0, "F%d", NOT_IN_SUBSET},
    {"bcLimit=",           "C<nnn>\tbytecode size limit",
