@@ -50,19 +50,29 @@ void TR::S390EncodingRelocation::addRelocation(TR::CodeGenerator *cg, uint8_t *c
    TR::Compilation *comp = cg->comp();
    TR_J9VMBase *fej9 = (TR_J9VMBase *)(comp->fe());
 
-   if (_reloType==TR_ClassObject || _reloType==TR_ClassAddress)
+   if (_reloType == TR_ClassAddress)
       {
-
-      bool classAddressRelo=_reloType==TR_ClassAddress;
-      if (classAddressRelo)
+      AOTcgDiag2(  comp, "TR_ClassAddress cursor=%x symbolReference=%x\n", cursor, _symbolReference);
+      TR_OpaqueClassBlock *clazz = (TR_OpaqueClassBlock*)(*((uintptrj_t*)cursor));
+      if (cg->comp()->getOption(TR_UseSymbolValidationManager))
          {
-         AOTcgDiag2(  comp, "TR_ClassAddress cursor=%x symbolReference=%x\n", cursor, _symbolReference);
+         cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, 
+                                                                           (uint8_t *)clazz, 
+                                                                           (uint8_t *) TR::SymbolType::typeClass,
+                                                                           TR_SymbolFromManager,
+                                                                           cg),
+                                                                        file, line, node);
          }
       else
          {
-         AOTcgDiag2(  comp, "TR_ClassObject cursor=%x symbolReference=%x\n", cursor, _symbolReference);
+         *((uintptrj_t*)cursor)=fej9->getPersistentClassPointerFromClassPointer((TR_OpaqueClassBlock*)(*((uintptrj_t*)cursor)));
+         cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) _symbolReference, (uint8_t *)_inlinedSiteIndex, (TR_ExternalRelocationTargetKind)_reloType, cg),
+                                 file, line, node);
          }
-
+      }
+   else if (_reloType==TR_ClassObject)
+      {
+      AOTcgDiag2(  comp, "TR_ClassObject cursor=%x symbolReference=%x\n", cursor, _symbolReference);
       *((uintptrj_t*)cursor)=fej9->getPersistentClassPointerFromClassPointer((TR_OpaqueClassBlock*)(*((uintptrj_t*)cursor)));
       cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) _symbolReference, (uint8_t *)_inlinedSiteIndex, (TR_ExternalRelocationTargetKind)_reloType, cg),
                               file, line, node);
@@ -70,8 +80,20 @@ void TR::S390EncodingRelocation::addRelocation(TR::CodeGenerator *cg, uint8_t *c
    else if (_reloType==TR_RamMethod)
       {
       AOTcgDiag1(  comp, "TR_RamMethod cursor=%x\n", cursor);
-      cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_RamMethod, cg), file, line, node);
-
+      if (cg->comp()->getOption(TR_UseSymbolValidationManager))
+         {
+         uint8_t * j9Method = (uint8_t *)(*(uint32_t *)cursor);
+         cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, 
+                                                                           j9Method, 
+                                                                           (uint8_t *) TR::SymbolType::typeMethod,
+                                                                           TR_SymbolFromManager,
+                                                                           cg),
+                                                                        file, line, node);
+         }
+      else
+         {
+         cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_RamMethod, cg), file, line, node);
+         }
       }
    else if (_reloType==TR_HelperAddress)
       {
