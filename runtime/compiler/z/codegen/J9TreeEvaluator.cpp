@@ -8195,7 +8195,10 @@ genInitObjectHeader(TR::Node * node, TR::Instruction *& iCursor, TR_OpaqueClassB
 
       // a pointer to the virtual register that will actually hold the class pointer.
       TR::Register * clzReg = classReg;
-
+      // TODO: Following approach for initializing object header for AOT is conservative
+      // as if we have classAddress available we should. Initialize object header with it.
+      // Under SVM we would need to do generate LoadAddress constant address with TR_ClassPointer
+      // relocation type which saves a load and store from memory.
       if (comp->compileRelocatableCode())
          {
          if (node->getOpCodeValue() == TR::newarray)
@@ -9074,6 +9077,7 @@ J9::Z::TreeEvaluator::VMnewEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       //////////////////////////////////////////////////////////////////////////////////////////////////////
       if (comp->compileRelocatableCode() && (opCode == TR::New || opCode == TR::anewarray) )
          {
+         TR_OpaqueClassBlock *classToValidate = classAddress;
          TR_RelocationRecordInformation *recordInfo =
          (TR_RelocationRecordInformation *) comp->trMemory()->allocateMemory(sizeof(TR_RelocationRecordInformation), heapAlloc);
          recordInfo->data1 = allocateSize;
@@ -9092,8 +9096,15 @@ J9::Z::TreeEvaluator::VMnewEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             {
             classSymRef = node->getSecondChild()->getSymbolReference();
             reloKind = TR_VerifyRefArrayForAlloc;
-            }
 
+            if (comp->getOption(TR_UseSymbolValidationManager))
+               classToValidate = comp->fej9()->getComponentClassFromArrayClass(classToValidate);
+            }
+         if (comp->getOption(TR_UseSymbolValidationManager))
+            {
+            TR_ASSERT_FATAL(classToValidate != NULL, "ClassToValidate Should not be NULL, clazz = %p\n", classAddress);
+            recordInfo->data5 = (uintptr_t)classToValidate;
+            }
          cg->addExternalRelocation(new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(firstInstruction,
                      (uint8_t *) classSymRef,
                      (uint8_t *) recordInfo,
