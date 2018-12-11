@@ -343,7 +343,7 @@ TR::S390J9CallSnippet::emitSnippetBody()
       {
       // Store the method pointer: it is NULL for unresolved
       // This field must be doubleword aligned for 64-bit and word aligned for 32-bit
-      if (methodSymRef->isUnresolved() || comp->compileRelocatableCode())
+      if (methodSymRef->isUnresolved())
          {
          pad_bytes = (((uintptrj_t) cursor + (sizeof(uintptrj_t) - 1)) / sizeof(uintptrj_t) * sizeof(uintptrj_t) - (uintptrj_t) cursor);
          TR_ASSERT( pad_bytes == 0, "Method Pointer field must be aligned for patching");
@@ -358,12 +358,25 @@ TR::S390J9CallSnippet::emitSnippetBody()
          }
       else
          {
-         *(uintptrj_t *) cursor = (uintptrj_t) methodSymbol->getMethodAddress();
+         uintptrj_t ramMethod = (uintptr_t)methodSymbol->getMethodAddress();
+         *(uintptrj_t *) cursor = ramMethod;
          if (comp->getOption(TR_EnableHCR))
             cg()->jitAddPicToPatchOnClassRedefinition((void *)methodSymbol->getMethodAddress(), (void *)cursor);
          AOTcgDiag1(comp, "add TR_MethodObject cursor=%x\n", cursor);
-         cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) callNode->getSymbolReference(), getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1, TR_MethodObject, cg()),
-                                   __FILE__, __LINE__, callNode);
+         if (cg()->getOption(TR_UseSymbolValidationManager))
+            {
+            cg()->addExternalRelocation( new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
+                                                                        (uint8_t *)ramMethod,
+                                                                        (uint8_t *)TR::SymbolType::typeMethod,
+                                                                        TR_SymbolFromManager,
+                                                                        cg()),
+                                                                     __FILE__, __LINE__, callNode);
+            }
+         else
+            {
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) callNode->getSymbolReference(), getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1, TR_MethodObject, cg()),
+                                    __FILE__, __LINE__, callNode);
+            }
          }
       }
 
