@@ -9074,6 +9074,7 @@ J9::Z::TreeEvaluator::VMnewEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       //////////////////////////////////////////////////////////////////////////////////////////////////////
       if (comp->compileRelocatableCode() && (opCode == TR::New || opCode == TR::anewarray) )
          {
+         TR_OpaqueClassBlock *classToValidate = classAddress;
          TR_RelocationRecordInformation *recordInfo =
          (TR_RelocationRecordInformation *) comp->trMemory()->allocateMemory(sizeof(TR_RelocationRecordInformation), heapAlloc);
          recordInfo->data1 = allocateSize;
@@ -9092,8 +9093,15 @@ J9::Z::TreeEvaluator::VMnewEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             {
             classSymRef = node->getSecondChild()->getSymbolReference();
             reloKind = TR_VerifyRefArrayForAlloc;
-            }
 
+            if (comp->getOption(TR_UseSymbolValidationManager))
+               classToValidate = comp->fej9()->getComponentClassFromArrayClass(classToValidate);
+            }
+         if (comp->getOption(TR_UseSymbolValidationManager))
+            {
+            TR_ASSERT(classToValidate != NULL, "ClassToValidate Should not be NULL, clazz = %p\n", classAddress);
+            recordInfo->data5 = (uintptr_t)classToValidate;
+            }
          cg->addExternalRelocation(new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(firstInstruction,
                      (uint8_t *) classSymRef,
                      (uint8_t *) recordInfo,
