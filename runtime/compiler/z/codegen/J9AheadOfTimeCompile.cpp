@@ -1215,7 +1215,7 @@ uint8_t *J9::Z::AheadOfTimeCompile::initializeAOTRelocationHeader(TR::IteratedEx
          {
          TR::DebugCounterBase *counter = (TR::DebugCounterBase *) relocation->getTargetAddress();
          if (!counter || !counter->getReloData() || !counter->getName())
-            comp()->failCompilation<TR::CompilationException>("Failed to generate debug counter relo data");
+            self()->comp()->failCompilation<TR::CompilationException>("Failed to generate debug counter relo data");
 
          TR::DebugCounterReloData *counterReloData = counter->getReloData();
 

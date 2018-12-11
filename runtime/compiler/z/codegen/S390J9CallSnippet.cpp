@@ -363,7 +363,7 @@ TR::S390J9CallSnippet::emitSnippetBody()
          if (comp->getOption(TR_EnableHCR))
             cg()->jitAddPicToPatchOnClassRedefinition((void *)methodSymbol->getMethodAddress(), (void *)cursor);
          AOTcgDiag1(comp, "add TR_MethodObject cursor=%x\n", cursor);
-         if (cg()->getOption(TR_UseSymbolValidationManager))
+         if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
             {
             cg()->addExternalRelocation( new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                         (uint8_t *)ramMethod,
