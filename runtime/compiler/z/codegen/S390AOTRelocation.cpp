@@ -53,16 +53,45 @@ void TR::S390EncodingRelocation::addRelocation(TR::CodeGenerator *cg, uint8_t *c
    if (_reloType==TR_ClassAddress)
       {
       AOTcgDiag2(  comp, "TR_ClassAddress cursor=%x symbolReference=%x\n", cursor, _symbolReference);
+      if (cg->comp()->getOption(TR_UseSymbolValidationManager))
+         {
+         TR_OpaqueClassBlock *clazz = (TR_OpaqueClassBlock*)(*((uintptrj_t*)cursor));
+         TR_ASSERT_FATAL(clazz, "clazz can not be null");
+         cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, 
+                                                                           (uint8_t *)clazz, 
+                                                                           (uint8_t *) TR::SymbolType::typeClass,
+                                                                           TR_SymbolFromManager,
+                                                                           cg),
+                                                                        file, line, node);
 
-      *((uintptrj_t*)cursor)=fej9->getPersistentClassPointerFromClassPointer((TR_OpaqueClassBlock*)(*((uintptrj_t*)cursor)));
-      cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) _symbolReference, (uint8_t *)_inlinedSiteIndex, TR_ClassAddress, cg),
-                              file, line, node);
+         }
+      else
+         {
+         *((uintptrj_t*)cursor)=fej9->getPersistentClassPointerFromClassPointer((TR_OpaqueClassBlock*)(*((uintptrj_t*)cursor)));
+         cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) _symbolReference, (uint8_t *)_inlinedSiteIndex, TR_ClassAddress, cg),
+                           file, line, node);
+         }
       }
    else if (_reloType==TR_RamMethod)
       {
       AOTcgDiag1(  comp, "TR_RamMethod cursor=%x\n", cursor);
-      cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_RamMethod, cg), file, line, node);
-
+      if (cg->comp()->getOption(TR_UseSymbolValidationManager))
+         {
+         TR::ResolvedMethodSymbol *methodSym = (TR::ResolvedMethodSymbol*) _symbolReference->getSymbol();
+         uint8_t * j9Method = (uint8_t *) (reinterpret_cast<intptrj_t>(methodSym->getResolvedMethod()->resolvedMethodAddress()));
+         //uint8_t * j9Method = (uint8_t *)(*(uint32_t *)cursor);
+         TR_ASSERT_FATAL(j9Method, "j9Method can not be null");
+         cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, 
+                                                                           j9Method, 
+                                                                           (uint8_t *) TR::SymbolType::typeMethod,
+                                                                           TR_SymbolFromManager,
+                                                                           cg),
+                                                                        file, line, node);
+         }
+      else
+         {
+         cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_RamMethod, cg), file, line, node);
+         }
       }
    else if (_reloType==TR_HelperAddress)
       {
