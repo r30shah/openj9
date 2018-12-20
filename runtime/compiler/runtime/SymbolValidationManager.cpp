@@ -581,7 +581,7 @@ TR::SymbolValidationManager::addClassClassRecord(TR_OpaqueClassBlock *classClass
 bool
 TR::SymbolValidationManager::addConcreteSubClassFromClassRecord(TR_OpaqueClassBlock *childClass, TR_OpaqueClassBlock *superClass)
    {
-   if (!superClass)
+   if (!childClass)
       return false;
    if (inHeuristicRegion())
       return true;
@@ -787,7 +787,15 @@ TR::SymbolValidationManager::addMethodFromClassAndSignatureRecord(TR_OpaqueMetho
    SVM_ASSERT_ALREADY_VALIDATED(this, beholder);
 
    SymbolValidationRecord *record = new (_region) MethodFromClassAndSigRecord(method, methodClass, beholder);
-   return storeValidationRecordIfNecessary(static_cast<void *>(method), record);
+   bool valid = storeValidationRecordIfNecessary(static_cast<void *>(method), record);
+
+   if (valid)
+      {
+      J9Class *classOfMethod = J9_CLASS_FROM_METHOD(reinterpret_cast<J9Method *>(method));
+      valid = addClassFromMethodRecord(reinterpret_cast<TR_OpaqueClassBlock *>(classOfMethod), method);
+      }
+
+   return valid;
    }
 
 bool
