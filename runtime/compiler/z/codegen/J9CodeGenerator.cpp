@@ -204,7 +204,7 @@ J9::Z::CodeGenerator::CodeGenerator() :
 
    const bool accessStaticsIndirectly = !cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) ||
          comp->getOption(TR_DisableDirectStaticAccessOnZ) ||
-         comp->compileRelocatableCode();
+         (comp->compileRelocatableCode() && !comp->getOption(TR_UseSymbolValidationManager));
 
    cg->setAccessStaticsIndirectly(accessStaticsIndirectly);
 
