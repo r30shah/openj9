@@ -95,7 +95,9 @@ static
 uint32_t getInstanceOfOrCheckCastTopProfiledClass(TR::CodeGenerator *cg, TR::Node *node, TR_OpaqueClassBlock *castClass, J9::TreeEvaluator::InstanceOfOrCheckCastProfiledClasses *profiledClassList, bool *topClassWasCastClass, uint32_t maxProfiledClass, float *topClassProbability)
    {
    TR::Compilation *comp = cg->comp();
-
+   static bool doNotGenProfiledClassTest = feGetEnv("TR_DisableTypeTestOptUnderAOT") != NULL;
+   if (doNotGenProfiledClassTest && comp->compileRelocatableCode())
+      return 0;
    if (comp->getOption(TR_TraceCG))
       {
       static bool traceProfilingInfo = feGetEnv("TR_traceInstanceOfOrCheckCastProfilingInfo") != NULL;
@@ -175,6 +177,12 @@ uint32_t getInstanceOfOrCheckCastTopProfiledClass(TR::CodeGenerator *cg, TR::Nod
          *topClassProbability = profiledInfo->_frequency / totalFrequency;
          continue;
          }
+
+      // For AOT compiles with a SymbolValidationManaer, skip any classes which cannot be verified.
+      //
+      if (comp->compileRelocatableCode() && comp->getOption(TR_UseSymbolValidationManager))
+         if (!comp->getSymbolValidationManager()->addProfiledClassRecord(tempProfiledClass))
+            continue;
 
       float frequency = profiledInfo->_frequency / totalFrequency;
       if ( frequency >= TR::Options::getMinProfiledCheckcastFrequency() )
@@ -325,8 +333,8 @@ uint32_t J9::TreeEvaluator::calculateInstanceOfOrCheckCastSequences(TR::Node *in
          //
          if (profiledClassList)
             {
-            *numberOfProfiledClass = getInstanceOfOrCheckCastTopProfiledClass(cg, instanceOfOrCheckCastNode, castClass, profiledClassList, topClassWasCastClass, maxProfiledClass, topClassProbability);
-            numProfiledClasses = *numberOfProfiledClass;
+            numProfiledClasses = getInstanceOfOrCheckCastTopProfiledClass(cg, instanceOfOrCheckCastNode, castClass, profiledClassList, topClassWasCastClass, maxProfiledClass, topClassProbability);
+            *numberOfProfiledClass = numProfiledClasses;
             if (cg->comp()->getOption(TR_TraceCG))
                {
                for (int i=0; i<numProfiledClasses; i++)
@@ -339,6 +347,9 @@ uint32_t J9::TreeEvaluator::calculateInstanceOfOrCheckCastSequences(TR::Node *in
             }
 
          TR_OpaqueClassBlock *singleImplementerClass = NULL;
+         static bool doNotGenCompGuessClassUnderAOT = feGetEnv("TR_DisableTypeTestOptUnderAOT") != NULL;
+         if (doNotGenCompGuessClassUnderAOT && cg->comp()->compileRelocatableCode())
+            compileTimeGuessClass = NULL;
 
          // If the caller doesn't provide the output param don't bother with guessing.
          //
@@ -351,6 +362,9 @@ uint32_t J9::TreeEvaluator::calculateInstanceOfOrCheckCastSequences(TR::Node *in
             if (!isInstanceOf)
                {
                singleImplementerClass = cg->comp()->getPersistentInfo()->getPersistentCHTable()->findSingleConcreteSubClass(castClass, cg->comp());
+               if (singleImplementerClass && cg->comp()->compileRelocatableCode() && cg->comp()->getOption(TR_UseSymbolValidationManager))
+                  if (!cg->comp()->getSymbolValidationManager()->addProfiledClassRecord(singleImplementerClass))
+                     singleImplementerClass = NULL;
                if (cg->comp()->getOption(TR_TraceCG))
                   {
                   if (singleImplementerClass)
