@@ -1171,7 +1171,7 @@ J9::SymbolReferenceTable::findOrCreateClassStaticsSymbol(TR::ResolvedMethodSymbo
    if (!TR::Compiler->cls.classObjectsMayBeCollected())
       sym->setNotCollected();
 
-   symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodSymbol->getResolvedMethodIndex(), -1);
+   symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodSymbol->getResolvedMethodIndex(), cpIndex);
 
    aliasBuilder.addressStaticSymRefs().set(symRef->getReferenceNumber()); // add the symRef to the statics list to get correct aliasing info
 
