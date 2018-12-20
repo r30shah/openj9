@@ -3767,9 +3767,9 @@ TR::Instruction* J9::Z::CodeGenerator::generateVMCallHelperSnippet(TR::Instructi
    if (TR::Compiler->target.is64Bit())
       {
       cursor = generateDataConstantInstruction(self(), TR::InstOpCode::DC, node, UPPER_4_BYTES(j9MethodAddress), cursor);
-      cursor->setEncodingRelocation(encodingRelocation);
 
       cursor = generateDataConstantInstruction(self(), TR::InstOpCode::DC, node, LOWER_4_BYTES(j9MethodAddress), cursor);
+      cursor->setEncodingRelocation(encodingRelocation);
       }
    else
       {
