@@ -6520,7 +6520,7 @@ TR_J9VMBase::getMatchingMethodFromNameAndSignature(TR_OpaqueClassBlock * classPo
          if (validate)
             {
             TR::Compilation *comp = TR::comp();
-            if (comp && comp->getOption(TR_UseSymbolValidationManager))
+            if (comp && canUseSymbolValidationManager() && comp->getOption(TR_UseSymbolValidationManager))
                {
                comp->getSymbolValidationManager()->addMethodFromClassRecord(method, classPointer, i);
                }
