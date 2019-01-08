@@ -7428,12 +7428,13 @@ TR::CompilationInfoPerThreadBase::wrappedCompile(J9PortLibrary *portLib, void * 
                if (options->getOptLevel() > warm || vm->isAOT_DEPRECATED_DO_NOT_USE())
                   options->setOption(TR_EnableGRACostBenefitModel, false);
                }
+            /*
             static bool doNotForceSVM = feGetEnv("TR_ForceSVM") == NULL;
             if ((jitConfig->javaVM->phase != J9VM_PHASE_NOT_STARTUP || options->getOptLevel() < warm) && doNotForceSVM)
                {
                options->setOption(TR_UseSymbolValidationManager, false);
                }
-
+            */
 
             // See if we need to inset GCR trees
             if (!details.supportsInvalidation())
