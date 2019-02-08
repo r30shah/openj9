@@ -28,6 +28,7 @@
 
 
     ReserveCodeCachePhase,
+    FixUpProfiledInterfaceGuardTest,
 
 
     InliningReportPhase,

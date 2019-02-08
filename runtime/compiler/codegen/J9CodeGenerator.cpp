@@ -3917,6 +3917,53 @@ J9::CodeGenerator::collectSymRefs(
    }
 
 
+
+void
+J9::CodeGenerator::fixUpProfiledInterfaceGuardTest()
+   {
+   TR::Compilation *comp = self()->comp();
+   TR::CFG * cfg = comp->getFlowGraph();
+   TR::Block *currentBlock = NULL;
+   for (TR::TreeTop * treeTop = comp->getStartTree(); treeTop; treeTop = treeTop->getNextTreeTop())
+      {
+      TR::Node *node = treeTop->getNode();
+
+      if (node->getOpCodeValue() == TR::BBStart )
+         {
+         currentBlock = node->getBlock();
+         }
+      else if (node->getOpCode().isIf() && node->isTheVirtualGuardForAGuardedInlinedCall())
+         {
+         TR_VirtualGuard *vg = comp->findVirtualGuardInfo(node);
+         if (vg && vg->getTestType() == TR_MethodTest && vg->getIsInterfaceMethodGuard())
+            {
+            traceMsg(comp, "RAHIL : Need to add a rangecheck before n%dn in block_%d\n",node->getGlobalIndex(), currentBlock->getNumber());
+            TR::Node* vTableSizeOfReceiver = TR::Node::createWithSymRef(TR::iloadi, 1, 1, node->getFirstChild()->getFirstChild(),
+                                                                           comp->getSymRefTab()->findOrCreateVtableEntrySymbolRef(comp->getMethodSymbol(),
+                                                                                                                                    sizeof(J9Class)+ offsetof(J9VTableHeader, size)));
+            TR::Node * rangeCheckTest = TR::Node::createif(TR::ificmplt, vTableSizeOfReceiver, TR::Node::iconst(node, node->getFirstChild()->getSymbolReference()->getOffset()), node->getBranchDestination());
+            TR::TreeTop *rangeTestTT = TR::TreeTop::create(comp, treeTop->getPrevTreeTop(), rangeCheckTest);
+            TR::Block *newBlock = currentBlock->split(treeTop, cfg, false, false);
+            cfg->addEdge(currentBlock, node->getBranchDestination()->getEnclosingBlock());
+            newBlock->setIsExtensionOfPreviousBlock();
+            if (node->getNumChildren() == 3)
+               {
+               TR::Node *currentBlockGlRegDeps = node->getChild(2);
+               TR::Node *exitGlRegDeps = TR::Node::create(TR::GlRegDeps, currentBlockGlRegDeps->getNumChildren());
+               for (int i = 0; i < currentBlockGlRegDeps->getNumChildren(); i++)
+                  {
+                  TR::Node *child = currentBlockGlRegDeps->getChild(i);
+                  exitGlRegDeps->setAndIncChild(i, child);
+                  }
+               rangeCheckTest->addChildren(&exitGlRegDeps, 1);
+               }
+            }
+         }
+      }
+   }
+
+
+
 void
 J9::CodeGenerator::allocateLinkageRegisters()
    {

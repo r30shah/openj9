@@ -28,7 +28,7 @@
 
 
     ReserveCodeCachePhase,
-
+    FixUpProfiledInterfaceGuardTest,
 
     InliningReportPhase,
     LateSequentialConstantStoreSimplificationPhase,

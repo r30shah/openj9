@@ -47,7 +47,7 @@ class OMR_EXTENSIBLE CodeGenPhase: public OMR::CodeGenPhaseConnector
    public:
 
    void reportPhase(PhaseValue phase);
-
+   static void performFixUpProfiledInterfaceGuardTestPhase(TR::CodeGenerator *cg, TR::CodeGenPhase *);
    static void performAllocateLinkageRegistersPhase(TR::CodeGenerator * cg, TR::CodeGenPhase *);
    static void performPopulateOSRBufferPhase(TR::CodeGenerator * cg, TR::CodeGenPhase *);
    static void performMoveUpArrayLengthStoresPhase(TR::CodeGenerator * cg, TR::CodeGenPhase *);

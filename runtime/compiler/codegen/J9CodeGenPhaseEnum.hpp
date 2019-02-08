@@ -29,7 +29,7 @@
 #include "codegen/OMRCodeGenPhaseEnum.hpp"
 
 // The entries in this file must be kept in sync with codegen/J9CodeGenPhaseFunctionTable.hpp
-
+   FixUpProfiledInterfaceGuardTest,
    AllocateLinkageRegisters,
    PopulateOSRBufferPhase,
    MoveUpArrayLengthStoresPhase,
