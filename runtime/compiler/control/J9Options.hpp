@@ -315,6 +315,8 @@ class OMR_EXTENSIBLE Options : public OMR::OptionsConnector
 
    static char *loadLimitfileOption(char *option, void *, TR::OptionTable *entry);
 
+   static char *limitSpecialFileOption(char *option, void *, TR::OptionTable *entry);
+
    static char *vmStateOption(char *option, void *, TR::OptionTable *entry);
 
    static char *setJitConfigRuntimeFlag(char *option, void *base, TR::OptionTable *entry);

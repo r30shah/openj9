@@ -374,6 +374,31 @@ J9::Options::limitfileOption(char * option, void * base, TR::OptionTable *entry)
       return J9::Options::getDebug()->limitfileOption(option, base, entry, TR::Options::getJITCmdLineOptions(), false, pseudoRandomNumbersListPtr);
       }
    }
+char *
+J9::Options::limitSpecialFileOption(char * option, void * base, TR::OptionTable *entry)
+   {
+   if (!J9::Options::getDebug() && !J9::Options::createDebug())
+      return 0;
+
+   J9JITConfig * jitConfig = (J9JITConfig*)base;
+   TR_PseudoRandomNumbersListElement **pseudoRandomNumbersListPtr = NULL;
+   if (jitConfig != 0)
+      {
+      TR::CompilationInfo * compInfo = TR::CompilationInfo::get(jitConfig);
+      pseudoRandomNumbersListPtr = compInfo->getPersistentInfo()->getPseudoRandomNumbersListPtr();
+      }
+
+   if (J9::Options::getJITCmdLineOptions() == NULL)
+      {
+      // if JIT options are NULL, means we're processing AOT options now
+      return J9::Options::getDebug()->limitSpecialFileOption(option, base, entry, TR::Options::getAOTCmdLineOptions(), false, pseudoRandomNumbersListPtr);
+      }
+   else
+      {
+      // otherwise, we're processing JIT options
+      return J9::Options::getDebug()->limitSpecialFileOption(option, base, entry, TR::Options::getJITCmdLineOptions(), false, pseudoRandomNumbersListPtr);
+      }
+   }
 
 char *
 J9::Options::inlinefileOption(char * option, void * base, TR::OptionTable *entry)
@@ -863,6 +888,9 @@ TR::OptionTable OMR::Options::_feOptions[] = {
    {"limitfile=",         "D<filename>\tfilter method compilation as defined in filename.  "
                           "Use limitfile=(filename,firstLine,lastLine) to limit lines considered from firstLine to lastLine",
         TR::Options::limitfileOption, 0, 0, "F%s"},
+   {"limitSpecialFile=",         "D<filename>\tfilter method compilation as defined in filename.  "
+                          "Use limitfile=(filename,firstLine,lastLine) to limit lines considered from firstLine to lastLine",
+        TR::Options::limitSpecialFileOption, 0, 0, "F%s"},
    {"loadExclude=",           "D<xxx>\tdo not relocate AOT methods beginning with xxx", TR::Options::loadLimitOption, 1, 0, "P%s"},
    {"loadLimit=",             "D<xxx>\tonly relocate AOT methods beginning with xxx", TR::Options::loadLimitOption, 0, 0, "P%s"},
    {"loadLimitFile=",         "D<filename>\tfilter AOT method relocation as defined in filename.  "
