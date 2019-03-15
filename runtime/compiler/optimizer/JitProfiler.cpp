@@ -106,6 +106,7 @@ int32_t TR_JitProfiler::perform()
       changesPerformed += performOnNode(cursor->getNode(), cursor);
       }
 
+   TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "jitprofilingvalue/profilingChanges/(%s)/%d", comp()->signature(), changesPerformed));
    // Mark the body that it contains samplingJProfiling instructions
    if (changesPerformed)
       {

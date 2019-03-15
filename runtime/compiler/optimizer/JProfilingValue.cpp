@@ -210,6 +210,7 @@ TR_JProfilingValue::removeRedundantProfilingValueCalls()
    {
    TR::TreeTop *cursor = comp()->getStartTree();
    TR_BitVector *alreadyProfiledValues = new (comp()->trStackMemory()) TR_BitVector();
+   int32_t profilingChanges = 0;
    while (cursor)
       {
       TR::Node * node = cursor->getNode();
@@ -230,9 +231,14 @@ TR_JProfilingValue::removeRedundantProfilingValueCalls()
                node->getFirstChild()->getThirdChild()->getReferenceCount() == 1,
                "Second and Third Child of the value calls should be referenced only once");
             */
+            {
             TR::TransformUtil::removeTree(comp(), cursor);
+            }
          else
+            {
+            profilingChanges++;
             alreadyProfiledValues->set(value->getGlobalIndex());
+            }
          
          }
       // Emptying a bit vector after scanning whole extended basic blocks will keep number of bits set in bit vector low.
@@ -242,6 +248,7 @@ TR_JProfilingValue::removeRedundantProfilingValueCalls()
          }
       cursor = cursor->getNextTreeTop();
       }    
+      TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "jprofilingvalue/profilingChanges/(%s)/%d", comp()->signature(), profilingChanges));
    }
 void
 TR_JProfilingValue::performOnNode(TR::Node *node, TR::TreeTop *tt, TR::NodeChecklist *checklist)
