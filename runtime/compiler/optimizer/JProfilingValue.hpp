@@ -46,16 +46,18 @@ class TR_JProfilingValue : public TR::Optimization
 
    void lowerCalls();
    void removeRedundantProfilingValueCalls();
+   void cleanUpAndAddProfilingCandidates();
    void addProfiling(TR::Node *address, TR::TreeTop *tt);
    void addVFTProfiling(TR::Node *address, TR::TreeTop *tt, bool addNullCheck);
    void performOnNode(TR::Node *node, TR::TreeTop *tt, TR::NodeChecklist *checklist);
+   void performOnNode(TR::Node *node, TR::TreeTop *cursor, TR_BitVector *alreadyProfiledValues);
 
    static bool addProfilingTrees(
       TR::Compilation *comp,
       TR::TreeTop *insertionPoint,
       TR::Node *value,
       TR_AbstractHashTableProfilerInfo *table,
-      TR::Node *optionalTest = NULL,
+      bool addNullCheck = false,
       bool extendBlocks = true,
       bool trace = false);
 
