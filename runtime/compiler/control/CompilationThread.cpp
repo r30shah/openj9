@@ -8047,6 +8047,17 @@ TR::CompilationInfoPerThreadBase::compile(
          if (vm.isAOT_DEPRECATED_DO_NOT_USE())
             compiler->getSymbolValidationManager()->populateWellKnownClasses();
 
+         if (compiler->getOption(TR_TraceProfilingData))
+            {
+            TR_PersistentJittedBodyInfo *bodyInfo = compiler->getRecompilationInfo()->getJittedBodyInfo();
+            if (bodyInfo)
+               {
+               TR_PersistentMethodInfo *methodInfo = bodyInfo->getMethodInfo();
+               if (methodInfo->getRecentProfileInfo() != NULL && compiler->getOptions()->getLogFile() != NULL)
+                  methodInfo->getRecentProfileInfo()->dumpInfo(compiler->getOptions()->getLogFile());
+               }
+            }
+
          rtn = compiler->compile();
 
          if ( TR::Options::getVerboseOption(TR_VerboseCompilationDispatch) && !rtn)
