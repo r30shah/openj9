@@ -373,9 +373,9 @@ TR_JProfilingValue::lowerCalls()
          TR::Node *value = child->getFirstChild();
          TR_AbstractHashTableProfilerInfo *table = (TR_AbstractHashTableProfilerInfo*) child->getSecondChild()->getAddress();
          //if (false)
-         //   addProfilingTrees1(comp(), cursor, value, table, child->getChild(2)->getConst<int32_t>() == NEED_NULLTEST, true, trace());
+            addProfilingTrees1(comp(), cursor, value, table, child->getChild(2)->getConst<int32_t>() == NEED_NULLTEST, true, trace());
          //else 
-            addProfilingTrees2(comp(), cursor, value, table, child->getChild(2)->getConst<int32_t>() == NEED_NULLTEST, true, trace());
+         //   addProfilingTrees2(comp(), cursor, value, table, child->getChild(2)->getConst<int32_t>() == NEED_NULLTEST, true, trace());
          // Remove the original trees and continue from the tree after the profiling
          TR::TransformUtil::removeTree(comp(), cursor);
          if (trace())
@@ -464,16 +464,16 @@ TR_JProfilingValue::lowerCalls()
  * \param optionalTest Option test node capable of preventing evaluation of value and using a fallbackValue instead.
  * \param extendBlocks Generates the blocks as extended, defaults true.
  * \param trace Enable tracing.
- 
+ */
 bool
 TR_JProfilingValue::addProfilingTrees1(
-    TR::Compilation *comp,
-    TR::TreeTop *insertionPoint,
-    TR::Node *value,
-    TR_AbstractHashTableProfilerInfo *table,
-    TR::Node *optionalTest,
-    bool extendBlocks,
-    bool trace)
+   TR::Compilation *comp,
+   TR::TreeTop *insertionPoint,
+   TR::Node *value,
+   TR_AbstractHashTableProfilerInfo *table,
+   bool addNullCheck,
+   bool extendBlocks,
+   bool trace)
    {
  // Common types used in calculation
    TR::DataType counterType = TR::Int32;
@@ -496,7 +496,7 @@ TR_JProfilingValue::addProfilingTrees1(
    if (!addNullCheck)
       insertionPoint->insertAfter(TR::TreeTop::create(comp, TR::Node::create(TR::treetop, 1, value)));
    TR::Block *mainlineReturn = NULL;
-   // mainlineReturn = originalBlock->splitPostGRA(insertionPoint->getNextTreeTop(), cfg, true);
+   mainlineReturn = originalBlock->splitPostGRA(insertionPoint->getNextTreeTop(), cfg, true, NULL, trace);
    
    TR::Node *origBlockGlRegDeps = originalBlock->getExit()->getNode()->getNumChildren() == 1 ? originalBlock->getExit()->getNode()->getFirstChild() : NULL;
    if (trace)
@@ -534,7 +534,7 @@ TR_JProfilingValue::addProfilingTrees1(
       iter->append(checkIfNeedToProfileValue);
       if (origBlockGlRegDeps != NULL)
          {
-         TR::Node *exitGlRegDeps = copyGlRegDeps(origBlockGlRegDeps);
+         TR::Node *exitGlRegDeps = copyGlRegDeps(comp, origBlockGlRegDeps);
          checkIfQueueForRecompilation->addChildren(&exitGlRegDeps, 1); 
          }
       // Might not need this
@@ -564,7 +564,7 @@ TR_JProfilingValue::addProfilingTrees1(
          }
       if (origBlockGlRegDeps != NULL)
          {
-         TR::Node *exitGlRegDeps = copyGlRegDeps(origBlockGlRegDeps);
+         TR::Node *exitGlRegDeps = copyGlRegDeps(comp,origBlockGlRegDeps);
          nullTest->addChildren(&exitGlRegDeps, 1); 
          }
       lastBranchToMainlineReturnTT = nullTestTree;
@@ -604,7 +604,7 @@ TR_JProfilingValue::addProfilingTrees1(
       TR::Node::createConstZeroValue(value, roundedType));
    if (origBlockGlRegDeps != NULL)
       {
-      TR::Node *exitGlRegDeps = copyGlRegDeps(origBlockGlRegDeps);
+      TR::Node *exitGlRegDeps = copyGlRegDeps(comp, origBlockGlRegDeps);
       checkNode->addChildren(&exitGlRegDeps, 1); 
       } 
    TR::TreeTop *checkNodeTreeTop = TR::TreeTop::create(comp, incIndexTreeTop, checkNode);
@@ -646,13 +646,16 @@ TR_JProfilingValue::addProfilingTrees1(
       duplicateGlRegDeps->setReferenceCount(0);
       goToMainlineNode->addChildren(&duplicateGlRegDeps, 1);
       //helper->takeGlRegDeps(comp, glRegDepsOfMainlineEntry);
+      /**
+       * There are mainly three case to get a profiled value for helper call. 
+       * 1. When we split blocks with commoning, we would try to assign register to that value. If we are successfull, 
+       * we should find the value in the GlRegDeps which we copied from mainline entry block for helper call.
+       * 2. If we could not find free register, we will use the temp slot, in that case just create a load from that temp slot.
+       * 3. If value is already assigned to register while global register allocation and is not reference after the split point, then 
+       * Just copy the regLoad and attach it to GlRegDeps of the helper block. 
+       * 
+       */
       
-      There are mainly three case to get a profiled value for helper call. 
-      1. When we split blocks with commoning, we would try to assign register to that value. If we are successfull, 
-         we should find the value in the GlRegDeps which we copied from mainline entry block for helper call.
-      2. If we could not find free register, we will use the temp slot, in that case just create a load from that temp slot.
-      3. If value is already assigned to register while global register allocation and is not reference after the split point, then 
-         Just copy the regLoad and attach it to GlRegDeps of the helper block. 
       
       // TODO: Found that we have const node as well for profiling candidate, which is not required to profile. 
       // isLoadDirect query returns true if it is constant as well. So In this case we need to check if it is not loadConst. 
@@ -738,7 +741,6 @@ TR_JProfilingValue::addProfilingTrees1(
       }
    return true;
    }
-*/
 
 bool
 TR_JProfilingValue::addProfilingTrees2(
@@ -1024,6 +1026,25 @@ TR_JProfilingValue::replaceNode(TR::Compilation *comp, TR::TreeTop *blockStart, 
       replaceNode(tt->getNode(), origNode, newNode, checklist);
       tt = tt->getNextTreeTop();
       }
+   }
+
+TR::Node *
+TR_JProfilingValue::copyGlRegDeps(TR::Compilation *comp, TR::Node *origGlRegDeps)
+   {
+   TR::Node *copiedGlRegDeps = TR::Node::create(origGlRegDeps, TR::GlRegDeps, origGlRegDeps->getNumChildren());
+   for (int32_t i = 0; i < origGlRegDeps->getNumChildren(); i++)
+      {
+      TR::Node* child = origGlRegDeps->getChild(i);
+      if (child->getOpCodeValue() == TR::PassThrough)
+         {
+         TR::Node *origPassThrough = child;
+         child = TR::Node::create(origPassThrough, TR::PassThrough, 1, origPassThrough->getFirstChild());
+         child->setLowGlobalRegisterNumber(origPassThrough->getLowGlobalRegisterNumber());
+         child->setHighGlobalRegisterNumber(origPassThrough->getHighGlobalRegisterNumber());
+         }
+      copiedGlRegDeps->setAndIncChild(i, child);
+      }
+   return copiedGlRegDeps;
    }
 
 /*

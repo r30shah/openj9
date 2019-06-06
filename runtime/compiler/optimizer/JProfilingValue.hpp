@@ -48,7 +48,7 @@ class TR_JProfilingValue : public TR::Optimization
    //void addProfiling(TR::Node *address, TR::TreeTop *tt);
    void cleanUpAndAddProfilingCandidates();
    void performOnNode(TR::Node *node, TR::TreeTop *tt, TR_BitVector *alreadyProfiledValues, TR::NodeChecklist *checklist);
-   /*
+   
    static bool addProfilingTrees1(
       TR::Compilation *comp,
       TR::TreeTop *insertionPoint,
@@ -57,7 +57,7 @@ class TR_JProfilingValue : public TR::Optimization
       bool addNullCheck = false,
       bool extendBlocks = true,
       bool trace = false);
-   */
+   
    static bool addProfilingTrees(
       TR::Compilation *comp,
       TR::TreeTop *insertionPoint,
@@ -67,7 +67,7 @@ class TR_JProfilingValue : public TR::Optimization
       bool extendBlocks = true,
       bool trace = false)
       {
-      return addProfilingTrees2(comp, insertionPoint, value, table, addNullCheck, extendBlocks, trace);         
+      return addProfilingTrees1(comp, insertionPoint, value, table, addNullCheck, extendBlocks, trace);         
       }
    static bool addProfilingTrees2(
       TR::Compilation *comp,
@@ -93,7 +93,7 @@ class TR_JProfilingValue : public TR::Optimization
    static TR::Node *storeNode(TR::Compilation *comp, TR::Node *value, TR::SymbolReference* &symRef);
    static TR::Node *createHelperCall(TR::Compilation *comp, TR::Node *value, TR::Node *table);
    static TR::Node *incrementMemory(TR::Compilation *comp, TR::DataType counterType, TR::Node *address);
-
+   static TR::Node *copyGlRegDeps(TR::Compilation *comp, TR::Node *origGlRegDeps);
    static TR::Node *effectiveAddress(TR::DataType dataType, TR::Node *base, TR::Node *index = NULL, TR::Node *offset = NULL);
    static TR::Node *systemConst(TR::Node *example, uint64_t value);
    static TR::Node *convertType(TR::Node *index, TR::DataType dataType, bool zeroExtend = true);
