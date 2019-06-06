@@ -3535,7 +3535,7 @@ bool FieldInfo::hasBadFieldSymRef()
 
 void FieldInfo::rememberFieldSymRef(TR::Node *fieldNode, int32_t fieldOffset, Candidate *candidate, TR_EscapeAnalysis *ea)
    {
-   TR_ASSERT(!ea->_parms, "rememberFieldSymRef: cannot remember peeked field SymRefs");
+   //TR_ASSERT(!ea->_parms, "rememberFieldSymRef: cannot remember peeked field SymRefs");
 
    TR::SymbolReference *symRef = fieldNode->getSymbolReference();
    if (_goodFieldSymrefs->find(symRef) || _badFieldSymrefs->find(symRef))

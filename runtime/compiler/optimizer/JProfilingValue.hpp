@@ -45,17 +45,36 @@ class TR_JProfilingValue : public TR::Optimization
    virtual const char *optDetailString() const throw();
 
    void lowerCalls();
-   void removeRedundantProfilingValueCalls();
-   void addProfiling(TR::Node *address, TR::TreeTop *tt);
-   void addVFTProfiling(TR::Node *address, TR::TreeTop *tt, bool addNullCheck);
-   void performOnNode(TR::Node *node, TR::TreeTop *tt, TR::NodeChecklist *checklist);
-
+   //void addProfiling(TR::Node *address, TR::TreeTop *tt);
+   void cleanUpAndAddProfilingCandidates();
+   void performOnNode(TR::Node *node, TR::TreeTop *tt, TR_BitVector *alreadyProfiledValues, TR::NodeChecklist *checklist);
+   /*
+   static bool addProfilingTrees1(
+      TR::Compilation *comp,
+      TR::TreeTop *insertionPoint,
+      TR::Node *value,
+      TR_AbstractHashTableProfilerInfo *table,
+      bool addNullCheck = false,
+      bool extendBlocks = true,
+      bool trace = false);
+   */
    static bool addProfilingTrees(
       TR::Compilation *comp,
       TR::TreeTop *insertionPoint,
       TR::Node *value,
       TR_AbstractHashTableProfilerInfo *table,
-      TR::Node *optionalTest = NULL,
+      bool addNullCheck = false,
+      bool extendBlocks = true,
+      bool trace = false)
+      {
+      return addProfilingTrees2(comp, insertionPoint, value, table, addNullCheck, extendBlocks, trace);         
+      }
+   static bool addProfilingTrees2(
+      TR::Compilation *comp,
+      TR::TreeTop *insertionPoint,
+      TR::Node *value,
+      TR_AbstractHashTableProfilerInfo *table,
+      bool addNullCheck = false,
       bool extendBlocks = true,
       bool trace = false);
 
