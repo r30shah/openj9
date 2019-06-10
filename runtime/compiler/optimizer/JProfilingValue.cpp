@@ -181,21 +181,47 @@ TR_JProfilingValue::perform()
          traceMsg(comp(), "JProfiling has been disabled, skip JProfilingValue\n");
       return 0;
       }
+   bool needToPerformJProfilingValuePostGRA = false;
+   TR_FilterBST = *filterInfo = NULL;
+   TR::CompilationFilters *perfomJProfFilters = NULL;
+   if (TR::Options::getDebug())
+      perfomJProfFilters = TR::Options::getDebug()->getGeneralUseFilters();
+   if (performJProfFilters)
+      {
+      needToPerformJProfilingValuePostGRA = !(comp()->getDebug()->methodSigCanBeFound(comp()->signature(), performJProfFilters, filterInfo, TR_Method::J9));
+      }
 
+   if (needToPerformJProfilingValuePostGRA)
+      {
+      cleanUpAndAddProfilingCandidates();
+      lowerCalls(true);
+      if (comp()->isProfilingCompilation())
+         {
+         TR::Recompilation *recomp = comp()->getRecompilationInfo();
+         TR_ValueProfiler *profiler = recomp->getValueProfiler();
+         TR_ASSERT(profiler, "Recompilation should have a ValueProfiler in a profiling compilation");
+         profiler->setPostLowering();
+         }
+      }
+   else
+      {
+      cleanUpAndAddProfilingCandidates();
+      lowerCalls1(false);
+      if (comp()->isProfilingCompilation())
+         {
+         TR::Recompilation *recomp = comp()->getRecompilationInfo();
+         TR_ValueProfiler *profiler = recomp->getValueProfiler();
+         TR_ASSERT(profiler, "Recompilation should have a ValueProfiler in a profiling compilation");
+         profiler->setPostLowering();
+         }
+      }
+   /*
    // Scan and remove duplicate value profiling calls before lowering calls
    // Scan tree-tops for profiling candidates as well as remove duplicate value profiling calls before lowering calls.
    cleanUpAndAddProfilingCandidates();
    // Lower all existing calls
    lowerCalls();
-
-   if (comp()->isProfilingCompilation())
-      {
-      TR::Recompilation *recomp = comp()->getRecompilationInfo();
-      TR_ValueProfiler *profiler = recomp->getValueProfiler();
-      TR_ASSERT(profiler, "Recompilation should have a ValueProfiler in a profiling compilation");
-      profiler->setPostLowering();
-      }
-
+   */
    return 1;
    }
 
@@ -325,7 +351,7 @@ TR_JProfilingValue::performOnNode(TR::Node *node, TR::TreeTop *cursor, TR_BitVec
  * into the fast, slow and helper paths.
  */
 void
-TR_JProfilingValue::lowerCalls()
+TR_JProfilingValue::lowerCalls(bool postGRA)
    {
    TR::TreeTop *cursor = comp()->getStartTree();
    TR_BitVector *backwardAnalyzedAddressNodesToCheck = new (comp()->trStackMemory()) TR_BitVector();
@@ -372,10 +398,10 @@ TR_JProfilingValue::lowerCalls()
          // Extract the arguments and add the profiling trees
          TR::Node *value = child->getFirstChild();
          TR_AbstractHashTableProfilerInfo *table = (TR_AbstractHashTableProfilerInfo*) child->getSecondChild()->getAddress();
-         //if (false)
+         if (postGRA)
             addProfilingTrees1(comp(), cursor, value, table, child->getChild(2)->getConst<int32_t>() == NEED_NULLTEST, true, trace());
-         //else 
-         //   addProfilingTrees2(comp(), cursor, value, table, child->getChild(2)->getConst<int32_t>() == NEED_NULLTEST, true, trace());
+         else 
+            addProfilingTrees2(comp(), cursor, value, table, child->getChild(2)->getConst<int32_t>() == NEED_NULLTEST, true, trace());
          // Remove the original trees and continue from the tree after the profiling
          TR::TransformUtil::removeTree(comp(), cursor);
          if (trace())
