@@ -185,7 +185,7 @@ J9::Compilation::Compilation(int32_t id,
       _hiresTimeForPreviousCallingContext = TR::Compiler->vm.getHighResClock(self());
 
    _profileInfo = new (m->trHeapMemory()) TR_AccessedProfileInfo(heapMemoryRegion);
-
+   _performedJProfiler = false;
    for (int i = 0; i < CACHED_CLASS_POINTER_COUNT; i++)
       _cachedClassPointers[i] = NULL;
    }

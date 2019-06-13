@@ -44,7 +44,7 @@ class TR_JProfilingValue : public TR::Optimization
    virtual int32_t perform();
    virtual const char *optDetailString() const throw();
 
-   void lowerCalls();
+   void lowerCalls(bool splitPostGRA);
    //void addProfiling(TR::Node *address, TR::TreeTop *tt);
    void cleanUpAndAddProfilingCandidates();
    void performOnNode(TR::Node *node, TR::TreeTop *tt, TR_BitVector *alreadyProfiledValues, TR::NodeChecklist *checklist);

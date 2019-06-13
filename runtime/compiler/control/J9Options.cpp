@@ -686,9 +686,6 @@ TR::OptionTable OMR::Options::_feOptions[] = {
         TR::Options::setStaticNumeric, (intptrj_t)&TR::Options::_aotMethodThreshold, 0, " %d", NOT_IN_SUBSET},
    {"aotWarmSCCThreshold=", "R<nnn>\tNumber of methods found in shared cache at startup to declare SCC as warm",
         TR::Options::setStaticNumeric, (intptrj_t)&TR::Options::_aotWarmSCCThreshold, 0, " %d", NOT_IN_SUBSET },
-   {"generalUseFile=",         "D<filename>\tfilter method compilation as defined in filename.  "
-                          "Use limitfile=(filename,firstLine,lastLine) to limit lines considered from firstLine to lastLine",
-        TR::Options::generalUseFileOption, 0, 0, "F%s"},
    {"availableCPUPercentage=", "M<nnn>\tUse it when java process has a fraction of a CPU. Number 1..99 ",
         TR::Options::setStaticNumeric, (intptrj_t)&TR::Options::_availableCPUPercentage, 0, "F%d", NOT_IN_SUBSET},
    {"bcLimit=",           "C<nnn>\tbytecode size limit",
@@ -781,6 +778,9 @@ TR::OptionTable OMR::Options::_feOptions[] = {
    {"gcTrace=",           "D<nnn>\ttrace gc stack walks after gc number nnn",
         TR::Options::setJitConfigNumericValue, offsetof(J9JITConfig, gcTraceThreshold), 0, "F%d"},
 #endif
+   {"generalUseFile=",         "D<filename>\tfilter method compilation as defined in filename.  "
+                          "Use limitfile=(filename,firstLine,lastLine) to limit lines considered from firstLine to lastLine",
+        TR::Options::generalUseFileOption, 0, 0, "F%s"},
    {"HWProfilerAOTWarmOptLevelThreshold=", "O<nnn>\tAOT Warm Opt Level Threshold",
         TR::Options::setStaticNumeric, (intptrj_t)&TR::Options::_hwprofilerAOTWarmOptLevelThreshold, 0, "F%d", NOT_IN_SUBSET},
    {"HWProfilerBufferMaxPercentageToDiscard=", "O<nnn>\tpercentage of HW profiling buffers "

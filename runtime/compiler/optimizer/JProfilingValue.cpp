@@ -182,17 +182,23 @@ TR_JProfilingValue::perform()
       return 0;
       }
    bool needToPerformJProfilingValuePostGRA = false;
-   TR_FilterBST = *filterInfo = NULL;
-   TR::CompilationFilters *perfomJProfFilters = NULL;
+   TR_FilterBST *filterInfo = NULL;
+   TR::CompilationFilters *performJProfFilters = NULL;
    if (TR::Options::getDebug())
-      perfomJProfFilters = TR::Options::getDebug()->getGeneralUseFilters();
+      performJProfFilters = TR::Options::getDebug()->getGeneralUseFilters();
    if (performJProfFilters)
       {
-      needToPerformJProfilingValuePostGRA = !(comp()->getDebug()->methodSigCanBeFound(comp()->signature(), performJProfFilters, filterInfo, TR_Method::J9));
+      needToPerformJProfilingValuePostGRA = (comp()->getDebug()->methodSigCanBeFound(comp()->signature(), performJProfFilters, filterInfo, TR_Method::J9));
       }
 
-   if (needToPerformJProfilingValuePostGRA)
+   if (needToPerformJProfilingValuePostGRA && !comp()->getPerformedJProfiler())
       {
+      // Not in the list, need to perform second JProfilingValue.
+      comp()->setPerformedJProfiler(true);
+      }
+   else if (needToPerformJProfilingValuePostGRA && comp()->getPerformedJProfiler())
+      {
+      // Second JProfiling Value pass post GRA
       cleanUpAndAddProfilingCandidates();
       lowerCalls(true);
       if (comp()->isProfilingCompilation())
@@ -203,10 +209,10 @@ TR_JProfilingValue::perform()
          profiler->setPostLowering();
          }
       }
-   else
+   else if (!needToPerformJProfilingValuePostGRA && !comp()->getPerformedJProfiler())
       {
       cleanUpAndAddProfilingCandidates();
-      lowerCalls1(false);
+      lowerCalls(false);
       if (comp()->isProfilingCompilation())
          {
          TR::Recompilation *recomp = comp()->getRecompilationInfo();
@@ -214,14 +220,8 @@ TR_JProfilingValue::perform()
          TR_ASSERT(profiler, "Recompilation should have a ValueProfiler in a profiling compilation");
          profiler->setPostLowering();
          }
+      comp()->setPerformedJProfiler(true);
       }
-   /*
-   // Scan and remove duplicate value profiling calls before lowering calls
-   // Scan tree-tops for profiling candidates as well as remove duplicate value profiling calls before lowering calls.
-   cleanUpAndAddProfilingCandidates();
-   // Lower all existing calls
-   lowerCalls();
-   */
    return 1;
    }
 

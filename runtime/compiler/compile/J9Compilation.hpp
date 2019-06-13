@@ -159,6 +159,9 @@ class OMR_EXTENSIBLE Compilation : public OMR::CompilationConnector
    bool canTransformConverterMethod(TR::RecognizedMethod method);
    bool isConverterMethod(TR::RecognizedMethod method);
 
+   void setPerformedJProfiler(bool flag) { _performedJProfiler = flag;}
+   bool getPerformedJProfiler() { return _performedJProfiler; }
+
    bool useCompressedPointers();
    bool useAnchors();
 
@@ -404,6 +407,7 @@ private:
 
    TR::SymbolValidationManager *_symbolValidationManager;
    bool _osrProhibitedOverRangeOfTrees;
+   bool _performedJProfiler;
    };
 
 }
