@@ -260,7 +260,7 @@ TR_JProfilingValue::performOnNode(TR::Node *node, TR::TreeTop *cursor, TR_BitVec
    TR::TreeTop *preceedingTT = NULL;
    TR::Node *profiledNode = NULL;
    TR::Node *constNode = NULL;
-   if (node->getOpCode().isCall() && !node->getByteCodeInfo().doNotProfile() &&
+   if (node->getOpCode().isCallIndirect() && !node->getByteCodeInfo().doNotProfile() &&
          (node->getSymbol()->getMethodSymbol()->isVirtual() || 
             node->getSymbol()->getMethodSymbol()->isInterface()))
       {
