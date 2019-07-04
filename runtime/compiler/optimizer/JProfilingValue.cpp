@@ -183,6 +183,8 @@ TR_JProfilingValue::perform()
       }
    
    cleanUpAndAddProfilingCandidates();
+   if (trace())
+      comp()->dumpMethodTrees("After Cleaning up Trees"); 
    lowerCalls(true);
    if (comp()->isProfilingCompilation())
       {
