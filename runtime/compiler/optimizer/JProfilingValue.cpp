@@ -181,6 +181,17 @@ TR_JProfilingValue::perform()
          traceMsg(comp(), "JProfiling has been disabled, skip JProfilingValue\n");
       return 0;
       }
+   
+   cleanUpAndAddProfilingCandidates();
+   lowerCalls(true);
+   if (comp()->isProfilingCompilation())
+      {
+      TR::Recompilation *recomp = comp()->getRecompilationInfo();
+      TR_ValueProfiler *profiler = recomp->getValueProfiler();
+      TR_ASSERT(profiler, "Recompilation should have a ValueProfiler in a profiling compilation");
+      profiler->setPostLowering();
+      }
+   /*
    bool needToPerformJProfilingValuePostGRA = false;
    TR_FilterBST *filterInfo = NULL;
    TR::CompilationFilters *performJProfFilters = NULL;
@@ -222,6 +233,7 @@ TR_JProfilingValue::perform()
          }
       comp()->setPerformedJProfiler(true);
       }
+   */
    return 1;
    }
 

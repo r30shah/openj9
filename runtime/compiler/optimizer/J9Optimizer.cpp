@@ -275,7 +275,7 @@ static const OptimizationStrategy coldStrategyOpts[] =
    { OMR::signExtendLoadsGroup,                      OMR::IfEnabled                  },
    { OMR::jProfilingRecompLoopTest,                  OMR::IfLoops                    },
    { OMR::trivialDeadTreeRemoval,                                               },
-   { OMR::jProfilingValue,                           OMR::MustBeDone                 },
+//   { OMR::jProfilingValue,                           OMR::MustBeDone                 },
    { OMR::cheapTacticalGlobalRegisterAllocatorGroup, OMR::IfAOTAndEnabled            },
    { OMR::jProfilingValue,                           OMR::MustBeDone                 },
    { OMR::globalLiveVariablesForGC,                  OMR::IfAggressiveLiveness  },
@@ -358,7 +358,7 @@ static const OptimizationStrategy warmStrategyOpts[] =
    { OMR::arraysetStoreElimination                                              },
    { OMR::checkcastAndProfiledGuardCoalescer                                    },
    { OMR::jProfilingRecompLoopTest,                  OMR::IfLoops                    },
-   { OMR::jProfilingValue,                           OMR::MustBeDone                 },
+//   { OMR::jProfilingValue,                           OMR::MustBeDone                 },
    { OMR::cheapTacticalGlobalRegisterAllocatorGroup, OMR::IfEnabled                  },
    { OMR::jProfilingValue,                           OMR::MustBeDone                 },
    { OMR::globalDeadStoreGroup,                                                 },
@@ -394,7 +394,7 @@ static const OptimizationStrategy reducedWarmStrategyOpts[] =
    { OMR::treeSimplification,                        OMR::MarkLastRun                 },
    { OMR::deadTreesElimination,                      OMR::IfEnabled                  }, // cleanup at the end
    { OMR::jProfilingRecompLoopTest,                  OMR::IfLoops                    },
-   { OMR::jProfilingValue,                           OMR::MustBeDone                 },
+//   { OMR::jProfilingValue,                           OMR::MustBeDone                 },
    { OMR::cheapTacticalGlobalRegisterAllocatorGroup, OMR::IfEnabled                  },
    { OMR::jProfilingValue,                           OMR::MustBeDone                 },
    { OMR::endOpts                                                               }
@@ -457,7 +457,7 @@ const OptimizationStrategy hotStrategyOpts[] =
    { OMR::arraycopyTransformation      },
    { OMR::checkcastAndProfiledGuardCoalescer                              },
    { OMR::jProfilingRecompLoopTest,              OMR::IfLoops                  },
-   { OMR::jProfilingValue,                           OMR::MustBeDone           },
+//   { OMR::jProfilingValue,                           OMR::MustBeDone           },
    { OMR::tacticalGlobalRegisterAllocatorGroup,  OMR::IfEnabled                },
    { OMR::jProfilingValue,                           OMR::MustBeDone           },
    { OMR::globalDeadStoreElimination,            OMR::IfMoreThanOneBlock       }, // global dead store removal
@@ -539,7 +539,7 @@ const OptimizationStrategy scorchingStrategyOpts[] =
    { OMR::localValuePropagation,                 OMR::MarkLastRun              },
    { OMR::arraycopyTransformation      },
    { OMR::checkcastAndProfiledGuardCoalescer      },
-   { OMR::jProfilingValue,                           OMR::MustBeDone                 },
+//   { OMR::jProfilingValue,                           OMR::MustBeDone                 },
    { OMR::tacticalGlobalRegisterAllocatorGroup,  OMR::IfEnabled   },
    { OMR::jProfilingValue,                           OMR::MustBeDone                 },
    { OMR::globalDeadStoreElimination,            OMR::IfMoreThanOneBlock }, // global dead store removal
@@ -706,7 +706,7 @@ static const OptimizationStrategy cheapWarmStrategyOpts[] =
    { OMR::treeSimplification,                        OMR::IfEnabledMarkLastRun       }, // Simplify non-normalized address computations introduced by prefetch insertion
    { OMR::trivialDeadTreeRemoval,                    OMR::IfEnabled                  }, // final cleanup before opcode expansion
    { OMR::jProfilingRecompLoopTest,                  OMR::IfLoops                    },
-   { OMR::jProfilingValue,                           OMR::MustBeDone                 },
+//   { OMR::jProfilingValue,                           OMR::MustBeDone                 },
    { OMR::cheapTacticalGlobalRegisterAllocatorGroup, OMR::IfEnabled                  },
    { OMR::jProfilingValue,                           OMR::MustBeDone                 },
    { OMR::globalDeadStoreGroup,                                                 },
