@@ -29,6 +29,7 @@
 #include "infra/List.hpp"
 #include "optimizer/Optimization_inlines.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
 #include "infra/Checklist.hpp"
 #include "ras/DebugCounter.hpp"
 #include "runtime/J9Profiler.hpp"
@@ -164,6 +165,7 @@ loadConst(TR::DataType dt)
 int32_t
 TR_JProfilingValue::perform() 
    {
+   /*
    if (comp()->getProfilingMode() == JProfiling)
       {
       if (trace())
@@ -180,20 +182,149 @@ TR_JProfilingValue::perform()
          traceMsg(comp(), "JProfiling has been disabled, skip JProfilingValue\n");
       return 0;
       }
-   
-   cleanUpAndAddProfilingCandidates();
-   if (trace())
-      comp()->dumpMethodTrees("After Cleaning up Trees"); 
-   lowerCalls();
+   */
 
    if (comp()->isProfilingCompilation())
       {
+      cleanUpAndAddProfilingCandidates();
+      if (trace())
+         comp()->dumpMethodTrees("After Cleaning up Trees"); 
+      lowerCalls();
       TR::Recompilation *recomp = comp()->getRecompilationInfo();
       TR_ValueProfiler *profiler = recomp->getValueProfiler();
       TR_ASSERT(profiler, "Recompilation should have a ValueProfiler in a profiling compilation");
       profiler->setPostLowering();
       }
+   else
+      {
+      addProfilingTreesForNonProfilingCompilations();
+      }
    return 1;
+   }
+
+void TR_JProfilingValue::addProfilingTreesForNonProfilingCompilations()
+   {
+   TR::TreeTop *cursor = comp()->getStartTree();
+   TR::NodeChecklist checklist(comp());
+   TR::CFG *cfg = comp()->getFlowGraph();
+   cfg->setStructure(0);
+   TR::SymbolReference *storedValueReference = NULL;
+   TR::SymbolReference *storedReturnAddressSymRef = NULL;
+   TR::Block *profilingBlock = addDeDuplicatedProfilingBlocks(comp(), cfg, storedValueReference, storedReturnAddressSymRef);
+   while (cursor)
+      {
+      TR::Node *node = cursor->getNode();
+      performOnNodeForNonProfilingCompilations(comp(), node, cursor, &checklist, cfg, storedValueReference, storedReturnAddressSymRef, profilingBlock);
+      cursor = cursor->getNextTreeTop();
+      }
+   }
+
+TR::Block* TR_JProfilingValue::addDeDuplicatedProfilingBlocks(TR::Compilation *comp, TR::CFG *cfg, TR::SymbolReference* &storedValueReference, TR::SymbolReference* &storedReturnAddressSymRef)
+   {
+   TR::TreeTop *lastTreeTop = comp->getMethodSymbol()->getLastTreeTop();
+   TR::Block *profilingEntryBlock = TR::Block::createEmptyBlock(comp, MAX_COLD_BLOCK_COUNT + 1);
+   profilingEntryBlock->setIsCold();
+   lastTreeTop->join(profilingEntryBlock->getEntry());
+   cfg->addNode(profilingEntryBlock);
+   // Create List of nodes to be added to entry and exit GlRegDeps
+   TR::StackMemoryRegion stackMemoryRegion(*(comp->trMemory())); 
+   List<TR::Node> depNodes(stackMemoryRegion);
+   TR_GlobalRegisterNumber firstGPR = comp->cg()->getFirstGlobalGPR();
+   TR_GlobalRegisterNumber lastGPR = comp->cg()->getLastNotUsableGlobalGPR();
+   TR::ResolvedMethodSymbol *methodSymbol = comp->getMethodSymbol();
+   int32_t listSize = 0;
+   for (TR_GlobalRegisterNumber itr = firstGPR; itr <= lastGPR; ++itr)
+      {
+      TR::Node *regLoad = TR::Node::create(comp->il.opCodeForRegisterLoad(TR::Int64), 0);
+      regLoad->setGlobalRegisterNumber(itr);
+      TR::SymbolReference *symRef = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab(),
+                                                                  TR::AutomaticSymbol::create(comp->trHeapMemory(),TR::Int64),
+                                                                  methodSymbol->getResolvedMethodIndex(),
+                                                                  methodSymbol->incTempIndex(comp->fe()));
+      regLoad->setRegLoadStoreSymbolReference(symRef);
+      depNodes.add(regLoad);
+      listSize++;
+      }
+   TR::Node *entryGlRegDeps = TR::Node::create(TR::GlRegDeps, listSize);
+   TR::Node *exitGlRegDeps = TR::Node::create(TR::GlRegDeps, listSize);
+   TR::Node *gotoNodeGlRegDeps = TR::Node::create(TR::GlRegDeps, listSize);
+   ListIterator<TR::Node> depNodeIter(&depNodes);
+   int32_t childID = 0;
+   for (TR::Node *dep = depNodeIter.getCurrent(); dep; dep = depNodeIter.getNext())
+      {
+      entryGlRegDeps->setAndIncChild(childID, dep);
+      gotoNodeGlRegDeps->setAndIncChild(childID, dep);
+      exitGlRegDeps->setAndIncChild(childID++, dep);
+      }
+   profilingEntryBlock->getEntry()->getNode()->addChildren(&entryGlRegDeps, 1);
+   profilingEntryBlock->getExit()->getNode()->addChildren(&exitGlRegDeps, 1);
+   
+   TR::SymbolReference *profiler = comp->getSymRefTab()->findOrCreateRuntimeHelper(TR_dummyHelperCall, false, false, false);
+
+#if defined(TR_HOST_POWER) || defined(TR_HOST_ARM) || defined(TR_HOST_S390)
+   profiler->getSymbol()->castToMethodSymbol()->setLinkage(TR_System);
+#elif defined(TR_HOST_X86)
+   profiler->getSymbol()->castToMethodSymbol()->setSystemLinkageDispatch();
+#endif
+   if (storedValueReference == NULL)
+      storedValueReference = comp->getSymRefTab()->createTemporary(comp->getMethodSymbol(), TR::Int32);
+   storedValueReference->getSymbol()->setNotCollected();
+   if (storedReturnAddressSymRef == NULL)
+      storedReturnAddressSymRef = comp->getSymRefTab()->createTemporary(comp->getMethodSymbol(), TR::Address);
+   storedReturnAddressSymRef->getSymbol()->setNotCollected();
+   TR::Node *loadArg = TR::Node::createLoad(storedValueReference);
+   TR::Node *helperCall = TR::Node::createWithSymRef(TR::call, 1, profiler);
+   helperCall->setAndIncChild(0, loadArg);
+   TR::TreeTop *callTT = TR::TreeTop::create(comp, profilingEntryBlock->getEntry(), helperCall);
+   TR::Node *loadReturnAddress = TR::Node::createLoad(storedReturnAddressSymRef);
+   TR::Node *returnNode = TR::Node::create(TR::igoto, 2);
+   returnNode->setAndIncChild(0, loadReturnAddress);
+   returnNode->setAndIncChild(1, gotoNodeGlRegDeps);
+   TR::TreeTop *returnTT = TR::TreeTop::create(comp, callTT, returnNode);  
+   return profilingEntryBlock;
+   }
+
+void TR_JProfilingValue::performOnNodeForNonProfilingCompilations(TR::Compilation *comp, TR::Node *node, TR::TreeTop *cursor, TR::NodeChecklist *checklist, TR::CFG *cfg, TR::SymbolReference * &storedValueReference, TR::SymbolReference *&storedReturnAddressSymRef, TR::Block *profilingBlock)
+   {
+   if (checklist->contains(node))
+      return;
+   checklist->add(node);
+   static int32_t profilingID = 0;
+   if ((node->getOpCode().isCallIndirect() && !node->getByteCodeInfo().doNotProfile() 
+      && (node->getSymbol()->getMethodSymbol()->isVirtual() 
+         || node->getSymbol()->getMethodSymbol()->isInterface()))
+      || (!node->getByteCodeInfo().doNotProfile() 
+         && (node->getOpCodeValue() == TR::instanceof 
+            || node->getOpCodeValue() == TR::checkcast 
+            || node->getOpCodeValue() == TR::checkcastAndNULLCHK)))
+      {
+      TR::Block *originalBlock = cursor->getEnclosingBlock();
+      TR::TreeTop *prevCursor = cursor->getPrevTreeTop();
+      TR::Block *mainlineEntry = originalBlock->splitPostGRA(cursor, cfg, true);
+      // istore <storedValueReference>
+      //    iconst <profilingID++>
+      // astore <storedReturnAddressSymRef>
+      //    loadaddr <return Block label>
+      TR::Node *storeArgument = storeNode(comp, TR::Node::iconst(profilingID++), storedValueReference);
+      TR::TreeTop *storeArgTT = TR::TreeTop::create(comp, prevCursor, storeArgument);
+      TR::LabelSymbol *label = TR::LabelSymbol::create(comp->trHeapMemory(), NULL, mainlineEntry);
+      mainlineEntry->getEntry()->getNode()->setLabel(label);
+      TR::SymbolReference *symRef = comp->getSymRefTab()->createSymbolReference(static_cast<TR::Symbol*>(label));
+      TR::Node *returnPointAddress = TR::Node::createWithSymRef(TR::loadaddr, 0, symRef);
+      TR::Node *store = storeNode(comp, returnPointAddress, storedReturnAddressSymRef);
+      TR::TreeTop * storeValTT = TR::TreeTop::create(comp, storeArgTT, store);
+      TR::Node *gotoNode = TR::Node::create(node, TR::Goto, 1);
+      TR::Node *origBlockGlRegDeps = originalBlock->getExit()->getNode()->getNumChildren() == 1 ? originalBlock->getExit()->getNode()->getFirstChild() : NULL; 
+      TR_ASSERT_FATAL(origBlockGlRegDeps, "Original Block should have Exit Dependency");
+      gotoNode->setAndIncChild(0, copyGlRegDeps(comp, origBlockGlRegDeps));
+      TR::TreeTop *gotoTT = TR::TreeTop::create(comp, storeValTT, gotoNode);
+      gotoNode->setBranchDestination(profilingBlock->getEntry());
+      cfg->addEdge(originalBlock, profilingBlock);
+      cfg->addEdge(profilingBlock, mainlineEntry);
+      }
+   for (int i = 0; i < node->getNumChildren(); ++i)
+      performOnNodeForNonProfilingCompilations(comp, node->getChild(i), cursor, checklist, cfg, storedValueReference, storedReturnAddressSymRef, profilingBlock);
+
    }
 
 void TR_JProfilingValue::cleanUpAndAddProfilingCandidates()

@@ -54,6 +54,12 @@ class TR_JProfilingValue : public TR::Optimization
     * for profiling target of virtual call dispatch and instanceOf/checkCast.
     */
    void cleanUpAndAddProfilingCandidates();
+
+   void addProfilingTreesForNonProfilingCompilations();
+
+   TR::Block* addDeDuplicatedProfilingBlocks(TR::Compilation *comp, TR::CFG *cfg, TR::SymbolReference* &storedValueReference, TR::SymbolReference* &storedReturnAddressSymRef);
+
+   void performOnNodeForNonProfilingCompilations(TR::Compilation *comp, TR::Node *node, TR::TreeTop *cursor, TR::NodeChecklist *checklist, TR::CFG *cfg, TR::SymbolReference* &storedValueReference, TR::SymbolReference* &storedReturnAddressSymRef, TR::Block *profilingBlock);
    /**
     * Examines node to identify profiling candidate and add place holder calls for profiling it.
     * This routine checks node and it's children for mainly two type of nodes. 
@@ -76,7 +82,7 @@ class TR_JProfilingValue : public TR::Optimization
       bool addNullCheck = false,
       bool extendBlocks = true,
       bool trace = false);
-   
+   static int32_t profilingID; 
    private:
    static TR::Node *computeHash(TR::Compilation *comp, TR_AbstractHashTableProfilerInfo *table, TR::Node *value, TR::Node *baseAddr);
 

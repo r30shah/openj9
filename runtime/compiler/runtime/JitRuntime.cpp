@@ -462,6 +462,13 @@ void J9FASTCALL _jProfile64BitValue(uint64_t value, TR_HashTableProfilerInfo<uin
 }
 
 extern "C" {
+
+void J9FASTCALL _dummyHelperCall(int32_t value)
+   {
+   printf("Rahil: Calling dummyHelperCall with %d\n", value);
+   }
+}
+extern "C" {
 void J9FASTCALL _jitProfileLongValue(uint64_t value, TR_LinkedListProfilerInfo<uint64_t> *info, int32_t maxNumValuesProfiled, int32_t *recompilationCounter)
    {
    if (recompilationCounter)
@@ -1179,6 +1186,7 @@ void initializeJitRuntimeHelperTable(char isSMP)
    SET(TR_jitProfileParseBuffer,                (void *)_jitProfileParseBuffer,           TR_Helper);
    SET_CONST(TR_jProfile32BitValue,             (void *)_jProfile32BitValue);
    SET_CONST(TR_jProfile64BitValue,             (void *)_jProfile64BitValue);
+   SET_CONST(TR_dummyHelperCall,                (void *)_dummyHelperCall);
 #elif defined(TR_HOST_X86)
    SET(TR_jitProfileWarmCompilePICAddress,      (void *)_jitProfileWarmCompilePICAddress, TR_CHelper);
    SET(TR_jitProfileAddress,                    (void *)_jitProfileAddress,               TR_CHelper);
