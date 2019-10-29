@@ -61,8 +61,6 @@ extern "C" {
 
 static uintptr_t stackIterator(J9VMThread *currentThread, J9StackWalkState *walkState);
 static void dumpStackFrames(J9VMThread *currentThread);
-static void traceAllocateIndexableObject(J9VMThread *vmThread, J9Class* clazz, uintptr_t objSize, uintptr_t numberOfIndexedFields);
-static J9Object * traceAllocateObject(J9VMThread *vmThread, J9Object * object, J9Class* clazz, uintptr_t objSize, uintptr_t numberOfIndexedFields=0);
 static bool traceObjectCheck(J9VMThread *vmThread);
 
 #define STACK_FRAMES_TO_DUMP	8
@@ -199,60 +197,6 @@ dumpStackFrames(J9VMThread *currentThread)
 			currentThread->javaVM->walkStackFrames(currentThread, &walkState);
 		}
 	}
-}
-
-static void
-traceAllocateIndexableObject(J9VMThread *vmThread, J9Class* clazz, uintptr_t objSize, uintptr_t numberOfIndexedFields)
-{
-	J9ArrayClass* arrayClass = (J9ArrayClass*) clazz;
-	uintptr_t arity = arrayClass->arity;
-	J9UTF8* utf;
-	/* Max arity is 255, so define a bracket array of size 256*2 */
-	static const char * brackets =
-		"[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]"
-		"[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]"
-		"[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]"
-		"[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]";
-	
-
-	utf = J9ROMCLASS_CLASSNAME(arrayClass->leafComponentType->romClass);
-
-	Trc_MM_J9AllocateIndexableObject_outOfLineObjectAllocation(vmThread, clazz, J9UTF8_LENGTH(utf), J9UTF8_DATA(utf), arity*2, brackets, objSize, numberOfIndexedFields);
-	return;
-}
-
-static J9Object *
-traceAllocateObject(J9VMThread *vmThread, J9Object * object, J9Class* clazz, uintptr_t objSize, uintptr_t numberOfIndexedFields)
-{
-	if(traceObjectCheck(vmThread)){
-		PORT_ACCESS_FROM_VMC(vmThread);
-		MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(vmThread->omrVMThread);
-		MM_GCExtensions *extensions = MM_GCExtensions::getExtensions(env);
-		uintptr_t byteGranularity = extensions->oolObjectSamplingBytesGranularity;
-		J9ROMClass *romClass = clazz->romClass;
-	
-		if (J9ROMCLASS_IS_ARRAY(romClass)){
-			traceAllocateIndexableObject(vmThread, clazz, objSize, numberOfIndexedFields);
-		}else{
-			Trc_MM_J9AllocateObject_outOfLineObjectAllocation(
-				vmThread, clazz, J9UTF8_LENGTH(J9ROMCLASS_CLASSNAME(romClass)), J9UTF8_DATA(J9ROMCLASS_CLASSNAME(romClass)), objSize);
-		}
-
-		TRIGGER_J9HOOK_MM_OBJECT_ALLOCATION_SAMPLING(
-			extensions->hookInterface,
-			vmThread,
-			j9time_hires_clock(),
-			J9HOOK_MM_OBJECT_ALLOCATION_SAMPLING,
-			object,
-			clazz,
-			objSize);
-
-		/* Keep the remainder, want this to happen so that we don't miss objects
-		 * after seeing large objects
-		 */
-		env->_oolTraceAllocationBytes = (env->_oolTraceAllocationBytes) % byteGranularity;
-	}
-	return object;
 }
 
 /* Required to check if we're going to trace or not since a java stack trace needs
@@ -453,7 +397,6 @@ J9AllocateObject(J9VMThread *vmThread, J9Class *clazz, uintptr_t allocateFlags)
 		dumpStackFrames(vmThread);
 		TRIGGER_J9HOOK_MM_PRIVATE_OUT_OF_MEMORY(extensions->privateHookInterface, vmThread->omrVMThread, j9time_hires_clock(), J9HOOK_MM_PRIVATE_OUT_OF_MEMORY, memorySpace, memorySpace->getName());
 	} else {
-		objectPtr = traceAllocateObject(vmThread, objectPtr, clazz, sizeInBytesRequired);
 		if (extensions->isStandardGC()) {
 			if (OMR_GC_ALLOCATE_OBJECT_TENURED == (allocateFlags & OMR_GC_ALLOCATE_OBJECT_TENURED)) {
 				/* Object must be allocated in Tenure if it is requested */
@@ -580,7 +523,6 @@ J9AllocateIndexableObject(J9VMThread *vmThread, J9Class *clazz, uint32_t numberO
 				highThreshold);
 		}
 		
-		objectPtr = traceAllocateObject(vmThread, objectPtr, clazz, sizeInBytesRequired, (uintptr_t)numberOfIndexedFields);
 		if (extensions->isStandardGC()) {
 			if (OMR_GC_ALLOCATE_OBJECT_TENURED == (allocateFlags & OMR_GC_ALLOCATE_OBJECT_TENURED)) {
 				/* Object must be allocated in Tenure if it is requested */
