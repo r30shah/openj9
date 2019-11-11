@@ -4971,6 +4971,7 @@ typedef struct J9VMThread {
 	void* osrReturnAddress;
 	void* osrScratchBuffer;
 	void* jitArtifactSearchCache;
+	void* methodPCCache;
 	void* jitExceptionHandlerCache;
 	void* jitPrivateData;
 	struct J9Method* jitMethodToBeCompiled;
