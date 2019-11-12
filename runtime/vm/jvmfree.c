@@ -127,6 +127,9 @@ recycleVMThread(J9VMThread * vmThread)
 {
 	J9JavaVM * vm = vmThread->javaVM;
 
+   /* Preserve J9VMThread->methodPCCacheMutex */
+   omrthread_monitor_t methodPCCacheMutex = vmThread->methodPCCacheMutex;
+
 	/* Preserve J9VMThread->startOfMemoryBlock and J9VMThread->J9RIParameters */
 	void *startOfMemoryBlock = vmThread->startOfMemoryBlock;
 #if defined(J9VM_PORT_RUNTIME_INSTRUMENTATION)
@@ -145,6 +148,9 @@ recycleVMThread(J9VMThread * vmThread)
 	/* Selectively clear the vmThread */
 	memset((U_8 *) vmThread, 0, startRegion);
 	memset(((U_8 *) vmThread) + endRegion, 0, J9_VMTHREAD_SEGREGATED_ALLOCATION_CACHE_OFFSET + vm->segregatedAllocationCacheSize - endRegion);
+
+   /* Restore J9VMThread->methodPCCacheMutex */
+   vmThread->methodPCCacheMutex = methodPCCacheMutex;
 
 	/* Restore J9VMThread->startOfMemoryBlock and J9VMThread->J9RIParameters */
 	vmThread->startOfMemoryBlock = startOfMemoryBlock;
