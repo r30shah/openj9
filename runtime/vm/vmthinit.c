@@ -117,6 +117,10 @@ void terminateVMThreading(J9JavaVM *vm)
 		if (NULL != vmThread->publicFlagsMutex) {
 			omrthread_monitor_destroy(vmThread->publicFlagsMutex);
 		}
+
+		if (NULL != vmThread->methodPCCacheMutex) {
+			omrthread_monitor_destroy(vmThread->methodPCCacheMutex);
+		}
 		destroyOMRVMThread(vm, vmThread);
 		freeVMThread(vm, vmThread);
 	}
