@@ -151,6 +151,12 @@ allocateVMThread(J9JavaVM * vm, omrthread_t osThread, UDATA privateFlags, void *
 		if (newThread->publicFlagsMutex == NULL) {
 			goto fail;
 		}
+
+      omrthread_monitor_init_with_name(&newThread->methodPCCacheMutex, 0, "Method PC cache mutex");
+		if (newThread->methodPCCacheMutex == NULL) {
+			goto fail;
+		}
+
 		initOMRVMThread(vm, newThread);
 	} else {
 
@@ -319,6 +325,11 @@ fail:
 			if (newThread->publicFlagsMutex) {
 				omrthread_monitor_destroy(newThread->publicFlagsMutex);
 			}
+
+			if (newThread->methodPCCacheMutex) {
+				omrthread_monitor_destroy(newThread->methodPCCacheMutex);
+			}
+
 			freeVMThread(vm, newThread);
 		}
 		newThread->threadObject = NULL;
