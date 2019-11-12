@@ -4975,7 +4975,6 @@ typedef struct J9VMThread {
 	void* osrReturnAddress;
 	void* osrScratchBuffer;
 	void* jitArtifactSearchCache;
-	void* methodPCCache;
 	void* jitExceptionHandlerCache;
 	void* jitPrivateData;
 	struct J9Method* jitMethodToBeCompiled;
@@ -5005,6 +5004,8 @@ typedef struct J9VMThread {
 #endif /* OMR_GC_COMPRESSED_POINTERS */
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	UDATA safePointCount;
+	void* methodPCCache;
+	omrthread_monitor_t methodPCCacheMutex;
 } J9VMThread;
 
 #define J9VMTHREAD_ALIGNMENT  0x100
