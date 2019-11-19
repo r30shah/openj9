@@ -4269,6 +4269,7 @@ void TR_ResolvedJ9Method::construct()
       { "java/lang/reflect/Array", ArrayMethods},
       { "java/nio/HeapByteBuffer", HeapByteBufferMethods},
       { "sun/nio/ch/NativeThread", NativeThreadMethods},
+      { "jdk/internal/Reflection", ReflectionMethods },
       { 0 }
       };
 
