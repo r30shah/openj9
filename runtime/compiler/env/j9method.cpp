@@ -4340,6 +4340,7 @@ void TR_ResolvedJ9Method::construct()
    static Y class31[] =
       {
       { "com/ibm/jit/DecimalFormatHelper", DecimalFormatHelperMethods},
+      { "jdk/internal/reflect/Reflection", ReflectionMethods },
       { 0 }
       };
    static Y class32[] =
