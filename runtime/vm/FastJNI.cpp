@@ -42,6 +42,7 @@ J9_FAST_JNI_METHOD_TABLE_EXTERN(java_lang_Object);
 J9_FAST_JNI_METHOD_TABLE_EXTERN(java_lang_System);
 J9_FAST_JNI_METHOD_TABLE_EXTERN(com_ibm_oti_vm_VM);
 J9_FAST_JNI_METHOD_TABLE_EXTERN(sun_misc_Unsafe);
+J9_FAST_JNI_METHOD_TABLE_EXTERN(jdk_internal_misc_Unsafe);
 J9_FAST_JNI_METHOD_TABLE_EXTERN(java_lang_ClassLoader);
 J9_FAST_JNI_METHOD_TABLE_EXTERN(java_lang_ref_Reference);
 J9_FAST_JNI_METHOD_TABLE_EXTERN(java_lang_Thread);
@@ -57,6 +58,7 @@ J9_FAST_JNI_CLASS_TABLE(fastJNINatives)
 	J9_FAST_JNI_CLASS("java/lang/System", java_lang_System)
 	J9_FAST_JNI_CLASS("com/ibm/oti/vm/VM", com_ibm_oti_vm_VM)
 	J9_FAST_JNI_CLASS("sun/misc/Unsafe", sun_misc_Unsafe)
+   J9_FAST_JNI_CLASS("jdk/internal/misc/Unsafe", jdk_internal_misc_Unsafe)
 	J9_FAST_JNI_CLASS("java/lang/ClassLoader", java_lang_ClassLoader)
 	J9_FAST_JNI_CLASS("java/lang/ref/Reference", java_lang_ref_Reference)
 	J9_FAST_JNI_CLASS("java/lang/Thread", java_lang_Thread)
