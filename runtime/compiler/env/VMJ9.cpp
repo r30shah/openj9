@@ -7449,10 +7449,9 @@ TR_J9VM::inlineNativeCall(TR::Compilation * comp, TR::TreeTop * callNodeTreeTop,
             }
 
          // char *caseName = (methodID == TR::sun_reflect_Reflection_getCallerClass) ? "s/r/R.getCallerClass" : "j/l/CL.getStackClassLoader";
-         TR::Node *iconstNode = callNode->getFirstChild();
-         if (iconstNode->getOpCodeValue() == TR::iconst)
+         if (callNode->getNumChildren() == 0 || callNode->getFirstChild()->getOpCodeValue() == TR::iconst)
             {
-            int32_t stackDepth = iconstNode->getInt();
+            int32_t stackDepth = callNode->getNumChildren() == 0 ? -1 : callNode->getFirstChild()->getInt();
             if (stackDepth <= 0)
                return 0;   // getCallerClass is meaningless when invoked with depth <= 0
             int32_t callerIndex = callNode->getByteCodeInfo().getCallerIndex();
