@@ -98,6 +98,13 @@ public:
 	 */
 	j9object_t hashAtUTF8(UDATA tableIndex, U_8 *utf8Data, UDATA utf8Length, U_32 hash);
 	/**
+	 * wrapper function to allow user to look up UTF8 strings in the hash table
+	 * @param tableIndex index of hash table into the array of sub-tables
+	 * @param utf8Data pointer to UTF8 string data
+	 * @para utf8Length length of the string
+	 */
+	j9object_t hashAtUTF8ASCII(UDATA tableIndex, U_8 *utf8Data, UDATA utf8Length, U_32 hash);
+	/**
 	 * Add a string to the hash table.
 	 * @param tableIndex index of hash table into the array of sub-tables
 	 * @param string pointer to a string object.

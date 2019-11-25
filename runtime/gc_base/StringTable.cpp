@@ -42,6 +42,7 @@ typedef struct stringTableUTF8Query {
 	U_8 *utf8Data;
 	UDATA utf8Length;
 	U_32 hash;
+	U_32 isAscii;
 } stringTableUTF8Query;
 
 static UDATA stringHashFn (void *key, void *userData);
@@ -163,6 +164,22 @@ MM_StringTable::hashAtUTF8(UDATA tableIndex, U_8 *utf8Data, UDATA utf8Length, U_
 	query.utf8Data = utf8Data;
 	query.utf8Length = utf8Length;
 	query.hash = hash;
+	query.isAscii = 0;
+	ptr = &query;
+	ptr = (void *) ((UDATA) ptr | TYPE_UTF8); /* Least significant bit indicates that this is a pointer to a stringTableUTF8Query */
+	return hashAt(tableIndex, (j9object_t)ptr);
+}
+
+j9object_t
+MM_StringTable::hashAtUTF8ASCII(UDATA tableIndex, U_8 *utf8Data, UDATA utf8Length, U_32 hash)
+{
+	stringTableUTF8Query query;
+	void *ptr;
+
+	query.utf8Data = utf8Data;
+	query.utf8Length = utf8Length;
+	query.hash = hash;
+	query.isAscii = 1;
 	ptr = &query;
 	ptr = (void *) ((UDATA) ptr | TYPE_UTF8); /* Least significant bit indicates that this is a pointer to a stringTableUTF8Query */
 	return hashAt(tableIndex, (j9object_t)ptr);
@@ -246,6 +263,18 @@ stringComparatorFn(struct J9AVLTree *tree, struct J9AVLTreeNode *leftNode, struc
 		U_32 left_i = 0;
 		U_32 i = 0;
 
+		/* Hack: assume that we are not in the AVL tree case and early exit if ascii
+		 * and compressed strings have different lengths
+		 */
+		if (leftUTF8->isAscii == 1) {
+			if (leftLength != rightLength) {
+				return (IDATA)leftLength - (IDATA)rightLength;
+			}
+			if (leftUTF8->hash != J9VMJAVALANGSTRING_HASHCODE_VM(javaVM, right_s)) {
+				return 1; // wrong result but will be "fixed up" by the hashequality wrapper in hashtable
+			}
+		}
+
 		for (i = 0; i < rightLength; i++) {
 			U_16 leftChar = 0;
 			U_16 rightChar = 0;
@@ -311,6 +340,14 @@ stringComparatorFn(struct J9AVLTree *tree, struct J9AVLTreeNode *leftNode, struc
 		leftLength = J9VMJAVALANGSTRING_LENGTH_VM(javaVM, left_s);
 		left_p = J9VMJAVALANGSTRING_VALUE_VM(javaVM, left_s);
 		leftCompressed = IS_STRING_COMPRESSED_VM(javaVM, left_s);
+
+		/* Hack: assume we're not in the AVL case and do an equality check */
+		if (J9VMJAVALANGSTRING_HASHCODE_VM(javaVM, left_s) != J9VMJAVALANGSTRING_HASHCODE_VM(javaVM, right_s)) {
+			return 1; // wrong answer but need to have it be "fixed up" by the equality wrapper function in hashtable
+		}
+		if (leftLength != rightLength)	{
+			return (IDATA)leftLength - (IDATA)rightLength;
+		}
 
 		for (i = 0; i < OMR_MIN(leftLength, rightLength); i++) {
 			U_16 leftChar = 0;
@@ -398,6 +435,18 @@ stringHashEqualFn(void *leftKey, void *rightKey, void *userData)
 		U_8 *u8Ptr = rightUTF8->utf8Data;
 		U_32 right_i = 0;
 		U_32 i;
+
+		 /* Hack: assume that we are not in the AVL tree case and early exit if ascii
+		 * and compressed strings have different lengths
+		 */
+		if (rightUTF8->isAscii == 1) {
+			if (rightLength != leftLength) {
+				return 0;
+			}
+			if (rightUTF8->hash != J9VMJAVALANGSTRING_HASHCODE_VM(javaVM, left_s)) {
+				return 0;
+			}
+		}
 
 		for (i = 0; i < leftLength; i++) {
 			U_16 leftChar, rightChar;
@@ -580,7 +629,11 @@ j9gc_createJavaLangString(J9VMThread *vmThread, U_8 *data, UDATA length, UDATA s
 		UDATA tableIndex = stringTable->getTableIndex(hash);
 
 		stringTable->lockTable(tableIndex);
-		result = stringTable->hashAtUTF8(tableIndex, data, length, (U_32)hash);
+		if (J9_ARE_ANY_BITS_SET(stringFlags, J9_STR_ASCII)) {
+			result = stringTable->hashAtUTF8ASCII(tableIndex, data, length, (U_32)hash);
+		} else {
+			result = stringTable->hashAtUTF8(tableIndex, data, length, (U_32)hash);
+		}
 		stringTable->unlockTable(tableIndex);
 	}
 
