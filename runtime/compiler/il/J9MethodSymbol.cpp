@@ -80,6 +80,7 @@ J9::MethodSymbol::isPureFunction()
       case TR::java_lang_Math_sqrt:
       case TR::java_lang_Math_tan:
       case TR::java_lang_Math_tanh:
+      case TR::java_lang_ref_Reference_reachabilityFence:
       case TR::java_lang_StrictMath_acos:
       case TR::java_lang_StrictMath_asin:
       case TR::java_lang_StrictMath_atan:
@@ -112,6 +113,7 @@ J9::MethodSymbol::isPureFunction()
       case TR::java_lang_StrictMath_sqrt:
       case TR::java_lang_StrictMath_tan:
       case TR::java_lang_StrictMath_tanh:
+      case TR::java_nio_Bits_keepAlive:
          /*
       case TR::java_math_BigDecimal_valueOf:
       case TR::java_math_BigDecimal_add:
@@ -128,6 +130,19 @@ J9::MethodSymbol::isPureFunction()
    return false;
    }
 
+bool 
+J9::MethodSymbol::functionCallDoesNotYieldOSR()
+   {
+   switch(self()->getRecognizedMethod())
+      {
+      case TR::java_lang_ref_Reference_reachabilityFence:
+      case TR::java_nio_Bits_keepAlive:
+      return true;
+      default: 
+         return false;
+      }
+   return false;
+   }
 
 // Which recognized methods are known to have no valid null checks
 //
