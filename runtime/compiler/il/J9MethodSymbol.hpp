@@ -57,7 +57,7 @@ protected:
       OMR::MethodSymbolConnector(lc, m) { }
 
 public:
-
+   bool functionCallDoesNotYieldOSR();
    bool isPureFunction();
 
    TR_RuntimeHelper getVMCallHelper() { return TR_j2iTransition; } // deprecated
