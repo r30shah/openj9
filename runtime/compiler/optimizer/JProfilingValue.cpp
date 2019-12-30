@@ -169,11 +169,13 @@ TR_JProfilingValue::perform()
       if (trace())
          traceMsg(comp(), "JProfiling has been enabled for profiling compilations, run JProfilingValue\n");
       }
+   /*   
    else if (comp()->getOption(TR_EnableJProfiling))
       {
       if (trace())
          traceMsg(comp(), "JProfiling has been enabled, run JProfilingValue\n");
       }
+   */
    else 
       {
       if (trace())
