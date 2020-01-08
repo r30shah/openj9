@@ -915,7 +915,7 @@ template <typename T, size_t bits> T
 TR_EmbeddedHashTable<T, bits>::recursivelySplit(T mask, T choices)
    {
    T key0, key1;
-
+   int32_t i1, i2;
    // Count the elements currently selected
    size_t matched = 0;
    for (size_t i = 0; i < this->getSize(); ++i)
@@ -925,9 +925,15 @@ TR_EmbeddedHashTable<T, bits>::recursivelySplit(T mask, T choices)
       if ((_keys[i] & mask) == choices)
          {
          if (matched == 0)
+            {
             key0 = _keys[i];
+            i1 = i;
+            }
          else if (matched == 1)
+            {
             key1 = _keys[i];
+            i2 = i;
+            }
          matched++;
          }
       }
@@ -941,7 +947,7 @@ TR_EmbeddedHashTable<T, bits>::recursivelySplit(T mask, T choices)
    // Couldn't find a suitable choice, grab any difference
    if (!diff)
       diff = key0 ^ key1;
-   TR_ASSERT_FATAL(diff != 0, "Duplicate keys in set");
+   TR_ASSERT_FATAL(diff != 0, "Duplicate keys in set, Table = %p, key0 = %ld at index %d, key1 = %ld at index %d\n", this, (int64_t)key0, i1,(int64_t)key1, i2);
 
    // Grab the lowest bit and add it to the mask
    diff &= ~(diff - 1);
