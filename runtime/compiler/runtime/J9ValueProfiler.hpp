@@ -718,7 +718,8 @@ TR_EmbeddedHashTable<T, bits>::addKey(T value)
    int32_t available = -1;
    size_t populated = 0;
    size_t i = 0;
-   for (; i <= lastIndex; ++i)
+   bool foundVal = false;
+   for (; i < 1 << bits; ++i)
       {
       if (i == otherIndex)
          continue;
@@ -729,14 +730,18 @@ TR_EmbeddedHashTable<T, bits>::addKey(T value)
          } 
 
       if (value == _keys[i])
+         {
+         foundVal = true;
+         _freqs[i]++;
          break;
+         }
       ++populated;
       }
 
    // If found, increment the value
-   if (i <= lastIndex)
-      _freqs[i]++;
-   else if (available > -1 && populated < this->getCapacity())
+//   if (i <= lastIndex)
+//      _freqs[i]++;
+   if (!foundVal && available > -1 && populated < this->getCapacity())
       {
       // Temporary hash config
       HashFunction hashConfig;
@@ -769,6 +774,15 @@ TR_EmbeddedHashTable<T, bits>::addKey(T value)
             }
          else
             {
+            // DEBUG: Making sure we only have one copy in the table
+            for (size_t j=0; j < 1 << bits; ++j)
+               {
+               if (j == this->getOtherIndex() || _keys[j] == getDefault(j))
+                  continue;
+               else if (_keys[j] == value)
+                  TR_ASSERT_FATAL(0, "We already have value in the table %p, value = %ld at index %d, We were going to add it at index %d\n", this, (int64_t)value, j, available);
+               }
+                  
             // Add the new value to an available slot
             _keys[available] = value;
             _freqs[available] = 1;
