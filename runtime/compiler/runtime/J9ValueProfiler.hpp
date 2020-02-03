@@ -692,7 +692,6 @@ TR_EmbeddedHashTable<T, bits>::reset()
 template <typename T, size_t bits> void
 TR_EmbeddedHashTable<T, bits>::addKey(T value)
    {
-   size_t otherIndex = this->getOtherIndex();
 
    static bool dumpInfo = feGetEnv("TR_JProfilingValueDumpInfo") != NULL;
    if (dumpInfo)
@@ -706,12 +705,13 @@ TR_EmbeddedHashTable<T, bits>::addKey(T value)
    // Lock the table, disabling jitted code access
    if (!this->tryLock(true))
       {
-      _freqs[otherIndex]++;
+      _freqs[this->getOtherIndex()]++;
       return;
       }
 
    TR_ASSERT_FATAL(this->_metaData.lock == 1, "HashTable not successfully locked");
    TR_ASSERT_FATAL(this->_metaData.otherIndex > -1, "JIT access not disabled");
+   size_t otherIndex = this->getOtherIndex();
 
    // Detect whether the value is already present, count populated slots and find the first empty one
    size_t lastIndex = (1 << bits) - 1;
