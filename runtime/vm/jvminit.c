@@ -2843,6 +2843,20 @@ modifyDllLoadTable(J9JavaVM * vm, J9Pool* loadTable, J9VMInitArgs* j9vm_args)
 					return JNI_ERR;
 				}
 			}
+			J9VMDllLoadInfo *zlibInfo = createLoadInfo( PORTLIB , loadTable, J9_ZIP_DLL_NAME, 0, NULL, 0);
+			if (NULL == zlibInfo)
+				{
+				j9tty_printf(PORTLIB, "Error: Failed to open ZLIB DLL\n");
+				rc = JNI_ERR;
+				}
+			zlibInfo->loadFlags |= LOAD_BY_DEFAULT;
+			char zlibDll[EsMaxPath];
+			char *zlibDllDir = zlibDll;
+			strcpy(zlibDllDir, vm->j9libvmDirectory);
+			strncat(zlibDllDir, DIR_SEPARATOR_STR, sizeof(DIR_SEPARATOR_STR)-1);
+			strncat(zlibDllDir, J9_ZIP_DLL_NAME, sizeof(J9_ZIP_DLL_NAME)-1);
+			if (0 != j9sl_open_shared_library(zlibDllDir, &(zlibInfo->descriptor), openFlags))
+				j9tty_printf(PORTLIB, "Error: Failed to open zlib DLL %s (%s)\n", zlibDllDir, j9error_last_error_message());
 			j9str_printf(PORTLIB, dllCheckPathPtr, expectedPathLength, "%s%s%s",
 					jitdirectoryValue, DIR_SEPARATOR_STR, entry->dllName);
 			jitFileHandle = j9sl_open_shared_library(dllCheckPathPtr, &(entry->descriptor), openFlags);
