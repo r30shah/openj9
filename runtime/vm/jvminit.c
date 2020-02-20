@@ -2843,7 +2843,7 @@ modifyDllLoadTable(J9JavaVM * vm, J9Pool* loadTable, J9VMInitArgs* j9vm_args)
 					return JNI_ERR;
 				}
 			}
-			J9VMDllLoadInfo *zlibInfo = createLoadInfo( PORTLIB , loadTable, J9_ZIP_DLL_NAME, 0, NULL, 0);
+			J9VMDllLoadInfo *zlibInfo = createLoadInfo( PORTLIB , loadTable, J9_ZIP_DLL_NAME, (MAGIC_LOAD | NO_J9VMDLLMAIN | SILENT_NO_DLL) , NULL, 0);
 			if (NULL == zlibInfo)
 				{
 				j9tty_printf(PORTLIB, "Error: Failed to open ZLIB DLL\n");
