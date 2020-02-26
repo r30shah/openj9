@@ -611,6 +611,8 @@ TR_JProfilingValue::addProfilingTrees(
 
    TR::Block *quickTestBlock = iter->split(incIndexTreeTop, cfg, false, true);
    quickTestBlock->setIsExtensionOfPreviousBlock();
+   TR::DebugCounter::prependDebugCounter(comp, TR::DebugCounter::debugCounterName(comp, "jProfilingValue/%d:%d/(%s)/%s", value->getByteCodeInfo().getCallerIndex(), value->getByteCodeInfo().getByteCodeIndex(), comp->signature(), comp->getHotnessName(comp->getMethodHotness())), 
+                                          incIndexTreeTop);
    if (lastBranchToMainlineReturnTT != NULL)
       {
       cfg->addEdge(iter, mainlineReturn);
