@@ -461,6 +461,7 @@ const OptimizationStrategy hotStrategyOpts[] =
    { OMR::checkcastAndProfiledGuardCoalescer                              },
    { OMR::jProfilingRecompLoopTest,              OMR::IfLoops                  },
    { OMR::tacticalGlobalRegisterAllocatorGroup,  OMR::IfEnabled                },
+   { OMR::regDepCopyRemoval                                               },
    { OMR::jProfilingValue,                           OMR::MustBeDone           },
    { OMR::globalDeadStoreElimination,            OMR::IfMoreThanOneBlock       }, // global dead store removal
    { OMR::deadTreesElimination                                            }, // cleanup after dead store removal
