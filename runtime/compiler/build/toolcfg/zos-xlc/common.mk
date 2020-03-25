@@ -33,9 +33,14 @@ EXESUFF=
 LIBPREFIX=lib
 DEPSUFF=.depend.mk
 
-ARCHLEVEL?=7
+ifeq ($(VERSION_MAJOR),8)
+	ARCHLEVEL=7
+	TGTLEVEL=zOSV2R3
+else
+	ARCHLEVEL=10
+	TGTLEVEL=zOSV1R13
+endif
 TUNELEVEL?=10
-TGTLEVEL?=zOSV1R13
 
 #
 # Paths for default programs on the platform
