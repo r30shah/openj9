@@ -1758,7 +1758,7 @@ ZZ make the call
 
 ifdef({J9ZOS390},{dnl
 
-LOAD_ADDR_FROM_TOC(r6,TR_jitAddPicToPatchOnClassUnload)
+LOAD_ADDR_FROM_TOC(r6,TR_S390jitAddPicToPatchOnClassUnload)
 
 RestoreSSP
 
@@ -1781,7 +1781,7 @@ ZZ 31 bit zOS
 SaveSSP
 },{dnl
 
-LOAD_ADDR_FROM_TOC(r14,TR_jitAddPicToPatchOnClassUnload)
+LOAD_ADDR_FROM_TOC(r14,TR_S390jitAddPicToPatchOnClassUnload)
 
 ZZ zLinux case
     BASR    r14,r14
@@ -2011,24 +2011,30 @@ IfCompressedElse({dnl
 
 ZZ Clobberable volatile regs r1,r2,r3,r0
 ZZ  Load pic address as second address
-    LR_GPR  CARG2,r1
-
-    L_GPR   CARG1,eq_intfAddr_inInterfaceSnippet(,r14)
-    L_GPR   r0,J9TR_J9Class_classLoader(CARG1)
+    LR_GPR r2,r1
+ZZ    LR_GPR  CARG2,r1
+    L_GPR   r1,eq_intfAddr_inInterfaceSnippet(,r14)
+ZZ    L_GPR   CARG1,eq_intfAddr_inInterfaceSnippet(,r14)
+    L_GPR   r0,J9TR_J9Class_classLoader(r1)
+ZZ    L_GPR   r0,J9TR_J9Class_classLoader(CARG1)
 
 ZZ  Load class pointer as first argument
 IfCompressedElse({dnl
-    L       CARG1,0(CARG2)   # May need to convert offset to J9Class
-    LLGFR   CARG1,CARG1
+    L       r1,0(r2)   # May need to convert offset to J9Class
+ZZ    L       CARG1,0(CARG2)   # May need to convert offset to J9Class
+    LLGFR   r1,r1
+ZZ    LLGFR   CARG1,CARG1
 },{dnl
-    L_GPR   CARG1,0(CARG2)
+    L_GPR   r1,0(r2)
+ZZ    L_GPR   CARG1,0(CARG2)
 })dnl
 
 ZZ  Compare (r0) the classloader of interface class
 ZZ  with the classloader of target class (CARG1)
 ZZ  If they are same, no need to register the pic site
 
-    C_GPR  r0,J9TR_J9Class_classLoader(CARG1)
+    C_GPR  r0,J9TR_J9Class_classLoader(r1)
+ZZ    C_GPR  r0,J9TR_J9Class_classLoader(CARG1)
     JZ      ifCHMLcommonJitDispatch
 
 ZZ Need to preserve r14,rEP,r5,r6,r7
@@ -2054,7 +2060,7 @@ RestoreSSP
 
 ifdef({J9ZOS390},{dnl
 
-LOAD_ADDR_FROM_TOC(r6,TR_jitAddPicToPatchOnClassUnload)
+LOAD_ADDR_FROM_TOC(r6,TR_S390jitAddPicToPatchOnClassUnload)
 
 ifdef({TR_HOST_64BIT},{dnl
 
@@ -2077,7 +2083,7 @@ SaveSSP
 
 
 ZZ zLinux case
-LOAD_ADDR_FROM_TOC(r14,TR_jitAddPicToPatchOnClassUnload)
+LOAD_ADDR_FROM_TOC(r14,TR_S390jitAddPicToPatchOnClassUnload)
     BASR    r14,r14
 })dnl
 

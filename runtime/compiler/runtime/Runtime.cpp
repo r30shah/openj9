@@ -618,6 +618,7 @@ JIT_HELPER(_interpreterDoubleStaticGlue);
 JIT_HELPER(_interpreterSyncDoubleStaticGlue);
 JIT_HELPER(_jitResolveConstantDynamic);
 JIT_HELPER(_nativeStaticHelper);
+JIT_HELPER(jitCallJitAddPicToPatchOnClassUnload);
 JIT_HELPER(jitLookupInterfaceMethod);
 JIT_HELPER(jitMethodIsNative);
 JIT_HELPER(jitMethodIsSync);
@@ -1580,6 +1581,7 @@ void initializeCodeRuntimeHelperTable(J9JITConfig *jitConfig, char isSMP)
    SET(TR_S390icallVMprJavaSendVirtualJ,                  (void *) icallVMprJavaSendVirtualJ,                      TR_Helper);
    SET(TR_S390icallVMprJavaSendVirtualF,                  (void *) icallVMprJavaSendVirtualF,                      TR_Helper);
    SET(TR_S390icallVMprJavaSendVirtualD,                  (void *) icallVMprJavaSendVirtualD,                      TR_Helper);
+   SET(TR_S390jitAddPicToPatchOnClassUnload,              (void *) jitCallJitAddPicToPatchOnClassUnload,           TR_Helper);
    SET(TR_S390jitLookupInterfaceMethod,                   (void *) jitLookupInterfaceMethod,                       TR_Helper);
    SET(TR_S390jitMethodIsNative,                          (void *) jitMethodIsNative,                              TR_Helper);
    SET(TR_S390jitMethodIsSync,                            (void *) jitMethodIsSync,                                TR_Helper);

@@ -690,6 +690,8 @@ inlineVectorizedStringIndexOf(TR::Node* node, TR::CodeGenerator* cg, bool isUTF1
       cg->decReferenceCount(node->getChild(i));
       }
    cg->stopUsingRegister(stringIndexReg);
+   cg->stopUsingRegister(stringLenReg);
+   cg->stopUsingRegister(patternLenReg);
    srm->stopUsingRegisters();
 
    return matchIndexReg;
