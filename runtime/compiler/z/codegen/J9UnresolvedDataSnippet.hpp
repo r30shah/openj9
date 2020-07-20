@@ -60,6 +60,7 @@ class UnresolvedDataSnippet : public J9::UnresolvedDataSnippet
    TR::SymbolReference     *_dataSymbolReference;
    TR::MemoryReference *_memoryReference;
    bool                    _isStore;
+   
 
    /**
     *_dataReferenceInstruction is the instruction
@@ -72,6 +73,8 @@ class UnresolvedDataSnippet : public J9::UnresolvedDataSnippet
    uint8_t                    *_literalPoolSlot;         ///< For trace file generation
 
    public:
+
+   TR::Instruction* fenceNOPInst;
 
    UnresolvedDataSnippet(TR::CodeGenerator *, TR::Node *, TR::SymbolReference *s, bool isStore, bool canCauseGC);
 
