@@ -2939,6 +2939,9 @@ bool TR_J9VMBase::supressInliningRecognizedInitialCallee(TR_CallSite* callsite, 
                dontInlineRecognizedMethod = true;
                }
             break;
+         case TR::sun_misc_Unsafe_copyMemory:
+            dontInlineRecognizedMethod = true;
+            break;
          default:
             break;
          }
