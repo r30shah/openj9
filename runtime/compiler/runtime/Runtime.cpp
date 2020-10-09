@@ -635,6 +635,7 @@ JIT_HELPER(_virtualUnresolvedHelper);
 JIT_HELPER(_interfaceCallHelper);
 JIT_HELPER(_interfaceCallHelperSingleDynamicSlot);
 JIT_HELPER(_interfaceCallHelperMultiSlots);
+JIT_HELPER(_interfaceCallHelperReadOnlyMultiSlots);
 JIT_HELPER(icallVMprJavaSendVirtual0);
 JIT_HELPER(icallVMprJavaSendVirtual1);
 JIT_HELPER(icallVMprJavaSendVirtualJ);
@@ -1654,6 +1655,7 @@ void initializeCodeRuntimeHelperTable(J9JITConfig *jitConfig, char isSMP)
    SET(TR_S390interfaceCallHelper,                        (void *) _interfaceCallHelper,                           TR_Helper);
    SET(TR_S390interfaceCallHelperSingleDynamicSlot,       (void *) _interfaceCallHelperSingleDynamicSlot,          TR_Helper);
    SET(TR_S390interfaceCallHelperMultiSlots,              (void *) _interfaceCallHelperMultiSlots,                 TR_Helper);
+   SET(TR_S390interfaceCallHelperReadOnlyMultiSlots,      (void *) _interfaceCallHelperReadOnlyMultiSlots,         TR_Helper);
    SET(TR_S390jitResolveConstantDynamicGlue,              (void *) _jitResolveConstantDynamic,                     TR_Helper);
    SET(TR_S390icallVMprJavaSendVirtual0,                  (void *) icallVMprJavaSendVirtual0,                      TR_Helper);
    SET(TR_S390icallVMprJavaSendVirtual1,                  (void *) icallVMprJavaSendVirtual1,                      TR_Helper);
