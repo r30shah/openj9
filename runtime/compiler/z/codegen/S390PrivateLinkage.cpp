@@ -1600,7 +1600,11 @@ J9::Z::PrivateLinkage::buildNoPatchingVirtualDispatchWithResolve(TR::Node *callN
       int32_t vtableOffset;
       };
    
-   ccResolveVirtualData *ccResolveVirtualDataAddress = reinterpret_cast<ccResolveVirtualData *>(cg()->allocateCodeMemory(sizeof(ccResolveVirtualData), false));
+   OMR::CCData *codeCacheData = cg()->getCodeCache()->manager()->getCodeCacheData();
+   OMR::CCData::index_t index;
+   codeCacheData->put(NULL, sizeof(ccResolveVirtualData), 8, NULL, index);
+   
+   ccResolveVirtualData *ccResolveVirtualDataAddress = codeCacheData->get<ccResolveVirtualData>(index);
 
    if (!ccResolveVirtualDataAddress)
       {
