@@ -24,6 +24,8 @@
 #pragma csect(STATIC,"TRJ9MRBase#S")
 #pragma csect(TEST,"TRJ9MRBase#T")
 
+#include "codegen/CCData.hpp"
+#include "codegen/CCData_inlines.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Machine.hpp"
@@ -86,6 +88,8 @@
 #include "infra/Flags.hpp"
 #include "infra/List.hpp"
 #include "ras/Debug.hpp"
+#include "runtime/CodeCache.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "z/codegen/EndianConversion.hpp"
 #include "z/codegen/S390Evaluator.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
@@ -393,8 +397,11 @@ J9::Z::MemoryReference::create(TR::CodeGenerator* cg, TR::Node* node)
 
       typedef J9::Z::UnresolvedDataReadOnlySnippet::CCUnresolvedData CCUnresolvedData;
 
-      CCUnresolvedData* ccUnresolvedDataAddress =
-         reinterpret_cast<J9::Z::UnresolvedDataReadOnlySnippet::CCUnresolvedData*>(cg->allocateCodeMemory(sizeof(CCUnresolvedData), false));
+      OMR::CCData *codeCacheData = cg->getCodeCache()->manager()->getCodeCacheData();
+      OMR::CCData::index_t index;
+      codeCacheData->put(NULL, sizeof(CCUnresolvedData), 8, NULL, index);
+      
+      CCUnresolvedData* ccUnresolvedDataAddress = codeCacheData->get<CCUnresolvedData>(index);
 
       if (ccUnresolvedDataAddress == NULL)
          {
