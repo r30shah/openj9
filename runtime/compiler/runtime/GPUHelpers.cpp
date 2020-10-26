@@ -1097,7 +1097,11 @@ static GpuMetaData* getGPUMetaData(uint8_t* startPC)
    {
       J9VMThread *vmThread = jitConfig->javaVM->internalVMFunctions->currentVMThread(jitConfig->javaVM);
       TR_MethodMetaData * metaData = jitConfig->jitGetExceptionTableFromPC(vmThread, (UDATA)startPC);
+#if defined(J9VM_OPT_SNAPSHOTS)
+      return J9JIT_DATACACHE_OFFSET_TO_PTR(metaData->gpuCodeOffset, GpuMetaData);
+#else /* defined(J9VM_OPT_SNAPSHOT) */
       return (GpuMetaData*)metaData->gpuCode;
+#endif
    }
 
 // load GPU kernel into the cudaInfo structure
