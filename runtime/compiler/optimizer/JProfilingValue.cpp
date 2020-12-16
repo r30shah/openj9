@@ -318,6 +318,11 @@ TR_JProfilingValue::lowerCalls()
    {
    TR::TreeTop *cursor = comp()->getStartTree();
    TR_BitVector *backwardAnalyzedAddressNodesToCheck = new (comp()->trStackMemory()) TR_BitVector();
+   bool selectiveProfilingForThisMethod = comp()->getOption(TR_EnableJProfDebugForMethod);
+   static int32_t numberOfTranformation = 1000;
+   if (selectiveProfilingForThisMethod)
+      numberOfTranformation = feGetEnv("TR_LastJProfValueTransformation") ? atoi(feGetEnv("TR_LastJProfValueTransformation")) : numberOfTranformation;
+   int32_t numberOfCallsTransformed = 0;   
    while (cursor)
       {
       TR::Node * node = cursor->getNode();
@@ -361,7 +366,11 @@ TR_JProfilingValue::lowerCalls()
          TR::Node *value = child->getFirstChild();
          TR_AbstractHashTableProfilerInfo *table = (TR_AbstractHashTableProfilerInfo*) child->getSecondChild()->getAddress();
          bool needNullTest =  comp()->getSymRefTab()->isNonHelper(child->getSymbolReference(), TR::SymbolReferenceTable::jProfileValueWithNullCHKSymbol);
-         addProfilingTrees(comp(), cursor, value, table, needNullTest, true, trace());
+         if (!selectiveProfilingForThisMethod || numberOfCallsTransformed < numberOfTranformation)
+            {
+            addProfilingTrees(comp(), cursor, value, table, needNullTest, true, trace());
+            numberOfCallsTransformed++;
+            }
          // Remove the original trees and continue from the tree after the profiling
          TR::TransformUtil::removeTree(comp(), cursor);
          if (trace())
