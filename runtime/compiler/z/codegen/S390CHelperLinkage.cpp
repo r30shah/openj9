@@ -49,6 +49,8 @@
 #include "z/codegen/S390J9CallSnippet.hpp"
 #include "z/codegen/S390StackCheckFailureSnippet.hpp"
 #include "z/codegen/SystemLinkage.hpp"
+#include "objectfmt/FunctionCallData.hpp"
+#include "objectfmt/ObjectFormat.hpp"
 #include "runtime/J9Profiler.hpp"
 #include "runtime/J9ValueProfiler.hpp"
 
@@ -354,9 +356,12 @@ TR::Register * J9::Z::CHelperLinkage::buildDirectDispatch(TR::Node * callNode, T
 #endif
       }
    TR::SymbolReference * callSymRef = callNode->getSymbolReference();
-   void * destAddr = callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->getMethodAddress();
-   cursor = new (cg()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, regRA, destAddr, callSymRef, cg());
-   cursor->setDependencyConditions(preDeps);
+
+   TR::FunctionCallData data(callSymRef, callNode, cg(), regRA, NULL, preDeps);
+   cursor = cg()->getObjectFormat()->emitFunctionCall(data);
+   //void * destAddr = callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->getMethodAddress();
+   //cursor = new (cg()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, regRA, destAddr, callSymRef, cg());
+   //cursor->setDependencyConditions(preDeps);
    if (isFastPathOnly)
       {
 #if defined(J9ZOS390)

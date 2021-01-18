@@ -291,7 +291,12 @@ TR::S390J9CallSnippet::emitSnippetBody()
    //  5840 4006   L     rEP,6(,rEP)   LG   rEP, 8(rEP) for 64bit
    //  0de4        BASR  r14,rEP
 
-   cursor = generatePICBinary(cursor, glueRef);
+   TR::FunctionCallData *data = new (cg()->trHeapMemory()) TR::FunctionCallData(glueRef, callNode, cursor, cg(), self(), TR_HelperAddress);
+
+   cursor = cg()->getObjectFormat()->encodeFunctionCall(*data);
+
+   setFunctionCallData(data);
+   //cursor = generatePICBinary(cursor, glueRef);
 
    // add NOPs to make sure the data area is aligned
    if (pad_bytes == 2)
@@ -510,7 +515,7 @@ TR::S390J9CallSnippet::getLength(int32_t  estimatedSnippetStart)
    // number of pad bytes has not been set when this method is called to
    // estimate codebuffer size, so -- i'll put an conservative number here...
    return (instructionCountForArguments(getNode(), cg()) +
-      getPICBinaryLength() +
+      cg()->getObjectFormat()->estimateBinaryLength() +
       3 * sizeof(uintptr_t) +
       getRuntimeInstrumentationOnOffInstructionLength(cg()) +
       sizeof(uintptr_t));  // the last item is for padding
@@ -551,7 +556,10 @@ TR::S390J9CallSnippet::print(TR::FILE *pOutFile, TR_Debug *debug)
       }
 
    bufferPos = debug->printRuntimeInstrumentationOnOffInstruction(pOutFile, bufferPos, false); // RIOFF
+   TR::FunctionCallData *data = getFunctionCallData();
+   bufferPos = cg()->getObjectFormat()->printEncodedFunctionCall(pOutFile, *data);
 
+   /*
    if (getKind() == TR::Snippet::IsUnresolvedCall)
       {
       debug->printPrefix(pOutFile, NULL, bufferPos, 6);
@@ -575,7 +583,7 @@ TR::S390J9CallSnippet::print(TR::FILE *pOutFile, TR_Debug *debug)
                     usedTrampoline() ? "- Trampoline Used.":"");
       bufferPos += 6;
       }
-
+   */
    if (padbytes == 2)
       {
       debug->printPrefix(pOutFile, NULL, bufferPos, 2);
@@ -739,8 +747,11 @@ TR::S390VirtualUnresolvedSnippet::emitSnippetBody()
    // Generate RIOFF if RI is supported.
    cursor = generateRuntimeInstrumentationOnOffInstruction(cg(), cursor, TR::InstOpCode::RIOFF);
 
-   cursor = generatePICBinary(cursor, glueRef);
+   TR::FunctionCallData *data = new (cg()->trHeapMemory()) TR::FunctionCallData(glueRef, callNode, cursor, cg(), self(), TR_HelperAddress);
 
+   cursor = cg()->getObjectFormat()->encodeFunctionCall(*data);
+
+   setFunctionCallData(data);
 
    // Method address
    *(uintptr_t *) cursor = (uintptr_t) glueRef->getMethodAddress();
@@ -814,7 +825,7 @@ uint32_t
 TR::S390VirtualUnresolvedSnippet::getLength(int32_t  estimatedSnippetStart)
    {
    TR::Compilation* comp = cg()->comp();
-   uint32_t length = getPICBinaryLength() + 7 * sizeof(uintptr_t) + TR::Compiler->om.sizeofReferenceAddress();
+   uint32_t length = cg()->getObjectFormat()->estimateBinaryLength() + 7 * sizeof(uintptr_t) + TR::Compiler->om.sizeofReferenceAddress();
    length += getRuntimeInstrumentationOnOffInstructionLength(cg());
    return length;
    }
@@ -982,11 +993,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390VirtualUnresolvedSnippet * snippet)
 
    bufferPos = printRuntimeInstrumentationOnOffInstruction(pOutFile, bufferPos, false); // RIOFF
 
-   printPrefix(pOutFile, NULL, bufferPos, 6);
-   trfprintf(pOutFile, "BRASL \tGPR14, <%p>\t# Branch to Helper Method %s",
-                    snippet->getSnippetDestAddr(),
-                    snippet->usedTrampoline()?"- Trampoline Used.":"");
-   bufferPos += 6;
+   TR::FunctionCallData *data = snippet->getFunctionCallData();
+   bufferPos = _cg->getObjectFormat()->printEncodedFunctionCall(pOutFile, *data);
 
    printPrefix(pOutFile, NULL, bufferPos, 4);
    trfprintf(pOutFile, "DC   \t%p\t\t# Method Address", *((uintptr_t *)bufferPos));

@@ -23,6 +23,8 @@
 #ifndef TR_S390J9CALLSNIPPET_INCL
 #define TR_S390J9CALLSNIPPET_INCL
 
+#include "objectfmt/FunctionCallData.hpp"
+#include "objectfmt/ObjectFormat.hpp"
 #include "z/codegen/CallSnippet.hpp"
 #include "z/codegen/ConstantDataSnippet.hpp"
 #include "z/codegen/S390Instruction.hpp"
@@ -36,6 +38,7 @@ namespace TR {
 
 class S390J9CallSnippet : public TR::S390CallSnippet
    {
+   TR::FunctionCallData *_functionCallData;
    public:
 
    S390J9CallSnippet(
@@ -62,6 +65,10 @@ class S390J9CallSnippet : public TR::S390CallSnippet
 
    uint8_t *generatePICBinary(uint8_t *cursor, TR::SymbolReference *glueRef);
    uint32_t getPICBinaryLength();
+
+   void setFunctionCallData(TR::FunctionCallData *data) { _functionCallData = data; }
+   TR::FunctionCallData* getFunctionCallData() { return _functionCallData; }
+
    virtual uint32_t getLength(int32_t estimatedSnippetStart);
 
    virtual void print(TR::FILE *pOutFile, TR_Debug *debug);
