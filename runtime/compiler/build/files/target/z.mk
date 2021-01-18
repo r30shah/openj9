@@ -57,7 +57,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     omr/compiler/z/codegen/snippet/PPA2Snippet.cpp \
     omr/compiler/z/env/OMRCPU.cpp \
     omr/compiler/z/objectfmt/OMRJitCodeRWXObjectFormat.cpp \
-    omr/compiler/z/objectfmt/OMRJitCodeRxObjectFormat.cpp
+    omr/compiler/z/objectfmt/OMRJitCodeRXObjectFormat.cpp
 
 JIT_PRODUCT_SOURCE_FILES+=\
     compiler/z/codegen/DFPTreeEvaluator.cpp \
