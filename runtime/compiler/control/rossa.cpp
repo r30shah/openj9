@@ -55,6 +55,7 @@
 #include "codegen/PrivateLinkage.hpp"
 #include "control/CompilationRuntime.hpp"
 #include "control/CompilationThread.hpp"
+#include "control/DebugAgent.hpp"
 #include "control/JitDump.hpp"
 #include "control/Recompilation.hpp"
 #include "control/RecompilationInfo.hpp"
@@ -1815,6 +1816,11 @@ onLoadInternal(
 #ifdef J9VM_RAS_DUMP_AGENTS
    jitConfig->runJitdump = runJitdump;
 #endif
+   jitConfig->debugAgentStart = debugAgentStart;
+   jitConfig->debugAgentGetAllJitMethods = debugAgentGetAllJitMethods;
+   jitConfig->debugAgentRevertToInterpreter = debugAgentRevertToInterpreter;
+   jitConfig->debugAgentRecompile = debugAgentRecompile;
+   jitConfig->debugAgentEnd = debugAgentEnd;
 
    jitConfig->printAOTHeaderProcessorFeatures = printAOTHeaderProcessorFeatures;
 
