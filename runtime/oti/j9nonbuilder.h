@@ -4161,6 +4161,11 @@ typedef struct J9JITConfig {
 	void ( *printAOTHeaderProcessorFeatures)(struct TR_AOTHeader * aotHeaderAddress, char * buff, const size_t BUFF_SIZE);
 	struct OMRProcessorDesc targetProcessor;
 	struct OMRProcessorDesc relocatableTargetProcessor;
+	BOOLEAN (*debugAgentStart)(struct J9VMThread *vmThread);
+	BOOLEAN (*debugAgentGetAllJitMethods)(struct J9VMThread *vmThread, jobject jitMethods);
+	BOOLEAN (*debugAgentRevertToInterpreter)(struct J9VMThread *vmThread, J9JITExceptionTable *jitMethod);
+	BOOLEAN (*debugAgentRecompile)(struct J9VMThread *vmThread, J9JITExceptionTable *jitMethod, IDATA lastOptIndex, IDATA lastOptSubIndex, BOOLEAN enableTracing);
+	BOOLEAN (*debugAgentEnd)(struct J9VMThread *vmThread);
 #if defined(J9VM_OPT_JITSERVER)
 	int32_t (*startJITServer)(struct J9JITConfig *jitConfig);
 	int32_t (*waitJITServerTermination)(struct J9JITConfig *jitConfig);

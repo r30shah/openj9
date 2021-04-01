@@ -23,8 +23,9 @@
 #include "jni.h"
 #include "j9.h"
 #include "j9cp.h"
-#include "jclprots.h"
 #include "j9modifiers_api.h"
+#include "j9nongenerated.h"
+#include "jclprots.h"
 
 /*
  * The following natives are called by the JITHelpers static initializer. They do not require special treatment by the JIT.
@@ -448,3 +449,107 @@ Java_com_ibm_jit_JITHelpers_getClassFlagsFromJ9Class32(JNIEnv *env, jobject rcv,
 }
 
 #endif
+
+void JNICALL		
+Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject ma, jobject obj, jobjectArray args)
+{	
+	J9VMThread *vmThread = (J9VMThread *)env;
+	J9JITConfig *jitConfig = vmThread->javaVM->jitConfig;
+	jitConfig->debugAgentStart(vmThread);
+
+	jclass java_lang_Long = (*env)->FindClass(env, "java/lang/Long");
+	jmethodID java_lang_Long_longValue = (*env)->GetMethodID(env, java_lang_Long, "longValue", "()J");
+
+	jclass java_util_HashSet = (*env)->FindClass(env, "java/util/HashSet");
+	jmethodID java_util_HashSet_init = (*env)->GetMethodID(env, java_util_HashSet, "<init>", "()V");
+	jmethodID java_util_HashSet_size = (*env)->GetMethodID(env, java_util_HashSet, "size", "()I");
+	jmethodID java_util_HashSet_toArray = (*env)->GetMethodID(env, java_util_HashSet, "toArray", "()[Ljava/lang/Object;");
+	
+	jclass sun_reflect_MethodAccessor = (*env)->FindClass(env, "sun/reflect/MethodAccessor");
+	jmethodID sun_reflect_MethodAccessor_invoke = (*env)->GetMethodID(env, sun_reflect_MethodAccessor, "invoke", "(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;");
+
+	jclass java_lang_reflect_InvocationTargetException = (*env)->FindClass(env, "java/lang/reflect/InvocationTargetException");
+
+	jobject jitMethodSet = (*env)->NewObject(env, java_util_HashSet, java_util_HashSet_init);
+	jitConfig->debugAgentGetAllJitMethods(vmThread, jitMethodSet);
+
+	fprintf(stderr, "Total number of JIT methods in HashSet = %d\n", (*env)->CallIntMethod(env, jitMethodSet, java_util_HashSet_size));
+
+	jobjectArray jitMethodArray = (*env)->CallObjectMethod(env, jitMethodSet, java_util_HashSet_toArray);
+	jint jitMethodArrayLength = (*env)->GetArrayLength(env, jitMethodArray);
+	for (IDATA i = 0; i < jitMethodArrayLength; ++i) {
+		jobject jitMethodObject = (*env)->GetObjectArrayElement(env, jitMethodArray, i);
+		jlong jitMethod = (*env)->CallLongMethod(env, jitMethodObject, java_lang_Long_longValue);
+		(*env)->DeleteLocalRef(env, jitMethodObject);
+
+		jitConfig->debugAgentRevertToInterpreter(vmThread, (J9JITExceptionTable*)jitMethod);
+
+		fprintf(stderr, "Rerunning test\n");
+		(*env)->CallObjectMethod(env, ma, sun_reflect_MethodAccessor_invoke, obj, args);
+		if ((*env)->ExceptionCheck(env)) {
+			(*env)->ExceptionClear(env);
+			fprintf(stderr, "Caught exception after invoking test\n");
+
+			jthrowable exceptionObject = (*env)->ExceptionOccurred(env);
+			if (!(*env)->IsInstanceOf(env, exceptionObject, java_lang_reflect_InvocationTargetException)) {
+				fprintf(stderr, "Unknown exception occured\n");
+				break;
+			}
+
+			(*env)->DeleteLocalRef(env, exceptionObject);
+		} else {
+			fprintf(stderr, "Identified problematic method\n");
+
+			IDATA lastOptSubIndex = 1024;
+
+			for (IDATA lastOptIndex = 100; lastOptIndex >= 0; --lastOptIndex) {
+				jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex, lastOptSubIndex, 0);
+
+				fprintf(stderr, "Rerunning test\n");
+				(*env)->CallObjectMethod(env, ma, sun_reflect_MethodAccessor_invoke, obj, args);
+				if ((*env)->ExceptionCheck(env)) {
+					(*env)->ExceptionClear(env);
+					fprintf(stderr, "Caught exception after invoking test with lastOptIndex = %ld\n", lastOptIndex);
+				} else {
+					fprintf(stderr, "LastOptIndex = %ld is the potential culprit\n", lastOptIndex + 1);
+
+					jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex, lastOptSubIndex, 1);
+
+					fprintf(stderr, "Rerunning test expecting it to pass\n");
+					(*env)->CallObjectMethod(env, ma, sun_reflect_MethodAccessor_invoke, obj, args);
+					if ((*env)->ExceptionCheck(env)) {
+						(*env)->ExceptionClear(env);
+						fprintf(stderr, "Test failed\n");
+						break;
+					} else {
+						fprintf(stderr, "Test passed\n");
+					}
+
+					jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex + 1, lastOptSubIndex, 1);
+
+					fprintf(stderr, "Rerunning test expecting it to fail\n");
+					(*env)->CallObjectMethod(env, ma, sun_reflect_MethodAccessor_invoke, obj, args);
+					if ((*env)->ExceptionCheck(env)) {
+						(*env)->ExceptionClear(env);
+						fprintf(stderr, "Test failed\n");
+					} else {
+						fprintf(stderr, "Test passed\n");
+					}
+
+					break;
+				}
+			}
+
+			break;
+		}
+	}
+
+	(*env)->DeleteLocalRef(env, java_lang_Long);
+	(*env)->DeleteLocalRef(env, java_util_HashSet);
+	(*env)->DeleteLocalRef(env, sun_reflect_MethodAccessor);
+	(*env)->DeleteLocalRef(env, java_lang_reflect_InvocationTargetException);
+	(*env)->DeleteLocalRef(env, jitMethodSet);
+	(*env)->DeleteLocalRef(env, jitMethodArray);
+
+	jitConfig->debugAgentEnd(vmThread);
+}

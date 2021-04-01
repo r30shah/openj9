@@ -23,6 +23,7 @@
 j9jit_files(
 	control/CompilationThread.cpp
 	control/CompileBeforeCheckpoint.cpp
+	control/DebugAgent.cpp
 	control/DLLMain.cpp
 	control/HookedByTheJit.cpp
 	control/J9CompilationStrategy.cpp
