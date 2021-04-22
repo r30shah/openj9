@@ -2050,7 +2050,7 @@ TR_BlockFrequencyInfo::getRawCount(TR_ByteCodeInfo &bci, TR_CallSiteInfo *callSi
    //
    int64_t frequency = 0;
    int32_t blocksMatched = 0;
-   bool currentCallSiteInfo = TR_CallSiteInfo::getCurrent(comp) == callSiteInfo;
+   bool currentCallSiteInfo = callSiteInfo != NULL ? TR_CallSiteInfo::getCurrent(comp) == callSiteInfo : false;
 
    for (uint32_t i = 0; i < _numBlocks; ++i)
       {
@@ -2697,7 +2697,7 @@ TR_PersistentProfileInfo::findOrCreateValueProfileInfo(TR::Compilation *comp)
    return _valueProfileInfo;
    }
 
-void TR_ValueProfileInfo::dumpInfo(TR::FILE *logFile)
+void TR_ValueProfileInfo::dumpInfo(TR::FILE *logFile, TR::Compilation *comp)
    {
    trfprintf(logFile, "\nDumping value profile info\n");
    for (size_t i = 0; i < LastProfiler; ++i)
@@ -2707,22 +2707,23 @@ void TR_ValueProfileInfo::dumpInfo(TR::FILE *logFile)
       }
    }
 
-void TR_BlockFrequencyInfo::dumpInfo(TR::FILE *logFile)
+void TR_BlockFrequencyInfo::dumpInfo(TR::FILE *logFile, TR::Compilation *comp)
    {
    trfprintf(logFile, "\nDumping block frequency info\n");
+   int32_t maxCount = getMaxRawCount();
    for (int32_t i = 0; i < _numBlocks; i++)
-      trfprintf(logFile, "   Block index = %d, caller = %d, frequency = %d\n", _blocks[i].getByteCodeIndex(), _blocks[i].getCallerIndex(), _frequencies[i]);
+      trfprintf(logFile, "   Block index = %d, caller = %d, frequency = %d\n", _blocks[i].getByteCodeIndex(), _blocks[i].getCallerIndex(), getRawCount(_blocks[i], NULL, maxCount, comp));
    }
 
 
-void TR_CatchBlockProfileInfo::dumpInfo(TR::FILE *logFile)
+void TR_CatchBlockProfileInfo::dumpInfo(TR::FILE *logFile, TR::Compilation *comp)
    {
    if (_catchCounter || _throwCounter)
       trfprintf(logFile, "\nDumping catch block info\n   catch %7d throw %7d\n", _catchCounter, _throwCounter);
    }
 
 
-void TR_CallSiteInfo::dumpInfo(TR::FILE *logFile)
+void TR_CallSiteInfo::dumpInfo(TR::FILE *logFile, TR::Compilation *comp)
    {
    trfprintf(logFile, "\nDumping call site info\n");
    for (int32_t i = 0; i < _numCallSites; i++)
@@ -2775,19 +2776,19 @@ TR_CallSiteInfo * TR_CallSiteInfo::deserialize(uint8_t * &buffer)
    return new (PERSISTENT_NEW) TR_CallSiteInfo(serializedData, buffer);
    }
 
-void TR_PersistentProfileInfo::dumpInfo(TR::FILE *logFile)
+void TR_PersistentProfileInfo::dumpInfo(TR::FILE *logFile, TR::Compilation *comp)
    {
    if (_callSiteInfo)
-      _callSiteInfo->dumpInfo(logFile);
+      _callSiteInfo->dumpInfo(logFile, comp);
 
    if (_blockFrequencyInfo)
-      _blockFrequencyInfo->dumpInfo(logFile);
+      _blockFrequencyInfo->dumpInfo(logFile, comp);
 
    if (_catchBlockProfileInfo)
-      _catchBlockProfileInfo->dumpInfo(logFile);
+      _catchBlockProfileInfo->dumpInfo(logFile, comp);
 
    if (_valueProfileInfo)
-      _valueProfileInfo->dumpInfo(logFile);
+      _valueProfileInfo->dumpInfo(logFile, comp);
    }
 
 uint32_t TR_PersistentProfileInfo::getSizeForSerialization() const

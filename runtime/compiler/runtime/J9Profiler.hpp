@@ -171,7 +171,7 @@ class TR_PersistentProfileInfo
 
    TR_CallSiteInfo          *getCallSiteInfo() {return _callSiteInfo;}
 
-   void dumpInfo(TR::FILE *);
+   void dumpInfo(TR::FILE *, TR::Compilation *comp = NULL);
 
    /**
     * @brief Determines the size of the serialized data for this object
@@ -492,7 +492,7 @@ class TR_ValueProfileInfo
 
    void resetLowFreqValues(TR::FILE *);
 
-   void dumpInfo(TR::FILE *);
+   void dumpInfo(TR::FILE *, TR::Compilation *comp = NULL);
 
    private:
    TR_AbstractProfilerInfo *_values[LastProfiler];
@@ -697,7 +697,7 @@ class TR_BlockFrequencyInfo
 
    TR::Node* generateBlockRawCountCalculationSubTree(TR::Compilation *comp, int32_t blockNumber, TR::Node *node);
    TR::Node* generateBlockRawCountCalculationSubTree(TR::Compilation *comp, TR::Node *node, bool trace);
-   void dumpInfo(TR::FILE *);
+   void dumpInfo(TR::FILE *, TR::Compilation *comp = NULL);
 
    int32_t getCallCount();
    int32_t getMaxRawCount(int32_t callerIndex);
@@ -826,7 +826,7 @@ class TR_CatchBlockProfileInfo
    uint32_t & getCatchCounter() { return _catchCounter; }
    uint32_t & getThrowCounter() { return _throwCounter; }
 
-   void dumpInfo(TR::FILE *);
+   void dumpInfo(TR::FILE *, TR::Compilation *comp = NULL);
 
    private:
 
@@ -874,7 +874,7 @@ class TR_CallSiteInfo
    size_t getNumCallSites() { return _numCallSites;}
    TR_OpaqueMethodBlock *inlinedMethod(TR_ByteCodeInfo & persistentByteCodeInfo, TR::Compilation *comp);
 
-   void dumpInfo(TR::FILE *);
+   void dumpInfo(TR::FILE *, TR::Compilation *comp = NULL);
 
    /**
     * @brief Determines the size of the serialized data for this object
