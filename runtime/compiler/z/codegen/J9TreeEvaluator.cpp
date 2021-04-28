@@ -5207,23 +5207,23 @@ J9::Z::TreeEvaluator::ArrayStoreCHKEvaluator(TR::Node * node, TR::CodeGenerator 
       nopASC = true;
 
    bool usingCompressedPointers = false;
+   bool extendSrcReg = false;
    if (comp->useCompressedPointers() && firstChild->getOpCode().isIndirect())
       {
       usingCompressedPointers = true;
 
-      if (usingCompressedPointers)
-         {
-         while ((sourceChild->getNumChildren() > 0) &&
-                  (sourceChild->getOpCodeValue() != TR::a2l))
-            sourceChild = sourceChild->getFirstChild();
-         if (sourceChild->getOpCodeValue() == TR::a2l)
-            sourceChild = sourceChild->getFirstChild();
-         // artificially bump up the refCount on the value so
-         // that different registers are allocated for the actual
-         // and compressed values
-         //
-         sourceChild->incReferenceCount();
-         }
+      while ((sourceChild->getNumChildren() > 0) &&
+            (sourceChild->getOpCodeValue() != TR::a2l))
+         sourceChild = sourceChild->getFirstChild();
+      if (sourceChild->getOpCodeValue() == TR::a2l)
+         sourceChild = sourceChild->getFirstChild();
+      else if (sourceChild->getDataType() == TR::Int32)
+         extendSrcReg = true;
+      // artificially bump up the refCount on the value so
+      // that different registers are allocated for the actual
+      // and compressed values
+      //
+      sourceChild->incReferenceCount();
       }
    TR::Node * memRefChild = firstChild->getFirstChild();
 
@@ -5273,6 +5273,9 @@ J9::Z::TreeEvaluator::ArrayStoreCHKEvaluator(TR::Node * node, TR::CodeGenerator 
       classReg = cg->evaluate(classChild);
       srcReg = cg->evaluate(sourceChild);
       }
+
+   if (extendSrcReg)
+      generateRRIInstruction(cg, TR::InstOpCode::LGFR, sourceChild, srcReg, srcReg);
    TR::Node *callNode = TR::Node::createWithSymRef(node, TR::call, 2, node->getSymbolReference());
    callNode->setChild(0, sourceChild);
    callNode->setChild(1, classChild);
