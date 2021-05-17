@@ -164,8 +164,7 @@ loadConst(TR::DataType dt)
 int32_t
 TR_JProfilingValue::perform()
    {
-   static bool debugJProf = feGetEnv("TR_DoNotValueProfile") != NULL;
-   if (comp()->getProfilingMode() == JProfiling && !debugJProf)
+   if (comp()->getProfilingMode() == JProfiling && !comp()->getOption(TR_DisableValueProfiling))
       {
       if (trace())
          traceMsg(comp(), "JProfiling has been enabled for profiling compilations, run JProfilingValue\n");
