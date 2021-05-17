@@ -94,7 +94,7 @@ static const OptimizationStrategy J9EarlyGlobalOpts[] =
    { OMR::osrGuardInsertion,                OMR::MustBeDone       },
    { OMR::osrExceptionEdgeRemoval                       }, // most inlining is done by now
    { OMR::jProfilingBlock                      },
-   { OMR::jProfilingRecompLoopTest,              OMR::IfLoops                  },
+//   { OMR::jProfilingRecompLoopTest,              OMR::IfLoops                  },
    { OMR::stringBuilderTransformer             },
    { OMR::stringPeepholes,                     },
    //{ basicBlockOrdering,          IfLoops }, // early ordering with no extension
@@ -471,7 +471,7 @@ const OptimizationStrategy hotStrategyOpts[] =
    { OMR::localValuePropagation,                 OMR::MarkLastRun              },
    { OMR::arraycopyTransformation      },
    { OMR::checkcastAndProfiledGuardCoalescer                              },
-//   { OMR::jProfilingRecompLoopTest,              OMR::IfLoops                  },
+   { OMR::jProfilingRecompLoopTest,              OMR::IfLoops                  },
    { OMR::tacticalGlobalRegisterAllocatorGroup,  OMR::IfEnabled                },
    { OMR::jProfilingValue,                           OMR::MustBeDone           },
    { OMR::treeLowering,                              OMR::MustBeDone           },
