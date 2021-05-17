@@ -480,6 +480,7 @@ J9::Z::CodeGenerator::lowerTreeIfNeeded(
    // J9, Z
    //
    // On zseries, convert aconst to iaload of aconst 0 and move it to its own new treetop
+   /*
    if (comp->target().cpu.isZ() && !self()->profiledPointersRequireRelocation() &&
          node->getOpCodeValue() == TR::aconst && node->isClassUnloadingConst())
       {
@@ -503,7 +504,7 @@ J9::Z::CodeGenerator::lowerTreeIfNeeded(
       node->decReferenceCount();
       parent->setAndIncChild(childNumberOfNode, node);
       }
-
+   */
    // J9, Z
    //
    if (comp->target().cpu.isZ() && node->getOpCodeValue() == TR::aloadi && node->isUnneededIALoad())
