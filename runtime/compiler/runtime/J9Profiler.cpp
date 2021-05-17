@@ -2075,12 +2075,19 @@ TR_BlockFrequencyInfo::getRawCount(TR_ByteCodeInfo &bci, TR_CallSiteInfo *callSi
             else if (((uintptr_t)toAdd & 0x1) == 1)
                {
                rawCount = _frequencies[(uintptr_t)toAdd >> 1];
+         		if (comp->getOption(TR_TraceBFGeneration))
+            		traceMsg(comp, "   \tSlot %d: Single Counter %p to be added, rawCount = %d\n", i, &_frequencies[(uintptr_t)toAdd >> 1], rawCount);
                }
             else
                {
                TR_BitVectorIterator addBVI(*toAdd);
                while (addBVI.hasMoreElements())
-                  rawCount += _frequencies[addBVI.getNextElement()];
+						{
+						int32_t el = addBVI.getNextElement();
+                  rawCount += _frequencies[el];
+         			if (comp->getOption(TR_TraceBFGeneration))
+            			traceMsg(comp, "   \t\tSlot %d: Adding Counter %p, counter data = %d rawCount = %d\n", i, &_frequencies[el], _frequencies[el], rawCount);
+						}
                }
 
             TR_BitVector *toSub = _counterDerivationInfo[i * 2 + 1];
@@ -2089,18 +2096,25 @@ TR_BlockFrequencyInfo::getRawCount(TR_ByteCodeInfo &bci, TR_CallSiteInfo *callSi
                if (((uintptr_t)toSub & 0x1) == 1)
                   {
                   rawCount -= _frequencies[(uintptr_t)toSub >> 1];
+         			if (comp->getOption(TR_TraceBFGeneration))
+            			traceMsg(comp, "   \tSlot %d: Single Counter %p to be subtracted, counter data = %d rawCount = %d\n", i, &_frequencies[(uintptr_t)toSub >> 1], _frequencies[(uintptr_t)toSub >> 1], rawCount);
                   }
                else
                   {
                   TR_BitVectorIterator subBVI(*toSub);
                   while (subBVI.hasMoreElements())
-                     rawCount -= _frequencies[subBVI.getNextElement()];
+							{
+							int32_t el = subBVI.getNextElement();
+                     rawCount -= _frequencies[el];
+         				if (comp->getOption(TR_TraceBFGeneration))
+            				traceMsg(comp, "   \t\tSlot %d: Subtracting Counter %p, counter data = %d rawCount = %d\n", i, &_frequencies[el], _frequencies[el], rawCount);
+							}
                   }
                }
             if (comp->getOption(TR_TraceBFGeneration))
                traceMsg(comp, "   Slot %d has raw frequency %d\n", i, rawCount);
 
-            if (maxCount > 0)
+            if (maxCount > 0 && rawCount > 0)
                rawCount = ((10000 * (uintptr_t)rawCount) / maxCount);
             else
                rawCount = 0;
@@ -2711,8 +2725,12 @@ void TR_BlockFrequencyInfo::dumpInfo(TR::FILE *logFile, TR::Compilation *comp)
    {
    trfprintf(logFile, "\nDumping block frequency info\n");
    int32_t maxCount = getMaxRawCount();
+   trfprintf(logFile, "\nMaximum Count = %d, _numBlocks = %d\n",maxCount,_numBlocks);
    for (int32_t i = 0; i < _numBlocks; i++)
+		{
+   	trfprintf(logFile, "\nblock_%d, calling the getRawCount\n",i);
       trfprintf(logFile, "   Block index = %d, caller = %d, frequency = %d\n", _blocks[i].getByteCodeIndex(), _blocks[i].getCallerIndex(), getRawCount(_blocks[i], NULL, maxCount, comp));
+		}
    }
 
 
