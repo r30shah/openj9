@@ -427,6 +427,7 @@ const OptimizationStrategy hotStrategyOpts[] =
    { OMR::coldBlockOutlining },
    { OMR::earlyGlobalGroup                                                },
    { OMR::earlyLocalGroup                                                 },
+   { OMR::jProfilingRecompLoopTest,              OMR::IfLoops                  },
    { OMR::stripMiningGroup,                      OMR::IfLoops                  }, // strip mining in loops
    { OMR::loopReplicator,                        OMR::IfLoops                  }, // tail-duplication in loops
    { OMR::blockSplitter,                         OMR::IfNews                   }, // treeSimplification + blockSplitter + VP => opportunity for EA
@@ -469,7 +470,7 @@ const OptimizationStrategy hotStrategyOpts[] =
    { OMR::localValuePropagation,                 OMR::MarkLastRun              },
    { OMR::arraycopyTransformation      },
    { OMR::checkcastAndProfiledGuardCoalescer                              },
-   { OMR::jProfilingRecompLoopTest,              OMR::IfLoops                  },
+//   { OMR::jProfilingRecompLoopTest,              OMR::IfLoops                  },
    { OMR::tacticalGlobalRegisterAllocatorGroup,  OMR::IfEnabled                },
    { OMR::jProfilingValue,                           OMR::MustBeDone           },
    { OMR::treeLowering,                              OMR::MustBeDone           },
