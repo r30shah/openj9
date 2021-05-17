@@ -426,8 +426,8 @@ const OptimizationStrategy hotStrategyOpts[] =
    { OMR::trivialDeadTreeRemoval,                OMR::IfEnabled                },
    { OMR::coldBlockOutlining },
    { OMR::earlyGlobalGroup                                                },
-   { OMR::earlyLocalGroup                                                 },
    { OMR::jProfilingRecompLoopTest,              OMR::IfLoops                  },
+   { OMR::earlyLocalGroup                                                 },
    { OMR::stripMiningGroup,                      OMR::IfLoops                  }, // strip mining in loops
    { OMR::loopReplicator,                        OMR::IfLoops                  }, // tail-duplication in loops
    { OMR::blockSplitter,                         OMR::IfNews                   }, // treeSimplification + blockSplitter + VP => opportunity for EA
