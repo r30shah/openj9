@@ -504,7 +504,7 @@ J9::Z::CodeGenerator::lowerTreeIfNeeded(
       node->decReferenceCount();
       parent->setAndIncChild(childNumberOfNode, node);
       }
-   */
+
    // J9, Z
    //
    if (comp->target().cpu.isZ() && node->getOpCodeValue() == TR::aloadi && node->isUnneededIALoad())
