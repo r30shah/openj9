@@ -484,6 +484,16 @@ J9::Z::CodeGenerator::lowerTreeIfNeeded(
    if (!exp && comp->target().cpu.isZ() && !self()->profiledPointersRequireRelocation() &&
          node->getOpCodeValue() == TR::aconst && node->isClassUnloadingConst())
       {
+      TR_VirtualGuard *guard = comp->findVirtualGuardInfo(parent);
+      if (guard != NULL)
+         {
+         traceMsg(comp, "RAHIL: Transforming aconst Successful, Guard Node n%dn,  %s\n", parent->getGlobalIndex(), self()->getDebug()->getVirtualGuardKindName(guard->getKind()));
+         }
+      else
+         {
+         traceMsg(comp, "RAHIL: Transforming aconst Successful, But no Guard Node, n%dn, %s\n", parent->getGlobalIndex(), parent->getOpCode().getName());
+         }
+
       TR::Node * dummyNode = TR::Node::create(node, TR::aconst, 0);
       TR::Node *constCopy;
       TR::SymbolReference *intShadow;
