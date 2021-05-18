@@ -480,8 +480,8 @@ J9::Z::CodeGenerator::lowerTreeIfNeeded(
    // J9, Z
    //
    // On zseries, convert aconst to iaload of aconst 0 and move it to its own new treetop
-   /*
-   if (comp->target().cpu.isZ() && !self()->profiledPointersRequireRelocation() &&
+   static bool exp = feGetEnv("TR_ExpRahilCG") != NULL;
+   if (!exp && comp->target().cpu.isZ() && !self()->profiledPointersRequireRelocation() &&
          node->getOpCodeValue() == TR::aconst && node->isClassUnloadingConst())
       {
       TR::Node * dummyNode = TR::Node::create(node, TR::aconst, 0);

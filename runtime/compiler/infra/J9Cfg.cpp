@@ -418,8 +418,9 @@ J9::CFG::setBlockAndEdgeFrequenciesBasedOnJITProfiler()
         if (_compilation->getOption(TR_TraceBFGeneration))
            traceMsg(comp(), "Raw frequency for block_%d is %d (maxCount %d origMax %d combinedPredRawFrequency %d)\n", node->getNumber(), frequency, maxCount, origMaxFrequency, combinedPredRawFrequency);
 
-        //if (frequency <= 0)
-        //   frequency = combinedPredRawFrequency;
+         static bool expFreq = feGetEnv("TR_ExpRahilFreq") != NULL;
+        if (frequency <= 0 && !expFreq)
+           frequency = combinedPredRawFrequency;
 
         if (frequency > maxCount)
            frequency = maxCount;
