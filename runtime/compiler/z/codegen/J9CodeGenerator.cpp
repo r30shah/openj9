@@ -480,20 +480,9 @@ J9::Z::CodeGenerator::lowerTreeIfNeeded(
    // J9, Z
    //
    // On zseries, convert aconst to iaload of aconst 0 and move it to its own new treetop
-   static bool exp = feGetEnv("TR_ExpRahilCG") != NULL;
-   if (!exp && comp->target().cpu.isZ() && !self()->profiledPointersRequireRelocation() &&
+   if (comp->target().cpu.isZ() && !self()->profiledPointersRequireRelocation() &&
          node->getOpCodeValue() == TR::aconst && node->isClassUnloadingConst())
       {
-      TR_VirtualGuard *guard = comp->findVirtualGuardInfo(parent);
-      if (guard != NULL)
-         {
-         traceMsg(comp, "RAHIL: Transforming aconst Successful, Guard Node n%dn,  %s\n", parent->getGlobalIndex(), self()->getDebug()->getVirtualGuardKindName(guard->getKind()));
-         }
-      else
-         {
-         traceMsg(comp, "RAHIL: Transforming aconst Successful, But no Guard Node, n%dn, %s\n", parent->getGlobalIndex(), parent->getOpCode().getName());
-         }
-
       TR::Node * dummyNode = TR::Node::create(node, TR::aconst, 0);
       TR::Node *constCopy;
       TR::SymbolReference *intShadow;
