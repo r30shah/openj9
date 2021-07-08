@@ -1251,7 +1251,19 @@ initializeJavaVM(void * osMainThread, J9JavaVM ** vmPtr, J9CreateJavaVMParams *c
 		&& omrsysinfo_processor_has_feature(&desc, OMR_FEATURE_X86_XSAVE_AVX)
 	) {
 		vm->extendedRuntimeFlags |= J9_EXTENDED_RUNTIME_USE_VECTOR_REGISTERS;
+
+#if JAVA_SPEC_VERSION >= 17
+		vm->extendedRuntimeFlags3 |= J9_EXTENDED_RUNTIME3_USE_VECTOR_LENGTH_256;
+
+		if (omrsysinfo_processor_has_feature(&desc, OMR_FEATURE_X86_AVX512F)
+			&& omrsysinfo_processor_has_feature(&desc, OMR_FEATURE_X86_AVX512BW)
+			&& omrsysinfo_processor_has_feature(&desc, OMR_FEATURE_X86_XSAVE_AVX512)
+		) {
+			vm->extendedRuntimeFlags3 |= J9_EXTENDED_RUNTIME3_USE_VECTOR_LENGTH_512;
+		}
+#endif /* JAVA_SPEC_VERSION >= 17 */
 	}
+
 }
 #endif /* defined(J9HAMMER) */
 
@@ -2918,6 +2930,16 @@ VMInitStages(J9JavaVM *vm, IDATA stage, void* reserved)
 			}
 			/* Consumed here as the option is dealt with before the consumed args list exists */
 			FIND_AND_CONSUME_VMARG(STARTSWITH_MATCH, VMOPT_XOPTIONSFILE_EQUALS, NULL);
+
+#if JAVA_SPEC_VERSION >= 17
+			/* Extended vector register preservation (ymm/zmm/opmask registers) requires a VM option. */
+			argIndex = FIND_AND_CONSUME_VMARG(EXACT_MATCH, VMOPT_PRESERVE_VECTORS, NULL);
+			argIndex2 = FIND_AND_CONSUME_VMARG(EXACT_MATCH, VMOPT_NO_PRESERVE_VECTORS, NULL);
+			if (argIndex2 >= argIndex) {
+				vm->extendedRuntimeFlags3 &= ~J9_EXTENDED_RUNTIME3_USE_VECTOR_LENGTH_256;
+				vm->extendedRuntimeFlags3 &= ~J9_EXTENDED_RUNTIME3_USE_VECTOR_LENGTH_512;
+			}
+#endif /* JAVA_SPEC_VERSION >= 17 */
 
 #ifdef J9VM_OPT_METHOD_HANDLE
 			if ((argIndex = FIND_AND_CONSUME_VMARG(STARTSWITH_MATCH, VMOPT_XXMHCOMPILECOUNT_EQUALS, NULL)) >= 0) {

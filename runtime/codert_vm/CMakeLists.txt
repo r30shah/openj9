@@ -49,10 +49,18 @@ target_include_directories(j9codert_vm
 
 if(OMR_ARCH_X86)
 	j9vm_gen_asm(xnathelp.m4)
+	if ((NOT JAVA_SPEC_VERSION LESS 17) AND OMR_ENV_DATA64)
+		j9vm_gen_asm(xvector.m4)
 
-	target_sources(j9codert_vm PRIVATE
-		xnathelp.s
-	)
+		target_sources(j9codert_vm PRIVATE
+			xnathelp.s
+			xvector.s
+		)
+	else()
+		target_sources(j9codert_vm PRIVATE
+			xnathelp.s
+		)
+	endif()
 elseif(OMR_ARCH_POWER)
 	j9vm_gen_asm(pnathelp.m4)
 
@@ -91,7 +99,7 @@ elseif(OMR_ARCH_RISCV)
 	j9vm_gen_asm(riscvnathelp.m4)
 	target_sources(j9codert_vm PRIVATE
 		riscvnathelp.s
-	)	
+	)
 else()
 	message(SEND_ERROR "Unsupported platform")
 endif()
