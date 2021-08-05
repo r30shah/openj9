@@ -143,6 +143,7 @@ static bool isFinalFieldPointingAtRepresentableNativeStruct(TR::SymbolReference 
       case TR::SymbolReferenceTable::componentClassSymbol:
       case TR::SymbolReferenceTable::classFromJavaLangClassSymbol:
       case TR::SymbolReferenceTable::classFromJavaLangClassAsPrimitiveSymbol:
+      case TR::SymbolReferenceTable::vftSymbol:
          // Note: We could also do vftSymbol, except replacing those with
          // loadaddr mucks up indirect loads in ways the optimizer/codegen
          // isn't expecting yet
@@ -406,7 +407,7 @@ static bool verifyFieldAccess(void *curStruct, TR::SymbolReference *field, TR::C
             return true; // Every java object has a vft pointer
          case TR::SymbolReferenceTable::classFromJavaLangClassSymbol:
          case TR::SymbolReferenceTable::classFromJavaLangClassAsPrimitiveSymbol:
-            return objectClass == fej9->getClassClassPointer(fej9->getObjectClass(reinterpret_cast<uintptr_t>(curStruct)));
+            return objectClass == fej9->getClassClassPointer(objectClass);
          default:
             TR_ASSERT(false, "Cannot verify unknown field of java object");
             return false;
