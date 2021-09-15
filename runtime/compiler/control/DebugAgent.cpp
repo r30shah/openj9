@@ -220,10 +220,23 @@ debugAgentRevertToInterpreter(J9VMThread* vmThread, J9JITExceptionTable *jitMeth
     J9UTF8 *className = J9ROMCLASS_CLASSNAME(clazz->romClass);
 
     void *pc = compInfo->getPCIfCompiled(jitMethod->ramMethod);
-    fprintf(stderr, "Invalidating PC = %p %.*s.%.*s%.*s\n", pc,
-        (int)J9UTF8_LENGTH(className), J9UTF8_DATA(className),
-        (int)J9UTF8_LENGTH(methName), J9UTF8_DATA(methName),
-        (int)J9UTF8_LENGTH(methSig), J9UTF8_DATA(methSig));
+
+    if (pc != NULL)
+        {
+        fprintf(stderr, "Invalidating PC = %p %.*s.%.*s%.*s\n", pc,
+            (int)J9UTF8_LENGTH(className), J9UTF8_DATA(className),
+            (int)J9UTF8_LENGTH(methName), J9UTF8_DATA(methName),
+            (int)J9UTF8_LENGTH(methSig), J9UTF8_DATA(methSig));
+        }
+    else
+        {
+        fprintf(stderr, "Cannot invalidate method because PC == NULL %.*s.%.*s%.*s\n",
+            (int)J9UTF8_LENGTH(className), J9UTF8_DATA(className),
+            (int)J9UTF8_LENGTH(methName), J9UTF8_DATA(methName),
+            (int)J9UTF8_LENGTH(methSig), J9UTF8_DATA(methSig));
+        
+        return false;
+        }
 
     TR::Recompilation::methodCannotBeRecompiled(pc, frontendOfThread);
 
