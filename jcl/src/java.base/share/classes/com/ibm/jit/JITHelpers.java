@@ -1184,9 +1184,9 @@ public final class JITHelpers {
 		try {
 			return ma.invoke(obj, args);
 		} catch (InvocationTargetException e) {
-			if (e.getCause() != null && e.getCause().getClass().getName().equals("java.lang.AssertionError")) {
+			if (e.getCause() != null && e.getCause().getClass().getName().equals("java.lang.NullPointerException")) {
 				// TODO: Need synchronization to prevent many threads entering here
-				System.err.println("Caught org.opentest4j.AssertionFailedError inside JITHelpers");
+				System.err.println("Caught java.lang.NullPointerException inside JITHelpers");
 
 				debugAgentRun(ma, obj, args);
 				
