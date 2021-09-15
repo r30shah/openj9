@@ -221,9 +221,9 @@ debugAgentRevertToInterpreter(J9VMThread* vmThread, J9JITExceptionTable *jitMeth
 
     void *pc = compInfo->getPCIfCompiled(jitMethod->ramMethod);
     fprintf(stderr, "Invalidating PC = %p %.*s.%.*s%.*s\n", pc,
-        (UDATA)J9UTF8_LENGTH(className), J9UTF8_DATA(className),
-        (UDATA)J9UTF8_LENGTH(methName), J9UTF8_DATA(methName),
-        (UDATA)J9UTF8_LENGTH(methSig), J9UTF8_DATA(methSig));
+        (int)J9UTF8_LENGTH(className), J9UTF8_DATA(className),
+        (int)J9UTF8_LENGTH(methName), J9UTF8_DATA(methName),
+        (int)J9UTF8_LENGTH(methSig), J9UTF8_DATA(methSig));
 
     TR::Recompilation::methodCannotBeRecompiled(pc, frontendOfThread);
 
@@ -269,10 +269,10 @@ debugAgentRecompile(J9VMThread* vmThread, J9JITExceptionTable *jitMethod, IDATA 
     J9UTF8 *className = J9ROMCLASS_CLASSNAME(clazz->romClass);
 
     void *pc = compInfo->getPCIfCompiled(jitMethod->ramMethod);
-    fprintf(stderr, "Recompiling PC = %p lastOptIndex = %d lastOptSubIndex = %d %.*s.%.*s%.*s\n", pc, lastOptIndex, lastOptSubIndex, 
-        (UDATA)J9UTF8_LENGTH(className), J9UTF8_DATA(className),
-        (UDATA)J9UTF8_LENGTH(methName), J9UTF8_DATA(methName),
-        (UDATA)J9UTF8_LENGTH(methSig), J9UTF8_DATA(methSig));
+    fprintf(stderr, "Recompiling PC = %p lastOptIndex = %d lastOptSubIndex = %d %.*s.%.*s%.*s\n", pc, (int)lastOptIndex, (int)lastOptSubIndex, 
+        (int)J9UTF8_LENGTH(className), J9UTF8_DATA(className),
+        (int)J9UTF8_LENGTH(methName), J9UTF8_DATA(methName),
+        (int)J9UTF8_LENGTH(methSig), J9UTF8_DATA(methSig));
 
     // The request to use a trace log gets passed to the compilation via the optimization plan. The options object
     // created before the compile is issued will use the trace log we provide to initialize IL tracing.
