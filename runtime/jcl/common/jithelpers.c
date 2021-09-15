@@ -465,8 +465,8 @@ Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject m
 	jmethodID java_util_HashSet_size = (*env)->GetMethodID(env, java_util_HashSet, "size", "()I");
 	jmethodID java_util_HashSet_toArray = (*env)->GetMethodID(env, java_util_HashSet, "toArray", "()[Ljava/lang/Object;");
 	
-	jclass sun_reflect_MethodAccessor = (*env)->FindClass(env, "sun/reflect/MethodAccessor");
-	jmethodID sun_reflect_MethodAccessor_invoke = (*env)->GetMethodID(env, sun_reflect_MethodAccessor, "invoke", "(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;");
+	jclass jdk_internal_reflect_MethodAccessor = (*env)->FindClass(env, "jdk/internal/reflect/MethodAccessor");
+	jmethodID jdk_internal_reflect_MethodAccessor_invoke = (*env)->GetMethodID(env, jdk_internal_reflect_MethodAccessor, "invoke", "(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;");
 
 	jclass java_lang_reflect_InvocationTargetException = (*env)->FindClass(env, "java/lang/reflect/InvocationTargetException");
 
@@ -485,7 +485,7 @@ Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject m
 		jitConfig->debugAgentRevertToInterpreter(vmThread, (J9JITExceptionTable*)jitMethod);
 
 		fprintf(stderr, "Rerunning test\n");
-		(*env)->CallObjectMethod(env, ma, sun_reflect_MethodAccessor_invoke, obj, args);
+		(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);
 		if ((*env)->ExceptionCheck(env)) {
 			(*env)->ExceptionClear(env);
 			fprintf(stderr, "Caught exception after invoking test\n");
@@ -506,7 +506,7 @@ Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject m
 				jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex, lastOptSubIndex, 0);
 
 				fprintf(stderr, "Rerunning test\n");
-				(*env)->CallObjectMethod(env, ma, sun_reflect_MethodAccessor_invoke, obj, args);
+				(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);
 				if ((*env)->ExceptionCheck(env)) {
 					(*env)->ExceptionClear(env);
 					fprintf(stderr, "Caught exception after invoking test with lastOptIndex = %ld\n", lastOptIndex);
@@ -516,7 +516,7 @@ Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject m
 					jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex, lastOptSubIndex, 1);
 
 					fprintf(stderr, "Rerunning test expecting it to pass\n");
-					(*env)->CallObjectMethod(env, ma, sun_reflect_MethodAccessor_invoke, obj, args);
+					(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);
 					if ((*env)->ExceptionCheck(env)) {
 						(*env)->ExceptionClear(env);
 						fprintf(stderr, "Test failed\n");
@@ -528,7 +528,7 @@ Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject m
 					jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex + 1, lastOptSubIndex, 1);
 
 					fprintf(stderr, "Rerunning test expecting it to fail\n");
-					(*env)->CallObjectMethod(env, ma, sun_reflect_MethodAccessor_invoke, obj, args);
+					(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);
 					if ((*env)->ExceptionCheck(env)) {
 						(*env)->ExceptionClear(env);
 						fprintf(stderr, "Test failed\n");
@@ -546,7 +546,7 @@ Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject m
 
 	(*env)->DeleteLocalRef(env, java_lang_Long);
 	(*env)->DeleteLocalRef(env, java_util_HashSet);
-	(*env)->DeleteLocalRef(env, sun_reflect_MethodAccessor);
+	(*env)->DeleteLocalRef(env, jdk_internal_reflect_MethodAccessor);
 	(*env)->DeleteLocalRef(env, java_lang_reflect_InvocationTargetException);
 	(*env)->DeleteLocalRef(env, jitMethodSet);
 	(*env)->DeleteLocalRef(env, jitMethodArray);
