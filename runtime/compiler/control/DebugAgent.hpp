@@ -37,7 +37,7 @@ extern J9_CFUNC BOOLEAN
 debugAgentRevertToInterpreter(J9VMThread* vmThread, J9JITExceptionTable *jitMethod);
 
 extern J9_CFUNC BOOLEAN
-debugAgentRecompile(J9VMThread* vmThread, J9JITExceptionTable *jitMethod, IDATA lastOptIndex, IDATA lastOptSubIndex, BOOLEAN enableTracing);
+debugAgentRecompile(J9VMThread* vmThread, J9JITExceptionTable *jitMethod, IDATA lastOptIndex, IDATA lastOptSubIndex, BOOLEAN enableTracing, BOOLEAN goodLog);
 
 extern J9_CFUNC BOOLEAN
 debugAgentEnd(J9VMThread* vmThread);

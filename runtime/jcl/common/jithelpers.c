@@ -503,7 +503,7 @@ Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject m
 			IDATA lastOptSubIndex = 1024;
 
 			for (IDATA lastOptIndex = 100; lastOptIndex >= 0; --lastOptIndex) {
-				jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex, lastOptSubIndex, 0);
+				jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex, lastOptSubIndex, 0, 0);
 
 				fprintf(stderr, "Rerunning test\n");
 				(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);
@@ -513,7 +513,7 @@ Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject m
 				} else {
 					fprintf(stderr, "LastOptIndex = %ld is the potential culprit\n", lastOptIndex + 1);
 
-					jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex, lastOptSubIndex, 1);
+					jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex, lastOptSubIndex, 1, 1);
 
 					fprintf(stderr, "Rerunning test expecting it to pass\n");
 					(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);
@@ -525,7 +525,7 @@ Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject m
 						fprintf(stderr, "Test passed\n");
 					}
 
-					jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex + 1, lastOptSubIndex, 1);
+					jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex + 1, lastOptSubIndex, 1, 0);
 
 					fprintf(stderr, "Rerunning test expecting it to fail\n");
 					(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);

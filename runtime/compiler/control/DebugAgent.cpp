@@ -244,7 +244,7 @@ debugAgentRevertToInterpreter(J9VMThread* vmThread, J9JITExceptionTable *jitMeth
     }
 
 extern J9_CFUNC BOOLEAN
-debugAgentRecompile(J9VMThread* vmThread, J9JITExceptionTable *jitMethod, IDATA lastOptIndex, IDATA lastOptSubIndex, BOOLEAN enableTracing)
+debugAgentRecompile(J9VMThread* vmThread, J9JITExceptionTable *jitMethod, IDATA lastOptIndex, IDATA lastOptSubIndex, BOOLEAN enableTracing, BOOLEAN goodLog)
     {
     J9JITConfig *jitConfig = vmThread->javaVM->jitConfig;
     if (NULL == jitConfig)
@@ -297,7 +297,23 @@ debugAgentRecompile(J9VMThread* vmThread, J9JITExceptionTable *jitMethod, IDATA 
         }
 
     plan->setInsertInstrumentation(bodyInfo->getIsProfilingBody());
-    // plan->setLogCompilation(jitdumpFile);
+
+    char *fileName = "goodJitCompilationLog_opt_index_";
+    if (!goodLog)
+    {
+        fileName = "badJitCompilationLog_opt_index_";
+    }
+    // Ref: https://github.com/eclipse-openj9/openj9-omr/blob/openj9/compiler/ras/Tree.cpp#L1168
+    int numDigits = ( lastOptIndex == 0 ? 1 : ((int) log10( (double)lastOptIndex ) + 1) );
+    int maxSize = strlen(fileName) + numDigits + 5;
+    char fileNameWithLastOptIndex[maxSize];
+    snprintf(fileNameWithLastOptIndex, maxSize, "%s%d.log", fileName, (int)lastOptIndex);
+    TR::FILE *jitCompilationLog = enableTracing ? trfopen(fileNameWithLastOptIndex, "ab", false) : NULL;
+    if (enableTracing)
+    {
+        plan->setLogCompilation(jitCompilationLog);
+        TR::Options::getCmdLineOptions()->setOption(TR_TraceAll);
+    }
 
     TR::Options::getCmdLineOptions()->setLastOptIndex(lastOptIndex);
     TR::Options::getCmdLineOptions()->setLastOptSubIndex(lastOptSubIndex);
@@ -310,6 +326,11 @@ debugAgentRecompile(J9VMThread* vmThread, J9JITExceptionTable *jitMethod, IDATA 
     auto rc = compilationOK;
     auto queued = false;
     compInfo->compileMethod(vmThread, details, pc, TR_no, &rc, &queued, plan);
+    if (enableTracing)
+    {
+        trfflush(jitCompilationLog);
+        trfclose(jitCompilationLog);
+    }
 
     vmThread->javaVM->internalVMFunctions->internalReleaseVMAccess(vmThread);
 
