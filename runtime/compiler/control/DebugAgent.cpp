@@ -335,7 +335,6 @@ debugAgentEnd(J9VMThread* vmThread)
 
     compInfo->getPersistentInfo()->setDisableFurtherCompilation(false);
 
-    // TODO: Need to suspend diagnostic thread here
-
+    compInfo->getCompilationInfoForDiagnosticThread()->suspendCompilationThread();
     return true;
     }
