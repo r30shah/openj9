@@ -4166,6 +4166,7 @@ typedef struct J9JITConfig {
 	BOOLEAN (*debugAgentRevertToInterpreter)(struct J9VMThread *vmThread, J9JITExceptionTable *jitMethod);
 	BOOLEAN (*debugAgentRecompile)(struct J9VMThread *vmThread, J9JITExceptionTable *jitMethod, IDATA lastOptIndex, IDATA lastOptSubIndex, BOOLEAN enableTracing, BOOLEAN goodLog);
 	BOOLEAN (*debugAgentEnd)(struct J9VMThread *vmThread);
+	void 	  (*debugAgentSetForceUsePreexistence)(struct J9VMThread *vmThread);
 #if defined(J9VM_OPT_JITSERVER)
 	int32_t (*startJITServer)(struct J9JITConfig *jitConfig);
 	int32_t (*waitJITServerTermination)(struct J9JITConfig *jitConfig);

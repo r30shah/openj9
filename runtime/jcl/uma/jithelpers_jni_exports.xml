@@ -124,4 +124,5 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 		<exclude-if condition="spec.flags.env_data64"/>
 	</export>
 	<export name="Java_com_ibm_jit_JITHelpers_debugAgentRun" />
+	<export name="Java_com_ibm_jit_JITHelpers_setForceUsePreexistence" />
 </exports>

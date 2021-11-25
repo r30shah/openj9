@@ -1223,6 +1223,8 @@ public final class JITHelpers {
 
 	public static native void dispatchVirtual();
 
+	public static native void setForceUsePreexistence();
+
 	private native static final void debugAgentRun(MethodAccessor ma, Object obj, Object[] args);
 
 	/**

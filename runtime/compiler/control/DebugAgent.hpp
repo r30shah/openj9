@@ -27,6 +27,9 @@
 #include "j9nonbuilder.h"
 #include "jni.h"
 
+extern J9_CFUNC void
+debugAgentSetForceUsePreexistence(J9VMThread* vmThread);
+
 extern J9_CFUNC BOOLEAN
 debugAgentStart(J9VMThread* vmThread);
 

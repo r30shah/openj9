@@ -873,6 +873,7 @@ jint JNICALL Java_com_ibm_jit_JITHelpers_getModifiersFromRomClass32(JNIEnv *env,
 jint JNICALL Java_com_ibm_jit_JITHelpers_getClassFlagsFromJ9Class32(JNIEnv *env, jobject rcv, jint j9clazz);
 #endif /* J9VM_ENV_DATA64 */
 void JNICALL Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject ma, jobject obj, jobjectArray args);
+void JNICALL Java_com_ibm_jit_JITHelpers_setForceUsePreexistence(JNIEnv *env,jclass ignored);
 
 /* crypto.c */
 jboolean JNICALL Java_com_ibm_jit_Crypto_isAESSupportedByHardware(JNIEnv *env, jobject ignored);

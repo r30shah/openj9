@@ -35,6 +35,12 @@
 #include <queue>
 #include <set>
 
+void
+debugAgentSetForceUsePreexistence(J9VMThread* vmThread)
+    {
+    TR::Options::getCmdLineOptions()->setOption(TR_ForceUsePreexistence);
+    }
+
 BOOLEAN
 debugAgentStart(J9VMThread* vmThread)
     {

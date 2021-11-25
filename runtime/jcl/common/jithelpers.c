@@ -450,6 +450,14 @@ Java_com_ibm_jit_JITHelpers_getClassFlagsFromJ9Class32(JNIEnv *env, jobject rcv,
 
 #endif
 
+void JNICALL
+Java_com_ibm_jit_JITHelpers_setForceUsePreexistence(JNIEnv* env, jclass ignored)
+{
+	J9VMThread *vmThread = (J9VMThread *)env;
+	J9JITConfig *jitConfig = vmThread->javaVM->jitConfig;
+	jitConfig->debugAgentSetForceUsePreexistence(vmThread);
+}
+
 void JNICALL		
 Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject ma, jobject obj, jobjectArray args)
 {	
