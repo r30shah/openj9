@@ -43,25 +43,19 @@ static TR::ILOpCodes conversionMapOMR2TR[TR::NumOMRTypes][TR::NumTypes-TR::NumOM
 /* Float */        { TR::f2pd, TR_Bad,  TR_Bad, TR_Bad, TR_Bad, TR_Bad, TR_Bad,  TR_Bad },  // Float
 /* Double */       { TR::d2pd, TR_Bad,  TR_Bad, TR_Bad, TR_Bad, TR_Bad, TR_Bad,  TR_Bad },  // Double
 /* Address */      { TR_Bad,   TR_Bad,  TR_Bad, TR_Bad, TR_Bad, TR_Bad, TR_Bad,  TR_Bad },  // Address
-/* VectorInt8 */   { TR_Bad,   TR_Bad,  TR_Bad, TR_Bad, TR_Bad, TR_Bad, TR_Bad,  TR_Bad },  // VectorInt8
-/* VectorInt16*/   { TR_Bad,   TR_Bad,  TR_Bad, TR_Bad, TR_Bad, TR_Bad, TR_Bad,  TR_Bad },  // VectorInt16
-/* VectorInt32*/   { TR_Bad,   TR_Bad,  TR_Bad, TR_Bad, TR_Bad, TR_Bad, TR_Bad,  TR_Bad },  // VectorInt32
-/* VectorInt64*/   { TR_Bad,   TR_Bad,  TR_Bad, TR_Bad, TR_Bad, TR_Bad, TR_Bad,  TR_Bad },  // VectorInt64
-/* VectorFloat*/   { TR_Bad,   TR_Bad,  TR_Bad, TR_Bad, TR_Bad, TR_Bad, TR_Bad,  TR_Bad },  // VectorFloat
-/* VectorDouble*/  { TR_Bad,   TR_Bad,  TR_Bad, TR_Bad, TR_Bad, TR_Bad, TR_Bad,  TR_Bad }   // VectorDouble
    };
 
 static TR::ILOpCodes conversionMapTR2OMR[TR::NumTypes-TR::NumOMRTypes][TR::NumOMRTypes] =
-//                                       No      Int8     Int16    Int32     Int64   Float     Double    Addr     VectorInt8 VectorInt16 VectorInt32 VectorInt64 VectorFloat VectorDouble
+//                                           No      Int8     Int16    Int32    Int64   Float     Double    Addr
    {
-/* PackedDecimal */                    { TR_Bad, TR_Bad,  TR_Bad,  TR::pd2i,TR::pd2l,TR::pd2f, TR::pd2d, TR_Bad,  TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad },  // PackedDecima
-/* ZonedDecimal */                     { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,   TR_Bad,   TR_Bad,  TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad },  // ZonedDecimal
-/* ZonedDecimalSignLeadingEmbedded */  { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,   TR_Bad,   TR_Bad,  TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad },  // ZonedDecimal
-/* ZonedDecimalSignLeadingSeparate*/   { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,   TR_Bad,   TR_Bad,  TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad },  // ZonedDecimal
-/* ZonedDecimalSignTrailingSeparate*/  { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,   TR_Bad,   TR_Bad,  TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad },  // ZonedDecimal
-/* UnicodeDecimal */                   { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,   TR_Bad,   TR_Bad,  TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad },  // UnicodeDecim
-/* UnicodeDecimalSignLeading */        { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,   TR_Bad,   TR_Bad,  TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad },  // UnicodeDecim
-/* UnicodeDecimalSignTrailing */       { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,   TR_Bad,   TR_Bad,  TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad }   // UnicodeDecim
+   /* PackedDecimal */                    { TR_Bad, TR_Bad,  TR_Bad,  TR::pd2i,TR::pd2l,TR::pd2f, TR::pd2d, TR_Bad },  // PackedDecima
+   /* ZonedDecimal */                     { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,   TR_Bad,   TR_Bad },  // ZonedDecimal
+   /* ZonedDecimalSignLeadingEmbedded */  { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,   TR_Bad,   TR_Bad },  // ZonedDecimal
+   /* ZonedDecimalSignLeadingSeparate*/   { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,   TR_Bad,   TR_Bad },  // ZonedDecimal
+   /* ZonedDecimalSignTrailingSeparate*/  { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,   TR_Bad,   TR_Bad },  // ZonedDecimal
+   /* UnicodeDecimal */                   { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,   TR_Bad,   TR_Bad },  // UnicodeDecim
+   /* UnicodeDecimalSignLeading */        { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,   TR_Bad,   TR_Bad },  // UnicodeDecim
+   /* UnicodeDecimalSignTrailing */       { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,   TR_Bad,   TR_Bad }   // UnicodeDecim
    };
 
 static TR::ILOpCodes conversionMapTR2TR[TR::NumTypes-TR::NumOMRTypes][TR::NumTypes-TR::NumOMRTypes] =
@@ -184,6 +178,9 @@ J9::DataType::getDataTypeConversion(TR::DataType t1, TR::DataType t2)
    {
    TR_ASSERT(t1 < TR::NumTypes, "conversion opcode from unexpected datatype %s requested", t1.toString());
    TR_ASSERT(t2 < TR::NumTypes, "conversion opcode to unexpected data type %s requested", t2.toString());
+
+   if (t1.isVector() or t2.isVector()) return TR::BadILOp;
+   
    if (t1 < TR::NumOMRTypes)
       {
       if (t2 < TR::NumOMRTypes)
@@ -218,7 +215,7 @@ const int32_t
 J9::DataType::getSize(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumTypes, "dataTypeSizeMap called on unrecognized data type");
-   if (dt < TR::FirstJ9Type)
+   if (dt < TR::FirstJ9Type || dt.isVector())
       return OMR::DataType::getSize(dt);
    else
       return J9DataTypeSizes[dt - TR::FirstJ9Type];
@@ -228,7 +225,7 @@ void
 J9::DataType::setSize(TR::DataType dt, int32_t newSize)
    {
    TR_ASSERT(dt < TR::NumTypes, "setDataTypeSizeInMap called on unrecognized data type");
-   if (dt < TR::FirstJ9Type)
+   if (dt < TR::FirstJ9Type || dt.isVector())
       OMR::DataType::setSize(dt, newSize);
    else
       J9DataTypeSizes[dt - TR::FirstJ9Type] = newSize;
@@ -253,7 +250,7 @@ const char *
 J9::DataType::getName(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumTypes, "Name requested for unknown datatype");
-   if (dt < TR::FirstJ9Type)
+   if (dt < TR::FirstJ9Type || dt.isVector())
       return OMR::DataType::getName(dt);
    else
       return J9DataTypeNames[dt - TR::FirstJ9Type];
@@ -278,7 +275,11 @@ const char *
 J9::DataType::getPrefix(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumTypes, "Prefix requested for unknown datatype");
-   if (dt < TR::FirstJ9Type)
+
+   if (dt.isVector())
+      return OMR::DataType::getPrefix(dt);
+   
+   if (dt < TR::FirstJ9Type || dt.isVector())
       return OMR::DataType::getPrefix(dt);
    else
       return J9DataTypePrefixes[dt - TR::FirstJ9Type];

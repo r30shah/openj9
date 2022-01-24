@@ -939,17 +939,16 @@ J9::Z::PrivateLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol
          case TR::UnicodeDecimalSignTrailing:
          case TR::Aggregate:
             break;
-         case TR::VectorInt8:
-         case TR::VectorInt16:
-         case TR::VectorInt32:
-         case TR::VectorInt64:
-         case TR::VectorDouble:
-            if (numVectorArgs < self()->getNumVectorArgumentRegisters())
+         default:
+            if (dt.isVector())
                {
-               index = numVectorArgs;
+               if (numVectorArgs < self()->getNumVectorArgumentRegisters())
+                  {
+                  index = numVectorArgs;
+                  }
+               numVectorArgs++;
+               break;
                }
-            numVectorArgs++;
-            break;
          }
       paramCursor->setLinkageRegisterIndex(index);
       paramCursor = paramIterator.getNext();

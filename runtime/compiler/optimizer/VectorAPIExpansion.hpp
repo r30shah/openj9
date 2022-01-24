@@ -227,7 +227,7 @@ class TR_VectorAPIExpansion : public TR::Optimization
    TR_BitVector _seenClasses;
 
   /** \brief
-   *     Checks if vector length is supported on current platform
+   *     Checks if vector is supported on current platform
    *
    *  \param comp
    *     Compilation
@@ -236,15 +236,25 @@ class TR_VectorAPIExpansion : public TR::Optimization
    *     Vector length in bits
    *
    *  \return
-   *     \c true if plaform supports \c vectorLength
-   *     \c false otherwise
+   *     \c corresponding TR::VectorLength enum if plaform supports \c vectorLength
+   *     \c TR::NoVectorLength otherwise
    */
-   static bool supportedOnPlatform(TR::Compilation *comp, vec_sz_t vectorLength)
+   static TR::VectorLength supportedOnPlatform(TR::Compilation *comp, vec_sz_t vectorLength)
          {
-         if (comp->target().cpu.isPower() && vectorLength == 128)
-            return true;
-         else
-            return false;
+#if 0
+         // General check for supported infrastructure
+         if (!comp->target().cpu.isPower() && !comp->target().cpu.isZ())
+            return TR::NoVectorLength;
+#endif
+         // Check for specific length
+         switch (vectorLength)
+            {
+            case 64:  if (TR::VectorLength64 <= TR::NumVectorElementTypes) return TR::VectorLength64;
+            case 128: if (TR::VectorLength128 <= TR::NumVectorElementTypes) return TR::VectorLength128;
+            case 256: if (TR::VectorLength256 <= TR::NumVectorElementTypes) return TR::VectorLength256;
+            case 512: if (TR::VectorLength512 <= TR::NumVectorElementTypes) return TR::VectorLength512;
+            }
+         return TR::NoVectorLength;
          }
 
    /** \brief

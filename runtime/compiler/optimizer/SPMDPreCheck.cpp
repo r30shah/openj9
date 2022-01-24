@@ -27,6 +27,8 @@
 #include "il/Node_inlines.hpp"
 #include "codegen/CodeGenerator.hpp"
 
+#define VECTOR_LENGTH 128
+
 bool SPMDPreCheck::isSPMDCandidate(TR::Compilation *comp, TR_RegionStructure *loop)
    {
    bool trace = comp->getOption(TR_TraceAll) || comp->trace(OMR::SPMDKernelParallelization);
@@ -77,7 +79,7 @@ bool SPMDPreCheck::isSPMDCandidate(TR::Compilation *comp, TR_RegionStructure *lo
                   traceMsg(comp, "SPMD PRE-CHECK FAILURE: store op code %s does not have a vector equivalent - skipping consideration of loop %d\n", comp->getDebug()->getName(opcode.getOpCodeValue()), loop->getNumber());
                 return false;
                 }
-             if (!comp->cg()->getSupportsOpCodeForAutoSIMD(vectorOp, node->getDataType()))
+             if (!comp->cg()->getSupportsOpCodeForAutoSIMD(vectorOp, node->getDataType(), VECTOR_LENGTH))
                 {
                 if (trace)
                   traceMsg(comp, "SPMD PRE-CHECK FAILURE: vector op code %s is not supported on the current platform - skipping consideration of loop %d\n", comp->getDebug()->getName(vectorOp), loop->getNumber());
