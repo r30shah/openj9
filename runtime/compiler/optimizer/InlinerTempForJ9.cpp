@@ -4796,7 +4796,8 @@ TR_J9InlinerPolicy::supressInliningRecognizedInitialCallee(TR_CallSite* callsite
    // Methods we may prefer not to inline, for heuristic reasons.
    // (Methods we must not inline for correctness don't go in the next switch below.)
    //
-   switch (initialCalleeMethod->getRecognizedMethod())
+   TR::RecognizedMethod rm = initialCalleeMethod->getRecognizedMethod();
+   switch (rm)
       {
       /*
        * Inline this group of methods when the compiling method is shared method handle thunk.
@@ -5045,6 +5046,11 @@ TR_J9InlinerPolicy::supressInliningRecognizedInitialCallee(TR_CallSite* callsite
          break;
       }
 
+      
+   // VectorSupport intrinsic candidates should not be redefined by the user
+   if (rm >= TR::FirstVectorMethod &&
+       rm <= TR::LastVectorIntrinsicMethod)
+      return true;
    // Methods we must not inline for correctness
    //
    switch (initialCalleeMethod->convertToMethod()->getMandatoryRecognizedMethod())
