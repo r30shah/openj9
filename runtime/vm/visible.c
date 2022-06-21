@@ -97,9 +97,9 @@ checkVisibility(J9VMThread *currentThread, J9Class* sourceClass, J9Class* destCl
 	sourceClass = J9_CURRENT_CLASS(sourceClass);
 	destClass = J9_CURRENT_CLASS(destClass);
 #ifdef DEBUG
-	printf("checkModVis: [%*s] [%*s]\n",
-				J9UTF8_LENGTH(J9ROMCLASS_CLASSNAME(sourceClass->romClass)), J9UTF8_DATA(J9ROMCLASS_CLASSNAME(sourceClass->romClass)),
-				J9UTF8_LENGTH(J9ROMCLASS_CLASSNAME(destClass->romClass)), J9UTF8_DATA(J9ROMCLASS_CLASSNAME(destClass->romClass)));
+//	printf("checkModVis: [%*s] [%*s]\n",
+//				J9UTF8_LENGTH(J9ROMCLASS_CLASSNAME(sourceClass->romClass)), J9UTF8_DATA(J9ROMCLASS_CLASSNAME(sourceClass->romClass)),
+//				J9UTF8_LENGTH(J9ROMCLASS_CLASSNAME(destClass->romClass)), J9UTF8_DATA(J9ROMCLASS_CLASSNAME(destClass->romClass)));
 #endif
 	if (!J9CLASS_IS_EXEMPT_FROM_VALIDATION(sourceClass)) {
 		if ( modifiers & J9AccPublic ) {
