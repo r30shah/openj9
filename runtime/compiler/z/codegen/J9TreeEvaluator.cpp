@@ -13571,7 +13571,7 @@ J9::Z::TreeEvaluator::inlineArraysSupportVectorizedMismatch(TR::Node *node, TR::
    TR::Register *resultReg = TR::TreeEvaluator::arraycmpEvaluator(arraycmpNode, cg);
    TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
    generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CG, node, resultReg, 0, TR::InstOpCode::COND_BNE, doneLabel, false);
-   generateRRFInstruction(cg, TR::InstOpCode::NORK, node, resultReg, resultReg, resultReg);
+   generateRIInstruction(cg, TR::InstOpCode::LHI, node, resultReg, -1);
    generateS390LabelInstruction(cg, TR::InstOpCode::label, node, doneLabel);
    node->setRegister(resultReg);
    for (int i=0; i < node->getNumChildren(); i++)
