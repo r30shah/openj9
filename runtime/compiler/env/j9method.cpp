@@ -3025,6 +3025,12 @@ void TR_ResolvedJ9Method::construct()
       };
 #endif /* JAVA_SPEC_VERSION >= 15 */
 
+   static X ArraysSupportMethods[] =
+      {
+      {x(TR::jdk_internal_util_ArraysSupport_vectorizedMismatch, "vectorizedMismatch", "(Ljava/lang/Object;JLjava/lang/Object;JII)I")},
+      {  TR::unknownMethod}
+      };
+
    static X VectorSupportMethods[] =
       {
       {x(TR::jdk_internal_vm_vector_VectorSupport_load, "load", "(Ljava/lang/Class;Ljava/lang/Class;ILjava/lang/Object;JLjava/lang/Object;ILjdk/internal/vm/vector/VectorSupport$VectorSpecies;Ljdk/internal/vm/vector/VectorSupport$LoadOperation;)Ljdk/internal/vm/vector/VectorSupport$VectorPayload;")},
@@ -4115,6 +4121,7 @@ void TR_ResolvedJ9Method::construct()
       {
       { "com/ibm/jit/DecimalFormatHelper", DecimalFormatHelperMethods},
       { "jdk/internal/reflect/Reflection", ReflectionMethods },
+      { "jdk/internal/util/ArraysSupport", ArraysSupportMethods },
       { 0 }
       };
    static Y class32[] =

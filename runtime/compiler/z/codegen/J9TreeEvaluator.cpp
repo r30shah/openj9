@@ -13562,6 +13562,26 @@ J9::Z::TreeEvaluator::inlineIntegerToCharsForLatin1Strings(TR::Node *node, TR::C
    }
 
 TR::Register*
+J9::Z::TreeEvaluator::inlineArraysSupportVectorizedMismatch(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *objectANode = TR::Node::create(TR::aladd, 2, node->getChild(0), node->getChild(1));
+   TR::Node *objectBNode = TR::Node::create(TR::aladd, 2, node->getChild(2), node->getChild(3));
+   TR::Node *arraycmpNode = TR::Node::create(TR::arraycmp, 3, objectANode, objectBNode, node->getChild(4));
+   arraycmpNode->setArrayCmpLen(true);
+   TR::Register *resultReg = TR::TreeEvaluator::arraycmpEvaluator(arraycmpNode, cg);
+   TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
+   generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CG, node, resultReg, 0, TR::InstOpCode::COND_BNE, doneLabel, false);
+   generateRRFInstruction(cg, TR::InstOpCode::NORK, node, resultReg, resultReg, resultReg);
+   generateS390LabelInstruction(cg, TR::InstOpCode::label, node, doneLabel);
+   node->setRegister(resultReg);
+   for (int i=0; i < node->getNumChildren(); i++)
+      {
+      cg->decReferenceCount(node->getChild(i));
+      }
+   return resultReg;
+   }
+
+TR::Register*
 J9::Z::TreeEvaluator::inlineIntegerToCharsForUTF16Strings(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();

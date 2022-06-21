@@ -3679,6 +3679,11 @@ J9::Z::CodeGenerator::suppressInliningOfRecognizedMethod(TR::RecognizedMethod me
       return true;
       }
 
+   if (method == TR::jdk_internal_util_ArraysSupport_vectorizedMismatch)
+      {
+      return true;
+      }
+
    if (method == TR::java_lang_Integer_highestOneBit ||
        method == TR::java_lang_Integer_numberOfLeadingZeros ||
        method == TR::java_lang_Integer_numberOfTrailingZeros ||
@@ -3954,7 +3959,12 @@ J9::Z::CodeGenerator::inlineDirectCall(
             return resultReg != NULL;
             }
          break;
-
+      case TR::jdk_internal_util_ArraysSupport_vectorizedMismatch:
+         {
+         resultReg = TR::TreeEvaluator::inlineArraysSupportVectorizedMismatch(node, cg);
+         return resultReg != NULL;
+         }
+         break;
       default:
          break;
 
