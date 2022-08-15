@@ -6242,7 +6242,7 @@ TR::Node *TR_EscapeAnalysis::createConst(TR::Compilation *comp, TR::Node *node, 
    if (type.isVector())
       {
       result = TR::Node::create(node, TR::ILOpCode::createVectorOpCode(TR::vsplats, type), 1);
-      result->setAndIncChild(0, TR::Node::create(node, comp->il.opCodeForConst(type), value));
+      result->setAndIncChild(0, TR::Node::create(node, comp->il.opCodeForConst(type.getVectorElementType()), value));
       }
    else
       {
