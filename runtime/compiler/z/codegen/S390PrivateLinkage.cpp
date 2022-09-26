@@ -2958,7 +2958,7 @@ TR::Register * J9::Z::JNILinkage::buildDirectDispatch(TR::Node * callNode)
       setupJNICallOutFrame(callNode, javaStackPointerRealRegister, methodMetaDataVirtualRegister,
                               returnFromJNICallLabel, jniCallDataSnippet);
 
-#if defined(JAVA_SPEC_VERSION >= 19)
+#if (JAVA_SPEC_VERSION >= 19)
 #if defined(TR_TARGET_64BIT)
       /**
        * For virtual threads, bump the callOutCounter.  It is safe and most efficient to
@@ -3023,7 +3023,7 @@ TR::Register * J9::Z::JNILinkage::buildDirectDispatch(TR::Node * callNode)
 #endif
      }
 
-#if defined(JAVA_SPEC_VERSION >= 19)
+#if (JAVA_SPEC_VERSION >= 19)
 #if defined(TR_TARGET_64BIT)
    if (isJNICallOutFrame)
       {

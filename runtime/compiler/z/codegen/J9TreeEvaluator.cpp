@@ -7329,7 +7329,7 @@ reservationLockEnter(TR::Node *node, int32_t lwOffset, TR::Register *objectClass
       generateRXInstruction(cg, storeOp, node, monitorReg, generateS390MemoryReference(objReg, lwOffset, cg));
       }
 
-#if defined(JAVA_SPEC_VERSION >= 19)
+#if (JAVA_SPEC_VERSION >= 19)
 #if defined(TR_TARGET_64BIT)
    generateSIInstruction(cg, TR::InstOpCode::AGSI, node, generateS390MemoryReference(cg->getMethodMetaDataRealRegister(), fej9->thisThreadGetOwnedMonitorCountOffset(), cg), 1);
 #else    /* TR_TARGET_64BIT */
@@ -7395,7 +7395,7 @@ reservationLockEnter(TR::Node *node, int32_t lwOffset, TR::Register *objectClass
       cg->generateDebugCounter("LockEnt/LR/CASSuccessful", 1, TR::DebugCounter::Undetermined);
 
       // Lock is acquired successfully
-#if defined(JAVA_SPEC_VERSION >= 19)
+#if (JAVA_SPEC_VERSION >= 19)
 #if defined(TR_TARGET_64BIT)
       TR::LabelSymbol *incrementOwnedMonitorCountLabel = generateLabelSymbol(cg);
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, incrementOwnedMonitorCountLabel);
@@ -7425,7 +7425,7 @@ reservationLockEnter(TR::Node *node, int32_t lwOffset, TR::Register *objectClass
          generateRXInstruction(cg, storeOp, node, monitorReg, generateS390MemoryReference(objReg, lwOffset, cg));
          }
 
-#if defined(JAVA_SPEC_VERSION >= 19)
+#if (JAVA_SPEC_VERSION >= 19)
 #if defined(TR_TARGET_64BIT)
       generateS390LabelInstruction(cg, TR::InstOpCode::label, node, incrementOwnedMonitorCountLabel);
       generateSIInstruction(cg, TR::InstOpCode::AGSI, node, generateS390MemoryReference(cg->getMethodMetaDataRealRegister(), fej9->thisThreadGetOwnedMonitorCountOffset(), cg), 1);
@@ -7587,7 +7587,7 @@ reservationLockExit(TR::Node *node, int32_t lwOffset, TR::Register *objectClassR
       generateRXInstruction(cg, use64b? TR::InstOpCode::STG : TR::InstOpCode::ST,
          node, tempReg, generateS390MemoryReference(objReg, lwOffset, cg));
       }
-#if defined(JAVA_SPEC_VERSION >= 19)
+#if (JAVA_SPEC_VERSION >= 19)
 #if defined(TR_TARGET_64BIT)
       generateSIInstruction(cg, TR::InstOpCode::AGSI, node, generateS390MemoryReference(cg->getMethodMetaDataRealRegister(), fej9->thisThreadGetOwnedMonitorCountOffset(), cg), -1);
 #else    /* TR_TARGET_64BIT */
@@ -7658,7 +7658,7 @@ reservationLockExit(TR::Node *node, int32_t lwOffset, TR::Register *objectClassR
 
       if (!isPrimitive)
          {
-#if defined(JAVA_SPEC_VERSION >= 19)
+#if (JAVA_SPEC_VERSION >= 19)
 #if defined(TR_TARGET_64BIT)
          generateSIInstruction(cg, TR::InstOpCode::AGSI, node, generateS390MemoryReference(cg->getMethodMetaDataRealRegister(), fej9->thisThreadGetOwnedMonitorCountOffset(), cg), -1);
 #else    /* TR_TARGET_64BIT */
@@ -8737,7 +8737,7 @@ J9::Z::TreeEvaluator::VMmonentEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             generateRSInstruction(cg, TR::InstOpCode::getCmpAndSwapOpCode(), node, monitorReg, metaReg,
                                   generateS390MemoryReference(baseReg, lwOffset, cg));
 
-#if defined(JAVA_SPEC_VERSION >= 19)
+#if (JAVA_SPEC_VERSION >= 19)
 #if defined(TR_TARGET_64BIT)
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, node, helperCallLabel);
          generateSIInstruction(cg, TR::InstOpCode::AGSI, node, generateS390MemoryReference(cg->getMethodMetaDataRealRegister(), fej9->thisThreadGetOwnedMonitorCountOffset(), cg), 1);
@@ -8838,7 +8838,7 @@ J9::Z::TreeEvaluator::VMmonentEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    // Both TR::InstOpCode::MASK6 and TR::InstOpCode::MASK4 are ok here. TR::InstOpCode::MASK4 is directly testing failure condition.
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, callLabel);
 
-#if defined(JAVA_SPEC_VERSION >= 19)
+#if (JAVA_SPEC_VERSION >= 19)
 #if defined(TR_TARGET_64BIT)
    generateSIInstruction(cg, TR::InstOpCode::AGSI, node, generateS390MemoryReference(cg->getMethodMetaDataRealRegister(), fej9->thisThreadGetOwnedMonitorCountOffset(), cg), 1);
 #else    /* TR_TARGET_64BIT */
@@ -8916,7 +8916,7 @@ J9::Z::TreeEvaluator::VMmonentEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          generateRIInstruction(cg, addImmOp, node, monitorReg, OBJECT_HEADER_LOCK_FIRST_RECURSION_BIT);
       generateRXInstruction(cg, storeOp, node, monitorReg, tempMR1);
 
-#if defined(JAVA_SPEC_VERSION >= 19)
+#if (JAVA_SPEC_VERSION >= 19)
 #if defined(TR_TARGET_64BIT)
       generateSIInstruction(cg, TR::InstOpCode::AGSI, node, generateS390MemoryReference(cg->getMethodMetaDataRealRegister(), fej9->thisThreadGetOwnedMonitorCountOffset(), cg), 1);
 #else    /* TR_TARGET_64BIT */
@@ -9182,7 +9182,7 @@ J9::Z::TreeEvaluator::VMmonexitEvaluator(TR::Node * node, TR::CodeGenerator * cg
          else
             gcPoint = generateSILInstruction(cg, TR::InstOpCode::getMoveHalfWordImmOpCode(), node, generateS390MemoryReference(baseReg, lwOffset, cg), 0);
 
-#if defined(JAVA_SPEC_VERSION >= 19)
+#if (JAVA_SPEC_VERSION >= 19)
 #if defined(TR_TARGET_64BIT)
          generateSIInstruction(cg, TR::InstOpCode::AGSI, node, generateS390MemoryReference(cg->getMethodMetaDataRealRegister(), fej9->thisThreadGetOwnedMonitorCountOffset(), cg), -1);
 #else    /* TR_TARGET_64BIT */
@@ -9261,7 +9261,7 @@ J9::Z::TreeEvaluator::VMmonexitEvaluator(TR::Node * node, TR::CodeGenerator * cg
    // out the lockWord on the object
    generateSILInstruction(cg, moveImmOp, node, generateS390MemoryReference(baseReg, lwOffset, cg), 0);
 
-#if defined(JAVA_SPEC_VERSION >= 19)
+#if (JAVA_SPEC_VERSION >= 19)
 #if defined(TR_TARGET_64BIT)
    generateSIInstruction(cg, TR::InstOpCode::AGSI, node, generateS390MemoryReference(cg->getMethodMetaDataRealRegister(), fej9->thisThreadGetOwnedMonitorCountOffset(), cg), -1);
 #else    /* TR_TARGET_64BIT */
@@ -9337,7 +9337,7 @@ J9::Z::TreeEvaluator::VMmonexitEvaluator(TR::Node * node, TR::CodeGenerator * cg
          generateRXInstruction(cg, storeOp, node, monitorReg, tempMR1);
          }
 
-#if defined(JAVA_SPEC_VERSION >= 19)
+#if (JAVA_SPEC_VERSION >= 19)
 #if defined(TR_TARGET_64BIT)
       generateSIInstruction(cg, TR::InstOpCode::AGSI, node, generateS390MemoryReference(cg->getMethodMetaDataRealRegister(), fej9->thisThreadGetOwnedMonitorCountOffset(), cg), -1);
 #else    /* TR_TARGET_64BIT */
