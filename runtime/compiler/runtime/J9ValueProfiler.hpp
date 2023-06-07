@@ -361,6 +361,8 @@ class TR_HashTableProfilerInfo : public TR_AbstractHashTableProfilerInfo
     */
    virtual void addKey(T value) = 0;
 
+   virtual void updateCounter(T value) = 0;
+
    protected:
    virtual uint32_t* getFrequencies() = 0;
    virtual T* getKeys() = 0;
@@ -415,6 +417,7 @@ class TR_EmbeddedHashTable : public TR_HashTableProfilerInfo<T>
     * Runtime helpers
     */
    void addKey(T value);
+   void updateCounter(T value);
    T    recursivelySplit(T mask, T choices);
    void rearrange(HashFunction &hash);
    void reset();
@@ -687,6 +690,24 @@ TR_EmbeddedHashTable<T, bits>::reset()
    this->_metaData.full = 0;
    }
 
+template <typename T, size_t bits> void
+TR_EmbeddedHashTable<T, bits>::updateCounter(T value)
+   {
+   size_t index = this->applyHash(this->_hashConfig, value);
+   if (_keys[index] == value)
+      {
+      // Value already profiled, should simply increment the counter
+      _freqs[index]++;
+      }
+   else if(this->_metaData.otherIndex >= 0)
+      {
+      _freqs[this->_metaData.otherIndex]++;
+      }
+   else
+      {
+      this->addKey(value);
+      }
+   }
 /**
  * Add a new value to the hash map.
  * Might need to move around existing values.

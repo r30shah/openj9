@@ -142,8 +142,12 @@ segment .text
 %ifdef TR_HOST_64BIT
         DECLARE_GLOBAL jProfile32BitValueWrapper
         DECLARE_GLOBAL jProfile64BitValueWrapper
+        DECLARE_GLOBAL jProfile32BitValueLowOptWrapper
+        DECLARE_GLOBAL jProfile64BitValueLowOptWrapper
         DECLARE_EXTERN jProfile32BitValue
         DECLARE_EXTERN jProfile64BitValue
+        DECLARE_EXTERN jProfile32BitValueLowOpt
+        DECLARE_EXTERN jProfile64BitValueLowOpt
 %endif
 
         align 16
@@ -658,6 +662,23 @@ jProfile64BitValueWrapper:
         mov [_rbp+J9TR_VMThread_sp], _rsp                 ; Store current java stack pointer to vmthread
         mov _rsp, [_rbp+J9TR_VMThread_machineSP]          ; switch to c stack
         CallHelper jProfile64BitValue
+        mov _rsp, [_rbp+J9TR_VMThread_sp]                 ; restore java stack pointer
+        ret
+
+jProfile32BitValueLowOptWrapper:
+        ; Called directly from jitted code, _rbp is vmthread
+        mov [_rbp+J9TR_VMThread_sp], _rsp                 ; Store current java stack pointer to vmthread
+        mov _rsp, [_rbp+J9TR_VMThread_machineSP]          ; switch to c stack
+        CallHelper jProfile32BitValueLowOpt
+        mov _rsp, [_rbp+J9TR_VMThread_sp]                 ; restore java stack pointer
+        ret
+
+        align 16
+jProfile64BitValueLowOptWrapper:
+        ; Called directly from jitted code, _rbp is vmthread
+        mov [_rbp+J9TR_VMThread_sp], _rsp                 ; Store current java stack pointer to vmthread
+        mov _rsp, [_rbp+J9TR_VMThread_machineSP]          ; switch to c stack
+        CallHelper jProfile32BitValueLowOpt
         mov _rsp, [_rbp+J9TR_VMThread_sp]                 ; restore java stack pointer
         ret
 %endif
