@@ -55,6 +55,7 @@
 #include "codegen/PrivateLinkage.hpp"
 #include "control/CompilationRuntime.hpp"
 #include "control/CompilationThread.hpp"
+#include "control/DebugAgent.hpp"
 #include "control/JitDump.hpp"
 #include "control/Recompilation.hpp"
 #include "control/RecompilationInfo.hpp"
