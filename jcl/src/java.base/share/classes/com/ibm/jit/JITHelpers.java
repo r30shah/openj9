@@ -1119,6 +1119,7 @@ public final class JITHelpers {
 					System.exit(-1);
 				}
 			}
+		throw ex;
 		}
 		return null;
 	}
