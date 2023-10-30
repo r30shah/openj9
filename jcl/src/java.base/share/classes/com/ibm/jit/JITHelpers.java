@@ -1096,6 +1096,8 @@ public final class JITHelpers {
 		return lwValue;
 	}
 
+	private native static final void debugAgentRun(MethodAccessor ma, Object obj, Object[] args);
+
 	/**
 	 * Invokes the method on the object with given MethodAccessor and arguments.
 	 * If the method throws an exception, it is caught and if the exception is unexpected,
@@ -1206,6 +1208,4 @@ public final class JITHelpers {
 	public static native void dispatchComputedStaticCall();
 
 	public static native void dispatchVirtual();
-
-	private native static final void debugAgentRun(MethodAccessor ma, Object obj, Object[] args);
 }
