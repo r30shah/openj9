@@ -283,6 +283,7 @@ JIT_PRODUCT_SOURCE_FILES+=\
     compiler/compile/J9SymbolReferenceTable.cpp \
     compiler/control/CompilationThread.cpp \
     compiler/control/CompileBeforeCheckpoint.cpp \
+    compiler/control/DebugAgent.cpp \
     compiler/control/DLLMain.cpp \
     compiler/control/HookedByTheJit.cpp \
     compiler/control/J9CompilationStrategy.cpp \
