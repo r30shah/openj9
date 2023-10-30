@@ -1121,7 +1121,6 @@ public final class JITHelpers {
 			}
 		throw ex;
 		}
-		return null;
 	}
 
 	/**		
