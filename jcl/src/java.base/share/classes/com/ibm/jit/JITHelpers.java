@@ -26,16 +26,21 @@ package com.ibm.jit;
 
 import com.ibm.oti.vm.J9UnmodifiableClass;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 import java.lang.reflect.Array;
 import com.ibm.oti.vm.VM;
 /*[IF Sidecar19-SE]
 import jdk.internal.misc.Unsafe;
 import jdk.internal.reflect.Reflection;
 import jdk.internal.reflect.CallerSensitive;
+import jdk.internal.reflect.MethodAccessor;
 /*[ELSE]*/
 import sun.misc.Unsafe;
 import sun.reflect.Reflection;
 import sun.reflect.CallerSensitive;
+import sun.reflect.MethodAccessor;
+import sun.reflect.Reflection;
 /*[ENDIF]*/
 
 /**
@@ -1091,6 +1096,33 @@ public final class JITHelpers {
 		return lwValue;
 	}
 
+	/**
+	 * Invokes the method on the object with given MethodAccessor and arguments.
+	 * If the method throws an exception, it is caught and if the exception is unexpected,
+	 * the debug agent is triggered.
+	 * 
+	 * @param ma MethodAccessor object for the method debug agent will run
+	 * @param obj Underlying object
+	 * @param args Arguments to the method
+	 * @return return value from method call
+	 */	
+	public static Object invoke(MethodAccessor ma, Object obj, Objects[] args) throws InvocationTargetException {
+		try {
+			return ma.invoke(obj, args);
+		} catch (InvocationTargetException ex) {
+			if (ex.getCause() != null && ex.getCause().getClass().getName().equals("java.lang.StringIndexOutOfBoundsException")) {
+				synchronized (JITHelpers.class) {
+					System.err.println("Caught java.lang.StringIndexOutOfBoundsException inside JITHelpers.invoke in thread "+Thread.currentThread().getName());
+					ex.getCause().printStackTrace();
+					debugAgentRun(ma, obj, args);
+					System.err.println("Aborting JVM");
+					System.exit(-1);
+				}
+			}
+		}
+		return null;
+	}
+
 	/**		
 	 * Determines whether the underlying platform's memory model is big-endian.		
 	 * 		
@@ -1174,4 +1206,6 @@ public final class JITHelpers {
 	public static native void dispatchComputedStaticCall();
 
 	public static native void dispatchVirtual();
+
+	private native static final void debugAgentRun(MethodAccessor ma, Object obj, Object[] args);
 }
