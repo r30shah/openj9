@@ -501,7 +501,7 @@ Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject m
 
 			IDATA lastOptSubIndex = 1024;
 
-			for (IDATA lastOptIndex = 100; lastOptIndex >= 0; --lastOptIndex) {
+			for (IDATA lastOptIndex = 300; lastOptIndex >= 0; --lastOptIndex) {
 				jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex, lastOptSubIndex, 0, 0);
 
 				fprintf(stderr, "Rerunning test\n");
