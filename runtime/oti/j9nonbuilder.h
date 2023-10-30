@@ -4169,7 +4169,7 @@ typedef struct J9JITConfig {
 	BOOLEAN (*debugAgentStart)(struct J9VMThread *vmThread);
 	BOOLEAN (*debugAgentGetAllJitMethods)(struct J9VMThread *vmThread, jobject jitMethods);
 	BOOLEAN (*debugAgentRevertToInterpreter)(struct J9VMThread *vmThread, J9JITExceptionTable *jitMethod);
-	BOOLEAN (*debugAgentRecompile)(struct J9VMThread *vmThread, J9JITExceptionTable *jitMethod, IDATA lastOptIndex, IDATA lastOptSubIndex, BOOLEAN enableTracing);
+	BOOLEAN (*debugAgentRecompile)(struct J9VMThread *vmThread, J9JITExceptionTable *jitMethod, IDATA lastOptIndex, IDATA lastOptSubIndex, BOOLEAN enableTracing, BOOLEAN goodLog);
 	BOOLEAN (*debugAgentEnd)(struct J9VMThread *vmThread);
 	void	(*debugAgentSetForceUsePreexistence) (struct J9VMThread *vmThread);
 } J9JITConfig;
