@@ -229,10 +229,10 @@ debugAgentRevertToInterpreter(J9VMThread* vmThread, J9JITExceptionTable *jitMeth
 
     if (pc != NULL)
         {
-        fprintf(stderr, "Invalidating PC = %p %.*s.%.*s%.*s\n", pc,
+        fprintf(stderr, "Invalidating PC = %p %.*s.%.*s%.*s, isAOT = %s\n", pc,
             (int)J9UTF8_LENGTH(className), J9UTF8_DATA(className),
             (int)J9UTF8_LENGTH(methName), J9UTF8_DATA(methName),
-            (int)J9UTF8_LENGTH(methSig), J9UTF8_DATA(methSig));
+            (int)J9UTF8_LENGTH(methSig), J9UTF8_DATA(methSig), bodyInfo->getIsAotedBody() ? "true" : "false");
         }
     else
         {
