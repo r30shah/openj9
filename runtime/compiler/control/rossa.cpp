@@ -1853,6 +1853,15 @@ onLoadInternal(
 
    jitConfig->runJitdump = runJitdump;
 
+   jitConfig->debugAgentStart = debugAgentStart;
+   jitConfig->debugAgentGetAllJitMethods = debugAgentGetAllJitMethods;
+   jitConfig->debugAgentRevertToInterpreter = debugAgentRevertToInterpreter;
+   jitConfig->debugAgentRecompile = debugAgentRecompile;
+   jitConfig->debugAgentEnd = debugAgentEnd;
+   jitConfig->debugAgentSetForceUsePreexistence = debugAgentSetForceUsePreexistence;
+   
+   jitConfig->printAOTHeaderProcessorFeatures = printAOTHeaderProcessorFeatures;
+
    jitConfig->printAOTHeaderProcessorFeatures = printAOTHeaderProcessorFeatures;
 
    if (!TR::Compiler->target.cpu.isI386())
