@@ -227,7 +227,7 @@ debugAgentRevertToInterpreter(J9VMThread* vmThread, J9JITExceptionTable *jitMeth
 
     void *pc = compInfo->getPCIfCompiled(jitMethod->ramMethod);
 
-    if (pc != NULL)
+    if (pc != NULL && !bodyInfo->getIsAotedBody())
         {
         fprintf(stderr, "Invalidating PC = %p %.*s.%.*s%.*s, isAOT = %s\n", pc,
             (int)J9UTF8_LENGTH(className), J9UTF8_DATA(className),
