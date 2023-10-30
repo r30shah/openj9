@@ -1106,7 +1106,7 @@ public final class JITHelpers {
 	 * @param args Arguments to the method
 	 * @return return value from method call
 	 */	
-	public static Object invoke(MethodAccessor ma, Object obj, Objects[] args) throws InvocationTargetException {
+	public static Object invoke(MethodAccessor ma, Object obj, Object[] args) throws InvocationTargetException {
 		try {
 			return ma.invoke(obj, args);
 		} catch (InvocationTargetException ex) {
