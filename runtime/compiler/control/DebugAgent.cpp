@@ -226,9 +226,18 @@ debugAgentRevertToInterpreter(J9VMThread* vmThread, J9JITExceptionTable *jitMeth
     J9UTF8 *className = J9ROMCLASS_CLASSNAME(clazz->romClass);
 
     void *pc = compInfo->getPCIfCompiled(jitMethod->ramMethod);
-
-    if (pc != NULL && !bodyInfo->getIsAotedBody())
+    int lengthOfSig = (int)J9UTF8_LENGTH(className) + (int)J9UTF8_LENGTH(methName) + (int)J9UTF8_LENGTH(methSig);
+    char m[lengthOfSig+1];
+    sprintf(m,"%.*s.%.*s%.*s",
+        (int)J9UTF8_LENGTH(className), J9UTF8_DATA(className),
+        (int)J9UTF8_LENGTH(methName), J9UTF8_DATA(methName),
+        (int)J9UTF8_LENGTH(methSig), J9UTF8_DATA(methSig));
+    
+    char s[218] ="javasoft/sqe/tests/api/java/util/stream/Stream/StreamAssert.checkElementsRegardingOrder(Ljava/lang/Iterable;Ljava/util/Iterator;Ljavasoft/sqe/tests/api/java/util/stream/Stream/ComparisonProperties;Ljava/lang/String;)V";
+    
+    if (pc != NULL && (strncmp(s, m, lengthOfSig) != 0))
         {
+        char str[]
         fprintf(stderr, "Invalidating PC = %p %.*s.%.*s%.*s, isAOT = %s\n", pc,
             (int)J9UTF8_LENGTH(className), J9UTF8_DATA(className),
             (int)J9UTF8_LENGTH(methName), J9UTF8_DATA(methName),
