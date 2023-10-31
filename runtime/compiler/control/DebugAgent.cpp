@@ -237,7 +237,6 @@ debugAgentRevertToInterpreter(J9VMThread* vmThread, J9JITExceptionTable *jitMeth
     
     if (pc != NULL && (strncmp(s, m, lengthOfSig) != 0))
         {
-        char str[]
         fprintf(stderr, "Invalidating PC = %p %.*s.%.*s%.*s, isAOT = %s\n", pc,
             (int)J9UTF8_LENGTH(className), J9UTF8_DATA(className),
             (int)J9UTF8_LENGTH(methName), J9UTF8_DATA(methName),
