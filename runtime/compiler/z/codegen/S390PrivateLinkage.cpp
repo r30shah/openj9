@@ -2326,7 +2326,7 @@ J9::Z::PrivateLinkage::buildDirectCall(TR::Node * callNode, TR::SymbolReference 
       TR::Register *j9classReg = cg()->allocateRegister();
       TR::TreeEvaluator::genLoadForObjectHeadersMasked(cg(), callNode, j9classReg, generateS390MemoryReference(objReg, static_cast<int32_t>(TR::Compiler->om.offsetOfObjectVftField()), cg()), NULL);
       TR::LabelSymbol *skipTrap = generateLabelSymbol(cg());
-      generateS390CompareAndBranchInstruction(cg(), TR::InstOpCode::getCmpRegOpCode(), callNode, j9classReg, reinterpret_cast<int64_t>(SIOOBclazz), TR::InstOpCode::COND_BNE, skipTrap, false, false);
+      generateS390CompareAndBranchInstruction(cg(), TR::InstOpCode::getCmpImmOpCode(), callNode, j9classReg, reinterpret_cast<int64_t>(SIOOBclazz), TR::InstOpCode::COND_BNE, skipTrap, false, false);
       generateS390EInstruction(cg(), TR::InstOpCode::BREAK, callNode);
       generateS390LabelInstruction(cg(), TR::InstOpCode::label, callNode, skipTrap); 
       }
