@@ -2316,9 +2316,9 @@ J9::Z::PrivateLinkage::buildDirectCall(TR::Node * callNode, TR::SymbolReference 
       }
 
 
-   if (callSymbol->isHelper()
-      && comp()->getSymRefTab()->findOrCreateAThrowSymbolRef(comp()->getMethodSymbol()) == callNode->getSymbolReference()
-      && comp()->getMethodHotness() == hot)
+   if (comp()->getOption(TR_ExperimentalOptRahil)
+      && callSymbol->isHelper()
+      && comp()->getSymRefTab()->findOrCreateAThrowSymbolRef(comp()->getMethodSymbol()) == callNode->getSymbolReference())
       {
       // Adding runtime test to check the class of the exception
       TR_OpaqueClassBlock *SIOOBclazz = comp()->fej9()->getSystemClassFromClassName("java/lang/StringIndexOutOfBoundsException", strlen("java/lang/StringIndexOutOfBoundsException"));
