@@ -2322,7 +2322,7 @@ J9::Z::PrivateLinkage::buildDirectCall(TR::Node * callNode, TR::SymbolReference 
       {
       // Adding runtime test to check the class of the exception
       TR_OpaqueClassBlock *SIOOBclazz = comp()->fej9()->getSystemClassFromClassName("java/lang/StringIndexOutOfBoundsException", strlen("java/lang/StringIndexOutOfBoundsException"));
-      TR::Register *objReg = cg()->evaluate(callNode->getFirstChild()->evaluate());
+      TR::Register *objReg = cg()->evaluate(callNode->getFirstChild());
       TR::Register *j9classReg = cg()->allocateRegister();
       TR::TreeEvaluator::genLoadForObjectHeadersMasked(cg(), callNode, j9classReg, generateS390MemoryReference(objReg, static_cast<int32_t>(TR::Compiler->om.offsetOfObjectVftField()), cg()));
       TR::LabelSymbol *skipTrap = generateLabelSymbol(cg());
