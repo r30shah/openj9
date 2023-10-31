@@ -2317,6 +2317,22 @@ J9::Z::PrivateLinkage::buildDirectCall(TR::Node * callNode, TR::SymbolReference 
    if (!callSymRef->isUnresolved() && !callSymbol->isInterpreted() && ((comp()->compileRelocatableCode() && callSymbol->isHelper()) || !comp()->compileRelocatableCode()))
       {
       // direct call for resolved method
+      // Hack to generate System Dump for specific exception.
+      
+      char s[218] ="javasoft/sqe/tests/api/java/util/stream/Stream/StreamAssert.checkElementsRegardingOrder(Ljava/lang/Iterable;Ljava/util/Iterator;Ljavasoft/sqe/tests/api/java/util/stream/Stream/ComparisonProperties;Ljava/lang/String;)V";
+
+      TR_OpaqueClassBlock *SIOOBclazz = comp()->fej9()->getSystemClassFromClassName("java/lang/StringIndexOutOfBoundsException", strlen("java/lang/StringIndexOutOfBoundsException"));
+      if (callSymbol->isHelper() 
+         && comp()->getSymRefTab()->findOrCreateAThrowSymbolRef(comp()->getMethodSymbol()) == callNode->getSymbolReference()
+         && callNode->getFirstChild() 
+         && callNode->getFirstChild()->getFirstChild()
+         && callNode->getFirstChild()->getFirstChild()->getSymbolReference()
+         && callNode->getFirstChild()->getFirstChild()->getSymbolReference()->getSymbol()->castToStaticSymbol()->getStaticAddress() == SIOOBclazz
+         && strncmp(comp()->signature(), s, 217) == 0)
+         {
+         generateS390EInstruction(cg(), TR::InstOpCode::BREAK, callNode);
+         }
+      
 
       gcPoint = generateDirectCall(cg(), callNode, myself ? true : false, callSymRef, dependencies);
       gcPoint->setDependencyConditions(dependencies);
