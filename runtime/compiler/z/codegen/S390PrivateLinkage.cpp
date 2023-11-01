@@ -2321,15 +2321,15 @@ J9::Z::PrivateLinkage::buildDirectCall(TR::Node * callNode, TR::SymbolReference 
       && comp()->getSymRefTab()->findOrCreateAThrowSymbolRef(comp()->getMethodSymbol()) == callNode->getSymbolReference())
       {
       // Adding runtime test to check the class of the exception
-      TR_OpaqueClassBlock *SIOOBclazz = comp()->fej9()->getSystemClassFromClassName("java/lang/StringIndexOutOfBoundsException", strlen("java/lang/StringIndexOutOfBoundsException"));
-      TR::Register *objReg = cg()->evaluate(callNode->getFirstChild());
-      TR::Register *j9classReg = cg()->allocateRegister();
-      TR::TreeEvaluator::genLoadForObjectHeadersMasked(cg(), callNode, j9classReg, generateS390MemoryReference(objReg, static_cast<int32_t>(TR::Compiler->om.offsetOfObjectVftField()), cg()), NULL);
-      TR::LabelSymbol *skipTrap = generateLabelSymbol(cg());
-      generateS390CompareAndBranchInstruction(cg(), TR::InstOpCode::CLG, callNode, j9classReg, reinterpret_cast<int64_t>(SIOOBclazz), TR::InstOpCode::COND_BNE, skipTrap, false, false);
+      //TR_OpaqueClassBlock *SIOOBclazz = comp()->fej9()->getSystemClassFromClassName("java/lang/StringIndexOutOfBoundsException", strlen("java/lang/StringIndexOutOfBoundsException"));
+      //TR::Register *objReg = cg()->evaluate(callNode->getFirstChild());
+      //TR::Register *j9classReg = cg()->allocateRegister();
+      //TR::TreeEvaluator::genLoadForObjectHeadersMasked(cg(), callNode, j9classReg, generateS390MemoryReference(objReg, static_cast<int32_t>(TR::Compiler->om.offsetOfObjectVftField()), cg()), NULL);
+      //TR::LabelSymbol *skipTrap = generateLabelSymbol(cg());
+      //generateS390CompareAndBranchInstruction(cg(), TR::InstOpCode::CLG, callNode, j9classReg, reinterpret_cast<int64_t>(SIOOBclazz), TR::InstOpCode::COND_BNE, skipTrap, false, false);
       generateS390EInstruction(cg(), TR::InstOpCode::BREAK, callNode);
-      generateS390LabelInstruction(cg(), TR::InstOpCode::label, callNode, skipTrap);
-      cg()->stopUsingRegister(j9classReg);
+      //generateS390LabelInstruction(cg(), TR::InstOpCode::label, callNode, skipTrap);
+      //cg()->stopUsingRegister(j9classReg);
       }
    if (!callSymRef->isUnresolved() && !callSymbol->isInterpreted() && ((comp()->compileRelocatableCode() && callSymbol->isHelper()) || !comp()->compileRelocatableCode()))
       {
