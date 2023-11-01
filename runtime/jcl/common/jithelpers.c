@@ -476,73 +476,79 @@ Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject m
 
 	jobjectArray jitMethodArray = (*env)->CallObjectMethod(env, jitMethodSet, java_util_HashSet_toArray);
 	jint jitMethodArrayLength = (*env)->GetArrayLength(env, jitMethodArray);
+	IDATA nonRevertedMethods = 0;
 	for (IDATA i = 0; i < jitMethodArrayLength; ++i) {
 		jobject jitMethodObject = (*env)->GetObjectArrayElement(env, jitMethodArray, i);
 		jlong jitMethod = (*env)->CallLongMethod(env, jitMethodObject, java_lang_Long_longValue);
 		(*env)->DeleteLocalRef(env, jitMethodObject);
 
-		jitConfig->debugAgentRevertToInterpreter(vmThread, (J9JITExceptionTable*)jitMethod);
+		UDATA reverted = jitConfig->debugAgentRevertToInterpreter(vmThread, (J9JITExceptionTable*)jitMethod);
 
-		fprintf(stderr, "Rerunning test\n");
-		(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);
-		if ((*env)->ExceptionCheck(env)) {
-			(*env)->ExceptionClear(env);
-			fprintf(stderr, "Caught exception after invoking test\n");
+		if (reverted)
+			{
+			fprintf(stderr, "Rerunning test\n");
+			(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);
+			if ((*env)->ExceptionCheck(env)) {
+				(*env)->ExceptionClear(env);
+				fprintf(stderr, "Caught exception after invoking test\n");
 
-			jthrowable exceptionObject = (*env)->ExceptionOccurred(env);
-			if (!(*env)->IsInstanceOf(env, exceptionObject, java_lang_reflect_InvocationTargetException)) {
-				fprintf(stderr, "Unknown exception occured\n");
-				break;
-			}
-
-			(*env)->DeleteLocalRef(env, exceptionObject);
-		} else {
-			fprintf(stderr, "Identified problematic method\n");
-
-			IDATA lastOptSubIndex = 1024;
-
-			for (IDATA lastOptIndex = 300; lastOptIndex >= 0; --lastOptIndex) {
-				jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex, lastOptSubIndex, 0, 0);
-
-				fprintf(stderr, "Rerunning test\n");
-				(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);
-				if ((*env)->ExceptionCheck(env)) {
-					(*env)->ExceptionClear(env);
-					fprintf(stderr, "Caught exception after invoking test with lastOptIndex = %ld\n", lastOptIndex);
-				} else {
-					fprintf(stderr, "LastOptIndex = %ld is the potential culprit\n", lastOptIndex + 1);
-
-					jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex, lastOptSubIndex, 1, 1);
-
-					fprintf(stderr, "Rerunning test expecting it to pass\n");
-					(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);
-					if ((*env)->ExceptionCheck(env)) {
-						(*env)->ExceptionClear(env);
-						fprintf(stderr, "Test failed\n");
-						break;
-					} else {
-						fprintf(stderr, "Test passed\n");
-					}
-
-					jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex + 1, lastOptSubIndex, 1, 0);
-
-					fprintf(stderr, "Rerunning test expecting it to fail\n");
-					(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);
-					if ((*env)->ExceptionCheck(env)) {
-						(*env)->ExceptionClear(env);
-						fprintf(stderr, "Test failed\n");
-					} else {
-						fprintf(stderr, "Test passed\n");
-					}
-
+				jthrowable exceptionObject = (*env)->ExceptionOccurred(env);
+				if (!(*env)->IsInstanceOf(env, exceptionObject, java_lang_reflect_InvocationTargetException)) {
+					fprintf(stderr, "Unknown exception occured\n");
 					break;
 				}
-			}
 
-			break;
+				(*env)->DeleteLocalRef(env, exceptionObject);
+			} else {
+				fprintf(stderr, "Identified problematic method\n");
+
+				IDATA lastOptSubIndex = 1024;
+
+				for (IDATA lastOptIndex = 300; lastOptIndex >= 0; --lastOptIndex) {
+					jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex, lastOptSubIndex, 0, 0);
+
+					fprintf(stderr, "Rerunning test\n");
+					(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);
+					if ((*env)->ExceptionCheck(env)) {
+						(*env)->ExceptionClear(env);
+						fprintf(stderr, "Caught exception after invoking test with lastOptIndex = %ld\n", lastOptIndex);
+					} else {
+						fprintf(stderr, "LastOptIndex = %ld is the potential culprit\n", lastOptIndex + 1);
+
+						jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex, lastOptSubIndex, 1, 1);
+
+						fprintf(stderr, "Rerunning test expecting it to pass\n");
+						(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);
+						if ((*env)->ExceptionCheck(env)) {
+							(*env)->ExceptionClear(env);
+							fprintf(stderr, "Test failed\n");
+							break;
+						} else {
+							fprintf(stderr, "Test passed\n");
+						}
+
+						jitConfig->debugAgentRecompile(vmThread, (J9JITExceptionTable*)jitMethod, lastOptIndex + 1, lastOptSubIndex, 1, 0);
+
+						fprintf(stderr, "Rerunning test expecting it to fail\n");
+						(*env)->CallObjectMethod(env, ma, jdk_internal_reflect_MethodAccessor_invoke, obj, args);
+						if ((*env)->ExceptionCheck(env)) {
+							(*env)->ExceptionClear(env);
+							fprintf(stderr, "Test failed\n");
+						} else {
+							fprintf(stderr, "Test passed\n");
+						}
+
+						break;
+					}
+				}
+
+				break;
+			}
+		} else {
+			nonRevertedMethods++;
 		}
 	}
-
+	fprintf(stderr, "Ending Debug Agent, Total JIT/AOT Compiled Method = %d, Non Reverted Method = %d\n", jitMethodArrayLength, nonRevertedMethods);
 	(*env)->DeleteLocalRef(env, java_lang_Long);
 	(*env)->DeleteLocalRef(env, java_util_HashSet);
 	(*env)->DeleteLocalRef(env, jdk_internal_reflect_MethodAccessor);
