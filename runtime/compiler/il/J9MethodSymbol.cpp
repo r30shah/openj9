@@ -114,6 +114,7 @@ J9::MethodSymbol::isPureFunction()
       case TR::java_lang_StrictMath_sqrt:
       case TR::java_lang_StrictMath_tan:
       case TR::java_lang_StrictMath_tanh:
+      case TR::java_lang_String_dummyStringMethod:
       case TR::java_nio_Bits_keepAlive:
          /*
       case TR::java_math_BigDecimal_valueOf:

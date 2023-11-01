@@ -3951,6 +3951,12 @@ J9::Z::CodeGenerator::inlineDirectCall(
             return resultReg != NULL;
             }
          break;
+      case TR::java_lang_String_dummyStringMethod:
+         {
+         TR::TreeEvaluator::generateBREAKInstruction(node, cg);
+         return NULL;
+         }
+         break;
       case TR::java_lang_StringUTF16_getChars_Integer:
       case TR::java_lang_StringUTF16_getChars_Long:
       case TR::java_lang_Integer_getChars_charBuffer:

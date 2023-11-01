@@ -14040,6 +14040,13 @@ J9::Z::TreeEvaluator::generateLoadAndStoreForArrayCopy(TR::Node *node, TR::CodeG
    }
 
 TR::Register*
+J9::Z::TreeEvaluator::generateBREAKInstruction(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   generateS390EInstruction(cg, TR::InstOpCode::BREAK, node);
+   return NULL;
+   }
+
+TR::Register*
 J9::Z::TreeEvaluator::inlineIntegerToCharsForLatin1Strings(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();

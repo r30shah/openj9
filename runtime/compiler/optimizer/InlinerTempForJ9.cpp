@@ -4864,6 +4864,9 @@ TR_J9InlinerPolicy::supressInliningRecognizedInitialCallee(TR_CallSite* callsite
             return true;
             }
          break;
+      case TR::java_lang_String_dummyStringMethod:
+         return true;
+         break;
       case TR::java_lang_StringCoding_encodeASCII:
       case TR::java_lang_String_encodeASCII:
          if (comp->cg()->getSupportsInlineEncodeASCII())
@@ -5158,6 +5161,7 @@ TR_InlinerFailureReason
        rm == TR::java_lang_String_decompressedArrayCopy_BICII ||
        rm == TR::java_lang_String_decompressedArrayCopy_CIBII ||
        rm == TR::java_lang_String_decompressedArrayCopy_CICII ||
+       rm == TR::java_lang_String_dummyStringMethod ||
        rm == TR::java_lang_Math_max_D ||
        rm == TR::java_lang_Math_min_D ||
        //DAA Intrinsic methods will get reduced if intrinsics are on, so don't consider it as a target
