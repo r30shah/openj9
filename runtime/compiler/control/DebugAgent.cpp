@@ -212,11 +212,11 @@ debugAgentRevertToInterpreter(J9VMThread* vmThread, J9JITExceptionTable *jitMeth
         }
 
     TR_PersistentJittedBodyInfo *bodyInfo = reinterpret_cast<TR_PersistentJittedBodyInfo *>(jitMethod->bodyInfo);
-    if (NULL == bodyInfo)
-        {
-        fprintf(stderr, "Could not locate persistent body info for JIT method %p\n", jitMethod);
-        return false;
-        }
+    //if (NULL == bodyInfo)
+    //    {
+    //    fprintf(stderr, "Could not locate persistent body info for JIT method %p\n", jitMethod);
+        //return false;
+    //    }
     
     PORT_ACCESS_FROM_VMC(vmThread);
     J9Class *clazz = J9_CLASS_FROM_METHOD(jitMethod->ramMethod);
@@ -224,6 +224,14 @@ debugAgentRevertToInterpreter(J9VMThread* vmThread, J9JITExceptionTable *jitMeth
     J9UTF8 *methName = J9ROMMETHOD_NAME(romMethod);
     J9UTF8 *methSig = J9ROMMETHOD_SIGNATURE(romMethod);
     J9UTF8 *className = J9ROMCLASS_CLASSNAME(clazz->romClass);
+    if (NULL == bodyInfo)
+        {
+        fprintf(stderr, "Could not locate persistent body info for %.*s.%.*s%.*s\n",
+            (int)J9UTF8_LENGTH(className), J9UTF8_DATA(className),
+            (int)J9UTF8_LENGTH(methName), J9UTF8_DATA(methName),
+            (int)J9UTF8_LENGTH(methSig), J9UTF8_DATA(methSig));
+        return false;
+        }
 
     void *pc = compInfo->getPCIfCompiled(jitMethod->ramMethod);
     int lengthOfSig = (int)J9UTF8_LENGTH(className) + (int)J9UTF8_LENGTH(methName) + (int)J9UTF8_LENGTH(methSig);
