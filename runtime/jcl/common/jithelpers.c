@@ -548,7 +548,7 @@ Java_com_ibm_jit_JITHelpers_debugAgentRun(JNIEnv *env, jclass ignored, jobject m
 			nonRevertedMethods++;
 		}
 	}
-	fprintf(stderr, "Ending Debug Agent, Total JIT/AOT Compiled Method = %d, Non Reverted Method = %d\n", jitMethodArrayLength, nonRevertedMethods);
+	fprintf(stderr, "Ending Debug Agent, Total JIT/AOT Compiled Method = %ld, Non Reverted Method = %ld\n", jitMethodArrayLength, nonRevertedMethods);
 	(*env)->DeleteLocalRef(env, java_lang_Long);
 	(*env)->DeleteLocalRef(env, java_util_HashSet);
 	(*env)->DeleteLocalRef(env, jdk_internal_reflect_MethodAccessor);
