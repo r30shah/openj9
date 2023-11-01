@@ -2328,7 +2328,8 @@ J9::Z::PrivateLinkage::buildDirectCall(TR::Node * callNode, TR::SymbolReference 
       TR::LabelSymbol *skipTrap = generateLabelSymbol(cg());
       generateS390CompareAndBranchInstruction(cg(), TR::InstOpCode::getCmpImmOpCode(), callNode, j9classReg, reinterpret_cast<int64_t>(SIOOBclazz), TR::InstOpCode::COND_BNE, skipTrap, false, false);
       generateS390EInstruction(cg(), TR::InstOpCode::BREAK, callNode);
-      generateS390LabelInstruction(cg(), TR::InstOpCode::label, callNode, skipTrap); 
+      generateS390LabelInstruction(cg(), TR::InstOpCode::label, callNode, skipTrap);
+      cg()->stopUsingRegister(j9classReg);
       }
    if (!callSymRef->isUnresolved() && !callSymbol->isInterpreted() && ((comp()->compileRelocatableCode() && callSymbol->isHelper()) || !comp()->compileRelocatableCode()))
       {
