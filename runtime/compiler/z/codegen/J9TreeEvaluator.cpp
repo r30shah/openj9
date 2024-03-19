@@ -10569,12 +10569,27 @@ J9::Z::TreeEvaluator::VMnewEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       //////////////////////////////////////////////////////////////////////////////////////////////////////
       if (opCode == TR::New)
          {
+         //if (node->canSkipZeroInitialization())
+         //   cg->generateDebugCounter(TR::DebugCounter::debugCounterName(comp, "skipZeroAlloc/newObject/({%s}{%s})", comp->signature(), comp->getHotnessName(comp->getMethodHotness())),1,TR::DebugCounter::Undetermined);
          classReg = cg->evaluate(firstChild);
          dataBegin = TR::Compiler->om.objectHeaderSizeInBytes();
          }
       else
          {
          isArray = true;
+         if (node->getOpCodeValue() == TR::newarray)
+            {
+            cg->generateDebugCounter(node->canSkipZeroInitialization() ? 
+                                       TR::DebugCounter::debugCounterName(comp, "skipZeroAlloc/newarray/({%s}{%s})/n%dn",
+                                          comp->signature(),
+                                          comp->getHotnessName(comp->getMethodHotness()),
+                                          node->getGlobalIndex())
+                                       : TR::DebugCounter::debugCounterName(comp, "dontSkipZeroAlloc/newarray/({%s}{%s})/n%dn",
+                                          comp->signature(),
+                                          comp->getHotnessName(comp->getMethodHotness()),
+                                          node->getGlobalIndex()),
+                                       1,TR::DebugCounter::Undetermined);
+            }
          if (generateArraylets || TR::Compiler->om.useHybridArraylets())
             {
             if (node->getOpCodeValue() == TR::newarray)
