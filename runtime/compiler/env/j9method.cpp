@@ -2724,7 +2724,7 @@ void TR_ResolvedJ9Method::construct()
       {x(TR::java_util_Arrays_copyOfRange_long,   "copyOfRange",     "([JII)[J")},
       {x(TR::java_util_Arrays_copyOfRange_float,  "copyOfRange",     "([FII)[F")},
       {x(TR::java_util_Arrays_copyOfRange_double, "copyOfRange",     "([DII)[D")},
-      {x(TR::java_util_Arrays_copyOfRangeByteNonZero, "copyOfRangeByteNonZero", "([BII])[B")},
+      {x(TR::java_util_Arrays_copyOfRangeByteNonZero, "copyOfRangeByteNonZero", "([BII)[B")},
       {x(TR::java_util_Arrays_copyOfRange_Object1,"copyOfRange",     "([Ljava/lang/Object;II)[Ljava/lang/Object;")},
       {x(TR::java_util_Arrays_copyOfRange_Object2,"copyOfRange",     "([Ljava/lang/Object;IILjava/lang/Class;)[Ljava/lang/Object;")},
       {  TR::unknownMethod}
