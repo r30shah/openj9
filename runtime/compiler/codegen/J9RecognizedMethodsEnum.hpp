@@ -1210,6 +1210,7 @@
    java_util_Arrays_copyOfRange_float,
    java_util_Arrays_copyOfRange_double,
    java_util_Arrays_copyOfRange_boolean,
+   java_util_Arrays_copyOfRangeByteNonZero,
    java_util_Arrays_copyOfRange_Object1,
    java_util_Arrays_copyOfRange_Object2,
 
