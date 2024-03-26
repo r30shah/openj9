@@ -1203,6 +1203,7 @@
    java_util_Arrays_copyOf_Object1,
    java_util_Arrays_copyOf_Object2,
    java_util_Arrays_copyOfRange_byte,
+   java_util_Arrays_copyOfRangeByte,
    java_util_Arrays_copyOfRange_short,
    java_util_Arrays_copyOfRange_char,
    java_util_Arrays_copyOfRange_int,
