@@ -255,6 +255,8 @@ public final class Class<T> implements java.io.Serializable, GenericDeclaration,
 	private static boolean reflectCacheDebug;
 	private static boolean reflectCacheAppOnly = true;
 
+
+	private static Map<String, Class<?>> classForNameList = new ConcurrentHashMap<>(31);
 	/*
 	 * This {@code ClassReflectNullPlaceHolder} class is created to indicate the cached class value is
 	 * initialized to null rather than the default value null ;e.g. {@code cachedDeclaringClass}
@@ -402,8 +404,11 @@ private static void forNameAccessCheck(final SecurityManager sm, final Class<?> 
 @CallerSensitive
 public static Class<?> forName(String className) throws ClassNotFoundException
 {
+	Class<?> cls = classForNameList.get(className);
+	if (cls != null)
+		return cls;
 /*[IF JAVA_SPEC_VERSION >= 18]*/
-	return forName(className, getStackClass(1));
+	cls = forName(className, getStackClass(1));
 /*[ELSE] JAVA_SPEC_VERSION >= 18
 	@SuppressWarnings("removal")
 	SecurityManager sm = null;
@@ -415,18 +420,19 @@ public static Class<?> forName(String className) throws ClassNotFoundException
 		sm = System.getSecurityManager();
 	}
 	if (null == sm) {
-		return forNameImpl(className, true, ClassLoader.callerClassLoader());
+		cls = forNameImpl(className, true, ClassLoader.callerClassLoader());
 	}
 	Class<?> caller = getStackClass(1);
 	ClassLoader callerClassLoader = null;
 	if (null != caller) {
 		callerClassLoader = caller.getClassLoaderImpl();
 	}
-	Class<?> c = forNameImpl(className, false, callerClassLoader);
-	forNameAccessCheck(sm, caller, c);
-	J9VMInternals.initialize(c);
-	return c;
+	cls = forNameImpl(className, false, callerClassLoader);
+	forNameAccessCheck(sm, caller, cls);
+	J9VMInternals.initialize(cls);
 /*[ENDIF] JAVA_SPEC_VERSION >= 18 */
+	classForNameList.putIfAbsent(className, cls);
+	return cls;
 }
 
 /*[IF JAVA_SPEC_VERSION >= 18]*/
