@@ -695,16 +695,14 @@ ffi_prep_args (unsigned char *stack, extended_cif *ecif)
       int type = (*type_ptr)->type;
       int size = (*type_ptr)->size;
 
-     /*  Check how a structure type is passed.   */
-      if (type == FFI_TYPE_STRUCT) {
-				memcpy(arg_ptr, (char*)p_argv, (*type_ptr)->size);
-				arg_ptr += (*type_ptr)->size;
-				continue;
-      }
-
      /*  Now handle all primitive int/pointer/float data types.  */
       switch (type) 
 	{
+    
+    case FFI_TYPE_STRUCT:
+      memcpy(arg_ptr, *p_argv, size);
+      break;
+
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE 
 	  case FFI_TYPE_LONGDOUBLE: 
 	    *(long double *) arg_ptr = * (long double *) (*p_argv);
@@ -743,23 +741,18 @@ ffi_prep_args (unsigned char *stack, extended_cif *ecif)
  
 	  case FFI_TYPE_UINT16:
 	    *(unsigned short *) arg_ptr = * (unsigned short *) (* p_argv);
-			arg_ptr += 2;
 	    break;
  
 	  case FFI_TYPE_SINT16:
 	    *(signed short *) arg_ptr = * (signed short *) (* p_argv);
-			arg_ptr += 2;
 	    break;
 
 	  case FFI_TYPE_UINT8:
 	    *(unsigned char *) arg_ptr = * (unsigned char *) (* p_argv);
-		arg_ptr += 3;
 	    break;
  
 	  case FFI_TYPE_SINT8:
 	    *(signed char *) arg_ptr = * (signed char*) (* p_argv);
-
-			arg_ptr += 3;
 	    break;
  
 	  default:
@@ -800,16 +793,17 @@ ffi_prep_cif_machdep(ffi_cif *cif)
 
   /* 64-bit XPLINK handling below */
 
+  /* TODO: This comment is describing 31-bit behaviour */
   /* Determine return value handling.  
-     Integral values <=4bytes are widened and put in GPR3
-     Integral values >4bytes and <=8bytes are widened and put in
-     GPR2 (left most 32-bits) and GPR3 (right most 32-bits)
+     Integral values <=8bytes are widened and put in GPR3
+     Integral values >8bytes and <=16bytes are widened and put in
+     GPR2 (left most 64-bits) and GPR3 (right most 64-bits)
      Floating point values, including complex type, are returned in 
      FPR0, FPR2, FPR4, FPR6 (as many registers as required)
-     Aggregates size of <=4 are returned GPR1 (left adjusted)
-     Aggregates size between 5bytes-8bytes are returned in GPR1 and 
+     Aggregates size of <=8 are returned GPR1 (left adjusted)
+     Aggregates size between 9bytes-16bytes are returned in GPR1 and 
      GPR2 (left adjusted)
-     Aggregates size between 9bytes-12bytes are returned in GPR1, GPR2,
+     Aggregates size between 17bytes-24bytes are returned in GPR1, GPR2,
      and GPR3 (left adjusted)
      Anything greater in size and anyother type is returned in a buffer,
      the buffer is passed in as hidden first argument.
@@ -825,12 +819,10 @@ ffi_prep_cif_machdep(ffi_cif *cif)
       /* Structures are returned in GPR or buffer depending on size.  */
       case FFI_TYPE_STRUCT:
 	struct_size = cif->rtype->size;
-	if (struct_size <= 8)
-	  cif->flags = FFI390_RET_INT64;
-	else if (struct_size <= 12)
+        if (struct_size <= 24)
 	  cif->flags = FFI390_RET_STRUCT;
 	else
-	  n_ov = struct_size;
+          n_gpr++;
 	break; 
 
       /* Floating point and complex values are returned in fpr0, 2, 4, 6 */
@@ -987,7 +979,10 @@ ffi_call(ffi_cif *cif,
   switch (cif->abi)
     {
       case FFI_SYSV:
-        ffi_call_SYSV(fn, &ecif, cif->flags, ecif.rvalue, cif->bytes, cif->nargs, (*cif->arg_types)->size);
+        if (cif->arg_types != NULL)
+          ffi_call_SYSV(fn, &ecif, cif->flags, ecif.rvalue, cif->bytes, cif->nargs, (*cif->arg_types)->size);
+        else 
+          ffi_call_SYSV(fn, &ecif, cif->flags, ecif.rvalue, cif->bytes, cif->nargs, 0);
 #ifdef FFI_DEBUG
 	printf("called_ffi_call_sysv nargs=%d\n",cif->nargs);
 #endif
