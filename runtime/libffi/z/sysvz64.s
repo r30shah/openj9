@@ -62,7 +62,7 @@ FFISYS CELQPRLG DSASIZE=DSASZ,PSECT=ASP
 GETNARGS DS 0H
 *Get the cif->nargs from caller's stack
          L   9,(2176+(((DSASZ+31)/32)*32)+44)(,4) 
-         CGIJE 9,0,CALL
+         CIJE 9,0,CALL
 
 *Place arguments passed to the foreign function based on type
 ARGLOOP  LG  11,0(10,5)       Get pointer to current ffi_type
