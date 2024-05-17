@@ -27,10 +27,10 @@ FFISYS CELQPRLG DSASIZE=DSASZ,PSECT=ASP
 *Input:   stack, extended_cif
 *Output:  void
 *Action:  Is an external call to C-XPLINK routine
-*         It saves function's arguments in this 
+*         It saves function's arguments in this
 *         routine's local storage
-         LA 1,LSTOR          
-         LGR 13,1 
+         LA 1,LSTOR
+         LGR 13,1
          CELQCALL   PREPARGS,WORKREG=10
 
          LGR 5,14              Copy of parameter types
@@ -48,33 +48,33 @@ FFISYS CELQPRLG DSASIZE=DSASZ,PSECT=ASP
 
 *Dumb handling for now, but if struct return with size > 24
 *bytes, we need to allocate space for the dummy argument
-*that holds the return value pointer 
+*that holds the return value pointer
          LG 15,(2176+(((DSASZ+31)/32)*32)+8)(,4)
          LG 15,0(,15)           ecif->cif
          LG 15,16(,15)          cif->rtype
          LG 15,0(,15)           rtype->size
          CGIJNH 15,24,GETNARGS
 
-         LG 1,(2176+(((DSASZ+31)/32)*32)+24)(,4)         
+         LG 1,(2176+(((DSASZ+31)/32)*32)+24)(,4)
          AHI 0,1                One less gpr to work with
          AHI 7,8                argument area is 8 bytes larger
 
 GETNARGS DS 0H
 *Get the cif->nargs from caller's stack
-         L   9,(2176+(((DSASZ+31)/32)*32)+44)(,4) 
+         L   9,(2176+(((DSASZ+31)/32)*32)+44)(,4)
          CIJE 9,0,CALL
 
 *Place arguments passed to the foreign function based on type
 ARGLOOP  LG  11,0(10,5)       Get pointer to current ffi_type
          LLGC 11,11(11)       ffi_type->type
          SLL 11,2             Find offset in branch tabel
-         LA  15,ATABLE        
-         L   15,0(11,15)      
+         LA  15,ATABLE
+         L   15,0(11,15)
          BR  15
- 
+
 *Following code prepares ffi arguments, according to xplink
 
-* technically, this isn't allowed 
+* technically, this isn't allowed
 * but openJ9 uses ffi_type_void for void functions
 * so support it since it doesn't break anything
 * assuming we don't have something weird like a void type
@@ -121,7 +121,7 @@ IARGA    DS 0H                INT/UI32 stored in arg area
          B CONT               Next parameter
 
 UI8      DS 0H                ffi_type_uint8
-SI8      DS 0H                ffi_type_sint8 
+SI8      DS 0H                ffi_type_sint8
          LA 15,I8
          LR 11,0
          SLL 11,2             Pass this parm in gpr or arg area
@@ -133,7 +133,7 @@ SI8      DS 0H                ffi_type_sint8
 INC2     DS 0H
          AHI 0,1              Now we have one less gpr left
 J2       DS 0H
-         BR 15 
+         BR 15
 
 I8GPR1   DS 0H                Char type passed in gpr1
          LLC 1,0(6,13)
@@ -146,7 +146,7 @@ I8GPR2   DS 0H                Char type passed in gpr2
          AHI 6,1              Advance the first byte of parm value
          B CONT               Next parameter
 I8GPR3   DS 0H                Char type passed in gpr3
-         LLC 3,0(6,13)   
+         LLC 3,0(6,13)
          AHI 7,8              Advance to the next word in arg area
          AHI 6,1              Advance the first byte of parm value
          B CONT
@@ -170,7 +170,7 @@ UI16     DS 0H                ffi_type_uint16
 INC3     DS 0H
          AHI 0,1              Now we have one less gpr left
 J3       DS 0H
-         BR 15 
+         BR 15
 
 U16GPR1  DS 0H                u_short type passed in gpr1
          LLH 1,0(6,13)
@@ -199,18 +199,18 @@ SI16     DS 0H                ffi_type_sint16
          LA 15,S16
          LR 11,0
          SLL 11,2            Pass this parm in gpr or arg area
-         L  15,0(11,15)      
+         L  15,0(11,15)
          CFI  0,3             GPRs left to pass parms in?
          BL INC4
          LA 0,3               Reached max gprs
-         B  J4            
+         B  J4
 INC4     DS 0H
          AHI 0,1              Now we have one less gpr left
 J4       DS 0H
-         BR 15 
+         BR 15
 
 S16GPR1  DS 0H                s_SHORT type passsed in gpr1
-         LH 1,0(6,13)   
+         LH 1,0(6,13)
          AHI 7,8              Advance to the next word in arg area
          AHI 6,2              Advance the first 2 bytes of parm value
          B CONT               Next parameter
@@ -244,7 +244,7 @@ SI64     DS 0H                ffi_type_sint64
 INC5     DS 0H
          AHI 0,1              Now we have two less gpr left
 J5       DS 0H
-         BR 15 
+         BR 15
 
 S64GPR1 DS 0H                INT64 type passed in gpr1
          LG  1,0(6,13)
@@ -273,7 +273,7 @@ PTR      DS 0H                ffi_type_pointer
          LA 15,PTRS
          LR 11,0
          SLL 11,2             Pass this parm in gpr or arg area
-         L  15,0(11,15)      
+         L  15,0(11,15)
          CFI  0,3             GPRs left to pass parms in?
          BL INC6
          LA 0,3               Reached max gprs
@@ -281,7 +281,7 @@ PTR      DS 0H                ffi_type_pointer
 INC6     DS 0H
          AHI 0,1              Now we have one less gpr left
 J6       DS 0H
-         BR 15 
+         BR 15
 
 PTRG1    DS 0H                PTR type passed in gpr1
          LG 1,0(6,13)
@@ -321,12 +321,12 @@ J64      DS 0H
          BR 15
 
 U64GP1   DS 0H                u_INT64 passed in gpr1, gpr2
-         LG 1,0(6,13)  
+         LG 1,0(6,13)
          AHI 7,8              Advance two slots in arg area
          AHI 6,8              Advance the first 8 bytes of parm value
          B CONT               Next parameter
 U64GP2   DS 0H                u_INT64 passed in gpr2, gpr3
-         LG 2,0(6,13) 
+         LG 2,0(6,13)
          AHI 7,8              Advance two slots in arg area
          AHI 6,8              Advance the first 8 bytes of parm value
          B CONT               Next parameter
@@ -342,13 +342,13 @@ U64ARGA  DS 0H                u_INT64 in arg area
          AHI 7,8              Bump one word in arg area
          AHI 6,8              Advance the first 8 bytes of parm value
          B CONT               Next parameter
-   
+
 FLT      DS 0H                ffi_type_float
          LA 15,FLTS
          LR 11,14
          SLL 11,2             Pass in fpr or arg area
          L 15,0(11,15)
-         CFI 14,4             FPRs left to pass parms in?            
+         CFI 14,4             FPRs left to pass parms in?
          BL INC7L
          LA 14,4              Reached max fprs
          B JL7
@@ -406,7 +406,7 @@ INC7     DS 0H
 INCGD    DS 0H
          AHI 0,1
 J7       DS 0H
-         BR 15 
+         BR 15
 
 FLDR0    DS 0H                DOUBLE passed in fpr0
          LD 0,0(6,13)
@@ -443,7 +443,7 @@ LD       DS 0H                ffi_type_longdouble
          BH  0(11,15)         Pass l_DOUBLE in arg area
          LA 11,4
          L  15,0(11,15)       Pass l_DOUBLE in fpr4-fpr6
-         BR 15 
+         BR 15
 
 DFPR0    DS 0H                l_DOUBLE passed in fpr0-fpr2
          LD 0,0(6,13)
@@ -453,11 +453,11 @@ DFPR0    DS 0H                l_DOUBLE passed in fpr0-fpr2
          LD 2,0(6,13)         l_DOUBLE passed in fpr0-fpr2
          STD 2,8(7,15)       Store the second 8bytes in arg area
          AHI 6,4              Bump stack once here, once at end
-         AHI 7,16             Advance two slots 
+         AHI 7,16             Advance two slots
          AHI 14,2             Now we have two less fprs left
          B CONT               Next Parameter
 DFPR4    DS 0H                l_DOUBLE passed in fpr4-fpr6
-         LD 4,0(6,13)     
+         LD 4,0(6,13)
          LA 15,2176(,4)       Start of arg area
          STD 4,0(7,15)       Store the first 8bytes in arg area
          AHI 6,8              Bump stack to next parameter
@@ -478,14 +478,14 @@ DARGF    DS 0H                l_DOUBLE in arg area
          LA  14,4             We reached max fprs
          B CONT               Next parameter
 
-*If we have spare gprs, pass up to 24 bytes in GPRs. 
+*If we have spare gprs, pass up to 24 bytes in GPRs.
 STRCT    DS 0H
          LG  11,0(10,5)
          LG 15,0(,11)          type->size
 *todo NULL check?
 
-*check if first element is float or double 
-STFPCHK  DS 0H  
+*check if first element is float or double
+STFPCHK  DS 0H
          LG 15,16(,11)         type->elements
          LG 15,0(,15)           type->elements[0]
          LH 15,10(,15)          type->elements[0]->type
@@ -532,7 +532,7 @@ STFPCHKF2 DS 0H
          CFI 14,4               no FPRs are available
          BNL STRCT2             if yes, not special case
 
-         CFI 14,3               1 FPR is available                
+         CFI 14,3               1 FPR is available
          BNL STRCT2             if yes, struct won't fit
 
          CFI 14,2
@@ -599,7 +599,7 @@ STFPCHKD2 DS 0H
          CFI 14,4               no FPRs are available
          BNL STRCT2             if yes, not special case
 
-         CFI 14,3               1 FPR is available                
+         CFI 14,3               1 FPR is available
          BNL STRCT2             if yes, struct won't fit
 
          CFI 14,2
@@ -654,7 +654,7 @@ STFPCHKD246 DS 0H
 *at this point we've weeded out all the float/double
 *pair structs that get passed purely in FPRs
 STRCT2  DS 0H
-         LG 15,0(,11)          type->size         
+         LG 15,0(,11)          type->size
          CFI 15,8              Struct <= 8 bytes?
          BNH  BYTE8
          CFI 15,16             Struct <= 16 bytes?
@@ -726,7 +726,7 @@ BYTE16   DS 0H               Struct <= 16 bytes
 BYTE16R1 DS 0H               Struct goes in R1-R2
          CFI 0,1             are R1+R2 available?
          BNL BYTE16R2
-        
+
          LG 1,0(6,13)
          LG 2,8(6,13)
 
@@ -741,7 +741,7 @@ BYTE16R1 DS 0H               Struct goes in R1-R2
 BYTE16R2 DS 0H               Struct goes in R2-R3
          CFI 0,2             are R2+R3 available?
          BNL BYTE16R3
-         
+
          LG 2,0(6,13)
          LG 3,8(6,13)
 
@@ -751,15 +751,37 @@ BYTE16R2 DS 0H               Struct goes in R2-R3
 
          AFI 0,2
          B STRCTLP
-         
+
 
 BYTE16R3 DS 0H               Struct goes in R3+Memory
          CFI 0,3             are R3 available?
          BNL STRCTLP
          LG 3,0(6,13)
+         AFI 0,1
+         AFI 15,-8
+         AFI 6,8
+         AFI 7,8
+         CFI 15,8
+         BNL STRCTLP
 
-         AFI 0,2
-         B STRCTLP
+EXP      DS 0H
+         CFI 15,0            Size remaining > 0?
+         BL JCB
+         LB 12,0(6,13)        Load the byte of the struct
+         STC 12,2176(7,4)     Store in next byte in arg area
+         AFI  6,1            Move to next byte in struct
+         AFI  7,1            Move to next byte in arg area
+         AFI 15,-1           Decrement size of struct
+         B  EXP
+
+JCB      DS 0H
+         AFI 7,-1
+         AFI 6,-1
+         LG 15,0(,11)          type->size
+         AFI 15,-8
+         AFI 7,8
+         SR 7,15
+         B CONT
 
 BYTE16F0 DS 0H               Struct goes in FPR0-FPR2
 BYTE16F2 DS 0H               Struct goes in FPR2-FPR4
@@ -771,7 +793,7 @@ BYTE24   DS 0H               Struct <= 24 bytes
 
 BYTE24R1 DS 0H               Struct goes in R1-R3
          CFI 0,1             are R1+R2+R3 available?
-         BNL BYTE24R2 
+         BNL BYTE24R2
          LG 1,0(6,13)
          LG 2,8(6,13)
          LG 3,16(6,13)
@@ -785,16 +807,16 @@ BYTE24R1 DS 0H               Struct goes in R1-R3
 
 BYTE24R2 DS 0H               Struct goes in R2,R3+(potentially)Memory
          CFI 0,2             are R1+R2+R3 available?
-         BNL BYTE24R3 
+         BNL BYTE24R3
          LG 2,0(6,13)
          LG 3,8(6,13)
-        
+
          AFI 0,3
          B STRCTLP
 
 BYTE24R3 DS 0H               Struct goes in R3+Memory
          CFI 0,3             are R3 available?
-         BNL STRCTLP 
+         BNL STRCTLP
          LG 3,0(6,13)
 
          AFI 0,3
@@ -804,10 +826,10 @@ BYTE24F0 DS 0H               Struct goes in FPR0-FPR4+Memory
 BYTE24F2 DS 0H               Struct goes in FPR2-FPR6+Memory
 BYTE24F4 DS 0H               Struct goes in FPR4-FPR6+Memory
 BYTE24F6 DS 0H               Struct goes in FPR6+Memory
- 
+
 STRCTLP  DS 0H               Rest of struct goes in Memory
          CFI 15,0            Size remaining > 0?
-         BL CONT
+         BNH CONT
 
          LB 12,0(6,13)        Load the byte of the struct
          STC 12,2176(7,4)     Store in next byte in arg area
@@ -820,9 +842,9 @@ STRCTLP  DS 0H               Rest of struct goes in Memory
 
 CONT     DS 0H                End of processing curr_param
          AHI 10,8             Next parameter type
-*        AHI 6,4              Next parameter value stored 
-         BCT 9,ARGLOOP        
-  
+*        AHI 6,4              Next parameter value stored
+         BCT 9,ARGLOOP
+
 *Get function address, first argument passed,
 *and return type, third argument passed from caller's
 *argument area.
@@ -831,8 +853,8 @@ CALL     DS 0H
          LA 11,0
          LG 6,(2176+(((DSASZ+31)/32)*32))(,4)
          L 11,(2176+(((DSASZ+31)/32)*32)+20)(,4)
-  
-*Call the foreign function using its address given 
+
+*Call the foreign function using its address given
 *to us from an xplink compiled routine
 
 *         L 5,16(,6)
@@ -840,7 +862,7 @@ CALL     DS 0H
          LMG 5,6,0(6)
          BASR 7,6
          DC    X'0700'
- 
+
 *What: Processing the return value based
 *      on information in cif->flags, 3rd
 *      parameter passed to this routine
@@ -900,17 +922,17 @@ RS       DS 0H
 * also if we use more than 2 floating point types we use GPRs
 * if we have at least one integral type, we use GPRs based on size
 * if the struct is > 24 bytes we have already passed in the return
-* pointer as the first argument to the callee "fn" 
+* pointer as the first argument to the callee "fn"
 * so that work was outsource to the compiler
 * turning this into some simple cases for clarity
-* if struct <= 24 bytes 
+* if struct <= 24 bytes
 *   if elements contains >1 integral types -> GPRs
 *   if elements contains only one type of float
 *     if num elements <= 2 -> FPRs
 *     else -> GPRs
-         
 
-* currently we have 
+
+* currently we have
 * r9 = cif->rtype
 * r7 = ecif->rvalue
 RSREG    DS 0H
@@ -1007,7 +1029,7 @@ RSGPR    DS 0H
 * so to save us from having to figure out
 * how many regs to save, we'll just save them all
 * into some local storage, then copy the right amount
-         LA 15,SSTOR      
+         LA 15,SSTOR
          STG  1,0(,15)
          STG  2,8(,15)
          STG  3,16(,15)
@@ -1015,9 +1037,9 @@ RSGPR    DS 0H
 
 * label to copy the struct to the return area
 * just move one byte at a time from r15 to r7
-* while r14 is non-zero 
+* while r14 is non-zero
 
-RSCPY    DS 0H 
+RSCPY    DS 0H
          CGIJNH 14,0,RET
          LB 1,0(,15)
 *         STB 1,0(,7)
@@ -1026,19 +1048,19 @@ RSCPY    DS 0H
          LA 7,1(,7)
          AFI 14,-1
          B RSCPY
- 
+
 * return struct in pointer passed as dummy first argument
 * this should be the same pointer passed to ffi_call
 * and should have been set up in  prep_args
 * only using an explicit label for clarity
-RSP      DS 0H                 
-         B RET                  
-  
-RET      DS 0H 
+RSP      DS 0H
+         B RET
+
+RET      DS 0H
          CELQEPLG
 
 ATABLE DC A(I)                Labels for parm types
- DC A(D)       
+ DC A(D)
  DC A(LD)
  DC A(UI8)
  DC A(SI8)
@@ -1046,7 +1068,7 @@ ATABLE DC A(I)                Labels for parm types
  DC A(SI16)
  DC A(UI32)
  DC A(SI64)
- DC A(PTR) 
+ DC A(PTR)
  DC A(UI64)
  DC A(FLT)
  DC A(STRCT)
@@ -1085,7 +1107,7 @@ FLD DC A(FLDR0)               Labels to store DOUBLE in fpr
 LDD DC A(DFPR0)               Labels to store l_DOUBLE in fpr
  DC A(DFPR4)
  DC A(DARGF)                  Label to store l_DOUBLE in arg area
-UI64S DC A(U64GP1)           Labels to store u_INT64 in gpr 
+UI64S DC A(U64GP1)           Labels to store u_INT64 in gpr
   DC A(U64GP2)
   DC A(U64GP3)
   DC A(U64ARGA)               Label to store u_INT64 in arg area
@@ -1100,7 +1122,7 @@ RTABLE DC A(RV)
  DC A(RD)
  DC A(RLD)
  DC A(RI)
- DC A(RLL) 
+ DC A(RLL)
 RETVOID  EQU  X'0'
 RETSTRT  EQU  X'1'
 RETFLOT  EQU  X'2'
@@ -1110,8 +1132,8 @@ RETINT6  EQU  X'5'
 OFFSET   EQU  7
 BASEREG  EQU  8
 GPX      EQU  0
-WRKREG   EQU  11    
-IDXREG   EQU  10    
+WRKREG   EQU  11
+IDXREG   EQU  10
 STKREG   EQU  13
 FPX      EQU  14
 CEEDSAHP CEEDSA SECTYPE=XPLINK
@@ -1123,3 +1145,4 @@ SSTOR DS  XL32
 SSIZE DS  XL8
 DSASZ    EQU (*-CEEDSAHP_FIXED)
  END FFISYS
+
