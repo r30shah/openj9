@@ -164,6 +164,7 @@ loadConst(TR::DataType dt)
 int32_t
 TR_JProfilingValue::perform()
    {
+   static bool performJProfilingInLowOpts = feGetEnv("TR_PerformJProfilingInWarm") != NULL;
    if (comp()->getProfilingMode() == JProfiling)
       {
       if (trace())
@@ -174,6 +175,11 @@ TR_JProfilingValue::perform()
       if (trace())
          traceMsg(comp(), "JProfiling has been enabled, run JProfilingValue\n");
       }
+   else if (comp()->getRecompilationInfo() && comp()->getOptLevel() <= warm && performJProfilingInLowOpts)
+      {
+      if (trace())
+         traceMsg(comp(), "JProfiling for warm or lower enabled, performing");
+      }
    else
       {
       if (trace())
@@ -181,17 +187,21 @@ TR_JProfilingValue::perform()
       return 0;
       }
 
-   cleanUpAndAddProfilingCandidates();
-   if (trace())
-      comp()->dumpMethodTrees("After Cleaning up Trees");
-   lowerCalls();
-
    if (comp()->isProfilingCompilation())
       {
+      cleanUpAndAddProfilingCandidates();
+      if (trace())
+         comp()->dumpMethodTrees("After Cleaning up Trees");
+      lowerCalls();
       TR::Recompilation *recomp = comp()->getRecompilationInfo();
       TR_ValueProfiler *profiler = recomp->getValueProfiler();
       TR_ASSERT(profiler, "Recompilation should have a ValueProfiler in a profiling compilation");
       profiler->setPostLowering();
+      }
+   else if (comp()->cg()->prepareForGRA() && comp()->getRecompilationInfo()->findOrCreateProfileInfo() != NULL)
+      {
+      cleanUpAndAddProfilingCandidates();
+      lowerCalls();
       }
    return 1;
    }
