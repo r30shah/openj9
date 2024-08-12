@@ -114,6 +114,8 @@ public:
 
    bool supportsTrapsInTMRegion();
 
+   bool supportsInliningOfIsAssignableFrom();
+
    using J9::CodeGenerator::addAllocatedRegister;
    void addAllocatedRegister(TR_PseudoRegister * temp);
 

@@ -4145,3 +4145,10 @@ J9::Z::CodeGenerator::supportsTrapsInTMRegion()
    {
    return self()->comp()->target().isZOS();
    }
+
+bool
+J9::Z::CodeGenerator::supportsInliningOfIsAssignableFrom()
+   {
+   static bool disableInliningOfIsAssignableFrom = feGetEnv("TR_DisableInlineIsAssignableFrom") != NULL;
+   return !disableInliningOfIsAssignableFrom;
+   }

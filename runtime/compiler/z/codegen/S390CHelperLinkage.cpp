@@ -264,7 +264,8 @@ TR::Register * J9::Z::CHelperLinkage::buildDirectDispatch(TR::Node * callNode, T
    RealRegisterManager RealRegisters(cg());
    bool isHelperCallWithinICF = deps != NULL;
    // TODO: Currently only jitInstanceOf is fast path helper. Need to modify following condition if we add support for other fast path only helpers
-   bool isFastPathOnly = callNode->getOpCodeValue() == TR::instanceof;
+   TR::SymbolReference * callSymRef = callNode->getSymbolReference();
+   bool isFastPathOnly = callNode->getOpCodeValue() == TR::instanceof || callSymRef->getReferenceNumber() == TR_checkAssignable;
    traceMsg(comp(),"%s: Internal Control Flow in OOL : %s\n",callNode->getOpCode().getName(),isHelperCallWithinICF  ? "true" : "false" );
    for (int i = TR::RealRegister::FirstGPR; i < TR::RealRegister::NumRegisters; i++)
       {
@@ -353,7 +354,6 @@ TR::Register * J9::Z::CHelperLinkage::buildDirectDispatch(TR::Node * callNode, T
 #endif
 #endif
       }
-   TR::SymbolReference * callSymRef = callNode->getSymbolReference();
    void * destAddr = callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->getMethodAddress();
    cursor = new (cg()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, regRA, destAddr, callSymRef, cg());
    cursor->setDependencyConditions(preDeps);
