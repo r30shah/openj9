@@ -427,6 +427,7 @@ TR::Register * J9::Z::CHelperLinkage::buildDirectDispatch(TR::Node * callNode, T
    // We need to fill returnReg only if it requested by evaluator or node returns value or address
    if (returnReg != NULL)
       generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), callNode, returnReg,  RealRegisters.use(isFastPathOnly ? getIntegerReturnRegister():getLongHighReturnRegister()), cursor);
-
+   if (callSymRef->getReferenceNumber() == TR_checkAssignable)
+      callNode->setRegister(returnReg);
    return returnReg;
    }
