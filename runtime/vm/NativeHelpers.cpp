@@ -119,6 +119,7 @@ cInterpGetStackClassJEP176Iterator(J9VMThread *currentThread, J9StackWalkState *
 				|| (walkState->method == vm->jlrMethodInvoke)
 #if JAVA_SPEC_VERSION >= 18
 				|| (walkState->method == vm->jlrMethodInvokeMH)
+				|| (walkState->method == vm->jliMethodHandleAsVarargsCollectorInvokeWithArgs)
 #endif /* JAVA_SPEC_VERSION >= 18 */
 				|| (vm->srMethodAccessor && vmFuncs->instanceOfOrCheckCast(currentClass, J9VM_J9CLASS_FROM_HEAPCLASS(currentThread, *((j9object_t *)vm->srMethodAccessor))))
 				|| (vm->srConstructorAccessor && vmFuncs->instanceOfOrCheckCast(currentClass, J9VM_J9CLASS_FROM_HEAPCLASS(currentThread, *((j9object_t *)vm->srConstructorAccessor))))

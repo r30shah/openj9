@@ -100,6 +100,7 @@ isPrivilegedFrameIterator(J9VMThread * currentThread, J9StackWalkState * walkSta
 		if ((walkState->method == vm->jlrMethodInvoke)
 #if JAVA_SPEC_VERSION >= 18
 			|| (walkState->method == vm->jlrMethodInvokeMH)
+			|| (walkState->method == vm->jliMethodHandleAsVarargsCollectorInvokeWithArgs)
 #endif /* JAVA_SPEC_VERSION >= 18 */
 			|| (walkState->method == vm->jliMethodHandleInvokeWithArgs)
 			|| (walkState->method == vm->jliMethodHandleInvokeWithArgsList)
@@ -1276,6 +1277,7 @@ isPrivilegedFrameIteratorGetAccSnapshot(J9VMThread * currentThread, J9StackWalkS
 		if ((walkState->method == vm->jlrMethodInvoke)
 #if JAVA_SPEC_VERSION >= 18
 			|| (walkState->method == vm->jlrMethodInvokeMH)
+			|| (walkState->method == vm->jliMethodHandleAsVarargsCollectorInvokeWithArgs)
 #endif /* JAVA_SPEC_VERSION >= 18 */
 			|| (walkState->method == vm->jliMethodHandleInvokeWithArgs)
 			|| (walkState->method == vm->jliMethodHandleInvokeWithArgsList)
@@ -1700,6 +1702,7 @@ isPrivilegedFrameIteratorGetCallerPD(J9VMThread * currentThread, J9StackWalkStat
 	if ((walkState->method == vm->jlrMethodInvoke)
 #if JAVA_SPEC_VERSION >= 18
 		|| (walkState->method == vm->jlrMethodInvokeMH)
+		|| (walkState->method == vm->jliMethodHandleAsVarargsCollectorInvokeWithArgs)
 #endif /* JAVA_SPEC_VERSION >= 18 */
 		|| (walkState->method == vm->jliMethodHandleInvokeWithArgs)
 		|| (walkState->method == vm->jliMethodHandleInvokeWithArgsList)

@@ -247,6 +247,16 @@ standardInit(J9JavaVM *vm, char *dllName)
 				goto _fail;
 			}
 			vm->jlrMethodInvokeMH = ((J9JNIMethodID*)invokeMethodMH)->method;
+			(*(JNIEnv*)vmThread)->DeleteLocalRef((JNIEnv*)vmThread, clazz);
+			clazz = (*(JNIEnv*)vmThread)->FindClass((JNIEnv*)vmThread, "java/lang/invoke/MethodHandleImpl$AsVarargsCollector");
+			if (NULL == clazz) {
+				goto _fail;
+			}
+			jmethodID invokeAsVarargsMethodMH = invokeMethod = (*(JNIEnv*)vmThread)->GetMethodID((JNIEnv*)vmThread, clazz, "invokeWithArguments", "([Ljava/lang/Object;)Ljava/lang/Object;");
+			if (NULL == invokeAsVarargsMethodMH) {
+				goto _fail;
+			}
+			vm->jliMethodHandleAsVarargsCollectorInvokeWithArgs = ((J9JNIMethodID*)invokeAsVarargsMethodMH)->method;
 		}
 #endif /* JAVA_SPEC_VERSION >= 18 */
 		(*(JNIEnv*)vmThread)->DeleteLocalRef((JNIEnv*)vmThread, clazz);

@@ -1536,6 +1536,7 @@ exit:
 		return ((method == vm->jlrMethodInvoke)
 #if JAVA_SPEC_VERSION >= 18
 				|| (method == vm->jlrMethodInvokeMH)
+				|| (method == vm->jliMethodHandleAsVarargsCollectorInvokeWithArgs)
 #endif /* JAVA_SPEC_VERSION >= 18 */
 				|| (method == vm->jliMethodHandleInvokeWithArgs)
 				|| (method == vm->jliMethodHandleInvokeWithArgsList)

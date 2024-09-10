@@ -5892,6 +5892,7 @@ typedef struct J9JavaVM {
 	struct J9Method* jlrMethodInvoke;
 #if JAVA_SPEC_VERSION >= 18
 	struct J9Method* jlrMethodInvokeMH;
+	struct J9Method* jliMethodHandleAsVarargsCollectorInvokeWithArgs;
 #endif /* JAVA_SPEC_VERSION >= 18 */
 	struct J9Method* jliMethodHandleInvokeWithArgs;
 	struct J9Method* jliMethodHandleInvokeWithArgsList;
