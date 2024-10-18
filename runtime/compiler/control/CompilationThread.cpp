@@ -9010,6 +9010,19 @@ TR::CompilationInfoPerThreadBase::wrappedCompile(J9PortLibrary *portLib, void * 
                         }
                      }
                   }
+               
+               // If patchable JProfiling is enabled and we can recompile the
+               // method, insertPatchableJProfiling code into the body.
+               // TODO: Currently only a cold level optimization is added to the
+               // list.
+               // For the final implementation, it should be updated.
+               if (options->getOption(TR_EnablePatchableJProfiling)
+                     && options->allowRecompilation()
+                     && !options->getOption(TR_NoRecompile)
+                     && p->_optimizationPlan->getOptLevel() <= cold)
+                  {
+                  p->_optimizationPlan->setInsertPatchableJProfiling(true);
+                  }
                } // end of compilation strategy tweaks for Java
 
 
