@@ -181,10 +181,14 @@ TR_JProfilingValue::perform()
       return 0;
       }
 
-   cleanUpAndAddProfilingCandidates();
+   TR::list<TR::TreeTop *> valueProfilingPlaceHolderCalls(getTypedAllocator<TR::TreeTop*>(comp()->allocator()));
+
+   cleanUpAndAddProfilingCandidates(valueProfilingPlaceHolderCalls);
    if (trace())
       comp()->dumpMethodTrees("After Cleaning up Trees");
-   lowerCalls();
+
+   if (!valueProfilingPlaceHolderCalls.empty())
+      lowerCalls(valueProfilingPlaceHolderCalls);
 
    if (comp()->isProfilingCompilation())
       {
@@ -196,7 +200,7 @@ TR_JProfilingValue::perform()
    return 1;
    }
 
-void TR_JProfilingValue::cleanUpAndAddProfilingCandidates()
+void TR_JProfilingValue::cleanUpAndAddProfilingCandidates(TR::list<TR::TreeTop *> &valueProfilingPlaceHolderCalls)
    {
    TR::TreeTop *cursor = comp()->getStartTree();
    TR_BitVector *alreadyProfiledValues = new (comp()->trStackMemory()) TR_BitVector();
@@ -232,6 +236,7 @@ void TR_JProfilingValue::cleanUpAndAddProfilingCandidates()
          else
             {
             alreadyProfiledValues->set(value->getGlobalIndex());
+            valueProfilingPlaceHolderCalls.push_back(cursor);
             }
 
          }
@@ -242,14 +247,18 @@ void TR_JProfilingValue::cleanUpAndAddProfilingCandidates()
          }
       else
          {
-         performOnNode(node, cursor, alreadyProfiledValues, &checklist);
+         performOnNode(node, cursor, alreadyProfiledValues, &checklist, valueProfilingPlaceHolderCalls);
          }
       cursor = nextTT;
       }
    }
 
 void
-TR_JProfilingValue::performOnNode(TR::Node *node, TR::TreeTop *cursor, TR_BitVector *alreadyProfiledValues, TR::NodeChecklist *checklist)
+TR_JProfilingValue::performOnNode(TR::Node *node,
+                                    TR::TreeTop *cursor,
+                                    TR_BitVector *alreadyProfiledValues,
+                                    TR::NodeChecklist *checklist,
+                                    TR::list<TR::TreeTop *> &valueProfilingPlaceHolderCalls)
    {
    if (checklist->contains(node))
       return;
@@ -307,67 +316,31 @@ TR_JProfilingValue::performOnNode(TR::Node *node, TR::TreeTop *cursor, TR_BitVec
       call->setAndIncChild(1, TR::Node::aconst(node, (uintptr_t) info));
       TR::TreeTop *callTree = TR::TreeTop::create(comp(), preceedingTT, TR::Node::create(TR::treetop, 1, call));
       callTree->getNode()->setIsProfilingCode();
+      valueProfilingPlaceHolderCalls.push_back(callTree);
       }
 
    for (int i = 0; i < node->getNumChildren(); ++i)
-      performOnNode(node->getChild(i), cursor, alreadyProfiledValues, checklist);
+      performOnNode(node->getChild(i), cursor, alreadyProfiledValues, checklist, valueProfilingPlaceHolderCalls);
    }
 
 void
-TR_JProfilingValue::lowerCalls()
+TR_JProfilingValue::lowerCalls(TR::list<TR::TreeTop *> &valueProfilingPlaceHolderCalls)
    {
-   TR::TreeTop *cursor = comp()->getStartTree();
-   TR_BitVector *backwardAnalyzedAddressNodesToCheck = new (comp()->trStackMemory()) TR_BitVector();
-   while (cursor)
+   for (auto cursor = valueProfilingPlaceHolderCalls.begin(); cursor != valueProfilingPlaceHolderCalls.end(); ++cursor)
       {
-      TR::Node * node = cursor->getNode();
-      TR::TreeTop *nextTreeTop = cursor->getNextTreeTop();
-      if (node->isProfilingCode() &&
-         node->getOpCodeValue() == TR::treetop &&
-         node->getFirstChild()->getOpCode().isCall() &&
-         (comp()->getSymRefTab()->isNonHelper(node->getFirstChild()->getSymbolReference(), TR::SymbolReferenceTable::jProfileValueSymbol) ||
-            comp()->getSymRefTab()->isNonHelper(node->getFirstChild()->getSymbolReference(), TR::SymbolReferenceTable::jProfileValueWithNullCHKSymbol)))
-         {
-         // Backward Analysis in the extended basic block to get list of address nodes
-         for (TR::TreeTop *iter = cursor->getPrevTreeTop();
-            iter && (iter->getNode()->getOpCodeValue() != TR::BBStart || iter->getNode()->getBlock()->isExtensionOfPreviousBlock());
-            iter = iter->getPrevTreeTop())
-            {
-            TR::Node *currentTreeTopNode = iter->getNode();
-            if (currentTreeTopNode->getNumChildren() >= 1 && currentTreeTopNode->getFirstChild()->getType() == TR::Address)
-               backwardAnalyzedAddressNodesToCheck->set(currentTreeTopNode->getFirstChild()->getGlobalIndex());
-            }
-         // Forward walk to check for compressedref anchors of any evaluated address nodes identified above
-         for (TR::TreeTop *iter = cursor->getNextTreeTop();
-            iter && (iter->getNode()->getOpCodeValue() != TR::BBStart || iter->getNode()->getBlock()->isExtensionOfPreviousBlock());
-            iter = iter->getNextTreeTop())
-            {
-            TR::Node *currentTreeTopNode = iter->getNode();
-            if (currentTreeTopNode->getOpCodeValue() == TR::compressedRefs
-               && backwardAnalyzedAddressNodesToCheck->isSet(currentTreeTopNode->getFirstChild()->getGlobalIndex()))
-               {
-               dumpOptDetails(comp(), "%s Moving treetop node n%dn above the profiling call to avoid uncommoning\n",
-                  optDetailString(), iter->getNode()->getGlobalIndex());
-               iter->unlink(false);
-               cursor->insertBefore(iter);
-               }
-            }
-
-         backwardAnalyzedAddressNodesToCheck->empty();
-         TR::Node *child = node->getFirstChild();
-         dumpOptDetails(comp(), "%s Replacing profiling placeholder n%dn with value profiling trees\n",
-            optDetailString(), child->getGlobalIndex());
-         // Extract the arguments and add the profiling trees
-         TR::Node *value = child->getFirstChild();
-         TR_AbstractHashTableProfilerInfo *table = (TR_AbstractHashTableProfilerInfo*) child->getSecondChild()->getAddress();
-         bool needNullTest =  comp()->getSymRefTab()->isNonHelper(child->getSymbolReference(), TR::SymbolReferenceTable::jProfileValueWithNullCHKSymbol);
-         addProfilingTrees(comp(), cursor, value, table, needNullTest, true, trace());
-         // Remove the original trees and continue from the tree after the profiling
-         TR::TransformUtil::removeTree(comp(), cursor);
-         if (trace())
-            comp()->dumpMethodTrees("After Adding Profiling Trees");
-         }
-      cursor = nextTreeTop;
+      TR::TreeTop *callTreeTop = *cursor;
+      TR::Node *callNode = callTreeTop->getNode()->getFirstChild();
+      dumpOptDetails(comp(), "%s Replacing profiling placeholder n%dn with value profiling trees\n",
+                        optDetailString(), callNode->getGlobalIndex());
+      // Extract the arguments and add the profiling trees
+      TR::Node *profilingValue = callNode->getFirstChild();
+      TR_AbstractHashTableProfilerInfo *table = (TR_AbstractHashTableProfilerInfo*) callNode->getSecondChild()->getAddress();
+      bool needNullTest =  comp()->getSymRefTab()->isNonHelper(callNode->getSymbolReference(), TR::SymbolReferenceTable::jProfileValueWithNullCHKSymbol);
+      addProfilingTrees(comp(), callTreeTop, profilingValue, table, needNullTest, true, trace());
+      // Remove the original trees and continue from the tree after the profiling
+      TR::TransformUtil::removeTree(comp(), callTreeTop);
+      if (trace())
+         comp()->dumpMethodTrees("After Adding Profiling Trees"); 
       }
    }
 
