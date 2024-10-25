@@ -2046,7 +2046,7 @@ TR_BlockFrequencyInfo::getRawCount(TR_ByteCodeInfo &bci, TR_CallSiteInfo *callSi
    //
    int64_t frequency = 0;
    int32_t blocksMatched = 0;
-   bool currentCallSiteInfo = TR_CallSiteInfo::getCurrent(comp) == callSiteInfo;
+   bool currentCallSiteInfo = (callSiteInfo != NULL && comp != NULL) ? TR_CallSiteInfo::getCurrent(comp) == callSiteInfo : false;  
 
    for (uint32_t i = 0; i < _numBlocks; ++i)
       {
@@ -2093,7 +2093,7 @@ TR_BlockFrequencyInfo::getRawCount(TR_ByteCodeInfo &bci, TR_CallSiteInfo *callSi
                      rawCount -= _frequencies[subBVI.getNextElement()];
                   }
                }
-            if (comp->getOption(TR_TraceBFGeneration))
+            if (comp != NULL && comp->getOption(TR_TraceBFGeneration))
                traceMsg(comp, "   Slot %d has raw frequency %d\n", i, rawCount);
 
             if (maxCount > 0 && rawCount > 0)
@@ -2102,7 +2102,7 @@ TR_BlockFrequencyInfo::getRawCount(TR_ByteCodeInfo &bci, TR_CallSiteInfo *callSi
                rawCount = 0;
             }
 
-         if (comp->getOption(TR_TraceBFGeneration))
+         if (comp != NULL && comp->getOption(TR_TraceBFGeneration))
             traceMsg(comp, "   Slot %d has frequency %d\n", i, rawCount);
 
          frequency += rawCount;
@@ -2714,8 +2714,15 @@ void TR_ValueProfileInfo::dumpInfo(TR::FILE *logFile)
 void TR_BlockFrequencyInfo::dumpInfo(TR::FILE *logFile)
    {
    trfprintf(logFile, "\nDumping block frequency info\n");
+   int32_t maxCount = getMaxRawCount();
+   trfprintf(logFile, "\tmaxRawCount = %d\n", maxCount);
    for (int32_t i = 0; i < _numBlocks; i++)
-      trfprintf(logFile, "   Block index = %d, caller = %d, frequency = %d\n", _blocks[i].getByteCodeIndex(), _blocks[i].getCallerIndex(), _frequencies[i]);
+      {
+      trfprintf(logFile, "\t\tBlock index = %d, calller = %d, raw frequency = %d\n",
+                  _blocks[i].getByteCodeIndex(),
+                  _blocks[i].getCallerIndex(),
+                  getRawCount(_blocks[i], NULL, maxCount, NULL));
+      }
    }
 
 

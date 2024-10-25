@@ -9883,6 +9883,22 @@ TR::CompilationInfoPerThreadBase::compile(
             compiler->getOption(TR_UseSymbolValidationManager))
             compiler->getSymbolValidationManager()->populateWellKnownClasses();
 
+         if (compiler->getOption(TR_TraceProfilingData))
+            {
+            TR::Recompilation *recompInfo = compiler->getRecompilationInfo();
+            if (recompInfo != NULL)
+               {
+               TR_PersistentJittedBodyInfo *bodyInfo = recompInfo->getJittedBodyInfo();
+               if (bodyInfo != NULL)
+                  {
+                  TR_PersistentMethodInfo *methodInfo = bodyInfo->getMethodInfo();
+                  if (methodInfo->getRecentProfileInfo() != NULL && compiler->getOptions()->getLogFile() != NULL)
+                     {
+                     methodInfo->getRecentProfileInfo()->dumpInfo(compiler->getOptions()->getLogFile());
+                     }
+                  }
+               }
+            }
          rtn = compiler->compile();
 
          if (TR::Options::getVerboseOption(TR_VerboseCompilationDispatch) && !rtn)
