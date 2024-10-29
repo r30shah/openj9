@@ -79,8 +79,18 @@ class TR_JProfilingValue : public TR::Optimization
       TR_AbstractHashTableProfilerInfo *table,
       bool addNullCheck = false,
       bool extendBlocks = true,
-      bool trace = false);
-   
+      bool trace = false,
+      TR::TreeTop *lastTreeTop);
+
+   TR::TreeTop * addProfilingTreesLowOpt(
+      TR::Compilation *comp,
+      TR::CFG *cfg,
+      TR::TreeTop *insertionPoint,
+      TR::Node *value,
+      TR_AbstractHashTableProfilerInfo *table,
+      bool addNullCheck,
+      TR::TreeTop *lastTreeTop);
+
    private:
    static TR::Node *computeHash(TR::Compilation *comp, TR_AbstractHashTableProfilerInfo *table, TR::Node *value, TR::Node *baseAddr);
 
@@ -94,7 +104,7 @@ class TR_JProfilingValue : public TR::Optimization
    static TR::Node *loadValue(TR::Compilation *comp, TR::DataType dataType, TR::Node *base, TR::Node *index = NULL,
       TR::Node *offset = NULL);
    static TR::Node *storeNode(TR::Compilation *comp, TR::Node *value, TR::SymbolReference* &symRef);
-   static TR::Node *createHelperCall(TR::Compilation *comp, TR::Node *value, TR::Node *table);
+   static TR::Node *createHelperCall(TR::Compilation *comp, TR::Node *value, TR::Node *table, bool lowOptComp = false);
    static TR::Node *incrementMemory(TR::Compilation *comp, TR::DataType counterType, TR::Node *address);
    static TR::Node *copyGlRegDeps(TR::Compilation *comp, TR::Node *origGlRegDeps);
    static TR::Node *effectiveAddress(TR::DataType dataType, TR::Node *base, TR::Node *index = NULL, TR::Node *offset = NULL);
