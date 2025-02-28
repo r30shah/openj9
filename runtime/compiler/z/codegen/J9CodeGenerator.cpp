@@ -186,7 +186,10 @@ J9::Z::CodeGenerator::initialize()
    // that we adjust nanoTime() after restoring checkpoints. This adjustment is currently not implemented for the high res timer, hence
    // we need to stick to the Java nanoTime() implementation.
    if (!fej9->isSnapshotModeEnabled())
+      {
+      cg->setSupportsMaxPrecisionMilliTime();
       cg->setSupportsCurrentTimeMaxPrecision();
+      }
 
    // Support BigDecimal Long Lookaside versioning optimizations.
    if (!comp->getOption(TR_DisableBDLLVersioning))
