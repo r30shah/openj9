@@ -507,6 +507,7 @@ IDATA J9VMDllMain(J9JavaVM* vm, IDATA stage, void * reserved)
          UDATA aotFlags = J9SHR_RUNTIMEFLAG_CACHE_INITIALIZATION_COMPLETE;
          if (vm->sharedClassConfig && ((vm->sharedClassConfig->runtimeFlags & aotFlags) == aotFlags) && TR::Options::getAggressivityLevel() != OMR::Options::AGGRESSIVE_THROUGHPUT)
             {
+            printf("setSharedClassCache True\n");
             TR::Options::setSharedClassCache(true); // Set to true as long as cache is present and initialized
 
             TR_J9VMBase *feWithoutThread = TR_J9VMBase::get(vm->jitConfig, 0);
@@ -533,6 +534,7 @@ IDATA J9VMDllMain(J9JavaVM* vm, IDATA stage, void * reserved)
          else
 #endif /* defined(J9VM_OPT_SHARED_CLASSES) */
             {
+            printf("setSharedClassCache False - 537\n");
             TR::Options::setSharedClassCache(false);
             }
 
@@ -551,6 +553,7 @@ IDATA J9VMDllMain(J9JavaVM* vm, IDATA stage, void * reserved)
                {
                TR::Options::getAOTCmdLineOptions()->setOption(TR_NoLoadAOT);
                TR::Options::getAOTCmdLineOptions()->setOption(TR_NoStoreAOT);
+               printf("setSharedClassCache False - 556\n");
                TR::Options::setSharedClassCache(false);
                }
             }
