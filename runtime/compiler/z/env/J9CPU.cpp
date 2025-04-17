@@ -31,6 +31,7 @@
 #include "control/CompilationRuntime.hpp"
 #include "env/CompilerEnv.hpp"
 #include "env/CPU.hpp"
+#include "env/VerboseLog.hpp"
 #include "infra/Assert.hpp"
 #include "j9.h"
 #include "j9port.h"
@@ -56,6 +57,7 @@ J9::Z::CPU::detectRelocatable(OMRPortLibrary * const omrPortLib)
       processorDescription.processor = OMR_PROCESSOR_S390_Z10;
       processorDescription.physicalProcessor = OMR_PROCESSOR_S390_Z10;
       }
+   TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "RAHIL_VERBOSELOG_DEBUG: Detected Processor = %d, PhysicalProcessor = %d", processorDescription.processor, processorDescription.physicalProcessor);
 
    const uint32_t disabledFeatures [] = {OMR_FEATURE_S390_TRANSACTIONAL_EXECUTION_FACILITY,
                                          OMR_FEATURE_S390_CONSTRAINED_TRANSACTIONAL_EXECUTION_FACILITY};
