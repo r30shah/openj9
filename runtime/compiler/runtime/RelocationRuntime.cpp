@@ -897,6 +897,7 @@ TR_RelocationRuntime::fillAOTHeader(J9JavaVM *vm, TR_FrontEnd *fe, TR_AOTHeader 
    aotHeader->gcPolicyFlag = vm->memoryManagerFunctions->j9gc_modron_getWriteBarrierType(vm);
    aotHeader->lockwordOptionHashValue = getCurrentLockwordOptionHashValue(vm);
    aotHeader->compressedPointerShift = vm->memoryManagerFunctions->j9gc_objaccess_compressedPointersShift(vm->internalVMFunctions->currentVMThread(vm));
+   printf("Writing into AOT HEADER - Proc = %s",TR::Compiler->relocatableTarget.cpu.getProcessorName());
    aotHeader->processorDescription = TR::Compiler->relocatableTarget.cpu.getProcessorDescription();
 
    // Set up other feature flags
