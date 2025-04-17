@@ -24,6 +24,7 @@
 #include "env/RawAllocator.hpp"
 #include "env/defines.h"
 #include "env/CPU.hpp"
+#include "env/VerboseLog.hpp"
 #include "j9.h"
 #if defined(J9VM_OPT_JITSERVER)
 #include "control/CompilationRuntime.hpp"
@@ -51,7 +52,10 @@ J9::CompilerEnv::initializeRelocatableTargetEnvironment()
    {
    OMR::CompilerEnvConnector::initializeRelocatableTargetEnvironment();
    if (J9_ARE_ANY_BITS_SET(javaVM->extendedRuntimeFlags2, J9_EXTENDED_RUNTIME2_ENABLE_PORTABLE_SHARED_CACHE))
+      {
+      TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "RAHIL_JITVERBOSE_DEBUG: Compiler Env set as per Portable Shared Class Cache");
       relocatableTarget.cpu = TR::CPU::detectRelocatable(omrPortLib);
+      }
    }
 
 /**
