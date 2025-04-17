@@ -53,7 +53,8 @@ J9::CompilerEnv::initializeRelocatableTargetEnvironment()
    OMR::CompilerEnvConnector::initializeRelocatableTargetEnvironment();
    if (J9_ARE_ANY_BITS_SET(javaVM->extendedRuntimeFlags2, J9_EXTENDED_RUNTIME2_ENABLE_PORTABLE_SHARED_CACHE))
       {
-      TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "RAHIL_JITVERBOSE_DEBUG: Compiler Env set as per Portable Shared Class Cache");
+      if (TR::Options::getVerboseOption(TR_VerboseOptions))
+         TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "RAHIL_JITVERBOSE_DEBUG: Compiler Env set as per Portable Shared Class Cache");
       relocatableTarget.cpu = TR::CPU::detectRelocatable(omrPortLib);
       }
    }
