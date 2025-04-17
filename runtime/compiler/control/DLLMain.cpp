@@ -566,7 +566,7 @@ IDATA J9VMDllMain(J9JavaVM* vm, IDATA stage, void * reserved)
             /* Although we've initialized the compiler, we have to tell the compiler whether it can perform JIT compiles
              * This is because the compiler can be configured to only AOT compile. */
             TR::Options::setCanJITCompile(isJIT);
-
+            printf("In DLLMain.cpp RAHIL\n");
             int32_t rv = aboutToBootstrap(vm, vm->jitConfig);
 
             jitConfig = vm->jitConfig;
