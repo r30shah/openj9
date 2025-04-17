@@ -2273,6 +2273,7 @@ VMInitStages(J9JavaVM *vm, IDATA stage, void* reserved)
 						BOOLEAN inContainer = omrsysinfo_is_running_in_container();
 						if (TRUE == inContainer) {
 							/* by default, enable portable shared cache in containers and disable otherwise */
+                     fprintf(stderr, "RAHIL DEBUG: Identified that we are running inside container\n");
 							vm->extendedRuntimeFlags2 |= J9_EXTENDED_RUNTIME2_ENABLE_PORTABLE_SHARED_CACHE;
 						}
 					}
