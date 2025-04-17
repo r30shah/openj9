@@ -2167,6 +2167,7 @@ aboutToBootstrap(J9JavaVM * javaVM, J9JITConfig * jitConfig)
 
       if (validateSCC)
          {
+         printf("Validate SCC- RAHIL\n");
          TR_J9SharedCache::validateAOTHeader(jitConfig, curThread, compInfo);
          }
 
