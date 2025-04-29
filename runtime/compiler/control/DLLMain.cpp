@@ -504,6 +504,7 @@ IDATA J9VMDllMain(J9JavaVM* vm, IDATA stage, void * reserved)
          {
 #if defined(J9VM_OPT_SHARED_CLASSES)
          // ENABLE_AOT must be set AND the shared class must be properly initialized
+         printf("Defiined J9VM_OPT_SHARED_CLASSES\n");
          UDATA aotFlags = J9SHR_RUNTIMEFLAG_CACHE_INITIALIZATION_COMPLETE;
          if (vm->sharedClassConfig && ((vm->sharedClassConfig->runtimeFlags & aotFlags) == aotFlags) && TR::Options::getAggressivityLevel() != OMR::Options::AGGRESSIVE_THROUGHPUT)
             {
