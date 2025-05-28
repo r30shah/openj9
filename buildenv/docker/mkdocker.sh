@@ -41,6 +41,7 @@ usage() {
   echo "  --print               write the Dockerfile to stdout (default; overrides '--build')"
   echo "  --tag=...             specify a name for the docker image (may be repeated, default: none)"
   echo "  --user=...            specify the user name (default: 'jenkins')"
+  echo "  --buildprivileged     build the docker to launch in privileged mode"
   echo "  --version=...         specify the distribution version (e.g. 6, 18.04)"
   echo ""
   local arch="$(uname -m)"
@@ -63,6 +64,7 @@ action=print
 all_versions=
 arch=
 criu=no
+buildprivileged=no
 cuda_src=
 cuda_tag=
 dist=unspecified
@@ -75,6 +77,7 @@ tags=()
 user=jenkins
 userid=1000
 version=unspecified
+jdksdir=/home/$user/bootjdks
 
 # Frequently used commands.
 wget_O="wget --progress=dot:mega -O"
@@ -100,6 +103,10 @@ parse_options() {
       --criu)
         criu=3.17.1
         ;;
+      --buildprivileged)
+        buildprivileged=yes
+        jdksdir=/root/bootjdks
+        ;; 
       --cuda)
         cuda_src=/usr/local/cuda-12.0
         cuda_tag=12.0.0-devel-ubuntu18.04
@@ -669,7 +676,7 @@ adjust_user_directory_perms() {
 }
 
 set_user() {
-  echo "USER $user"
+  echo "USER $1"
 }
 
 install_freemarker() {
@@ -685,7 +692,7 @@ install_freemarker() {
 bootjdk_dirs() {
   local version
   for version in $@ ; do
-    echo /home/$user/bootjdks/jdk$version
+    echo $jdksdir/jdk$version
   done
 }
 
@@ -889,7 +896,9 @@ print_dockerfile() {
 if [ $criu != no ] ; then
   install_criu
 fi
+if [ $buildprivileged != no ]; then
   create_user
+fi
 if [ "x$cuda_tag" != x ] ; then
   install_cuda
 fi
@@ -906,8 +915,12 @@ fi
 if [ $gen_git_cache = yes ] ; then
   create_git_cache
 fi
+if [ $buildprivileged != no ]; then
   adjust_user_directory_perms
-  set_user
+  set_user $user
+else
+  set_user root 
+fi
 }
 
 main() {
