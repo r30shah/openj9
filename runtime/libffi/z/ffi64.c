@@ -812,6 +812,21 @@ ffi_check_struct_for_complex(ffi_type *arg_type)
   return arg_type->type;
 }
 
+ffi_status
+ffi_prep_cif_machdep_var(ffi_cif *cif, unsigned int nfixedargs, unsigned int ntotalargs)
+{
+  cif->z_nfixedargs = nfixedargs;
+  return ffi_prep_cif_machdep_core(cif);
+}
+
+ffi_status
+ffi_prep_cif_machdep(ffi_cif *cif)
+{
+  cif->z_nfixedargs = cif->nargs;
+  return ffi_prep_cif_machdep_core(cif);
+}
+
+
 /*====================================================================*/
 /*                                                                    */
 /* Name     - ffi_prep_cif_machdep.                                   */
@@ -821,7 +836,7 @@ ffi_check_struct_for_complex(ffi_type *arg_type)
 /*====================================================================*/
 
 ffi_status
-ffi_prep_cif_machdep(ffi_cif *cif)
+ffi_prep_cif_machdep_core(ffi_cif *cif)
 {
   size_t struct_size = 0;
   int n_gpr = 0;
@@ -830,6 +845,7 @@ ffi_prep_cif_machdep(ffi_cif *cif)
 
   ffi_type **ptr;
   int i;
+  int argID = 0;
 
   if (FFI_CEL4RO31 == cif->abi)
     {
@@ -914,12 +930,12 @@ ffi_prep_cif_machdep(ffi_cif *cif)
 
   for (ptr = cif->arg_types, i = cif->nargs;
        i > 0;
-       i--, ptr++)
+       i--, ardID++, ptr++)
     {
       int type = (*ptr)->type;
 
       /* Check how a structure type is passed.  */
-      if (type == FFI_TYPE_STRUCT)
+      if (type == FFI_TYPE_STRUCT && (cif->nargs == cif->z_nfixedargs || argID < cif->z_nfixedargs))
 	{
 
 	  /* ffi_check_struct_type() will return FFI_TYPE_UINT64 for a structure with
