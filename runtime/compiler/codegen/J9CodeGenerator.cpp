@@ -5283,6 +5283,19 @@ J9::CodeGenerator::stressJitDispatchJ9MethodJ2I()
    return stress;
    }
 
+void
+J9::CodeGenerator::initJProfilingValueProfilingGuardInstructions()
+   {
+   _jProfilingValueProfilingGuardInstructions = new (comp()->trHeapMemory()) TR::list<TR::Instruction *>(getTypedAllocator<TR::Instruction *>(comp()->allocator()));
+   }
+
+void
+J9::CodeGenerator::addJProfilingValueProfilingGuardInstructionToList(TR::Instruction *instr)
+   {
+   TR_ASSERT_FATAL(_jProfilingValueProfilingGuardInstructions != NULL, "Attempt to add instruction to _jProfilingValueProfilingGuardInstructions without initializing list");
+   _jProfilingValueProfilingGuardInstructions->push_front(instr);
+   }
+
 #if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
 void
 J9::CodeGenerator::addInvokeBasicCallSiteImpl(

@@ -343,6 +343,8 @@ private:
 
    TR::list<TR::Node*> _nodesSpineCheckedList;
 
+   TR::list<TR::Instruction *> *_jProfilingValueProfilingGuardInstructions;
+
    TR::list<TR_Pair<TR_ResolvedMethod, TR::Instruction> *> _jniCallSites; // list of instrutions representing direct jni call sites
 
    uint16_t changeParmLoadsToRegLoads(TR::Node*node, TR::Node **regLoads, TR_BitVector *globalRegsWithRegLoad, TR_BitVector &killedParms, vcount_t visitCount); // returns number of RegLoad nodes created
@@ -377,6 +379,10 @@ protected:
    TR::Node *_dummyTempStorageRefNode;
 
 public:
+
+   void initJProfilingValueProfilingGuardInstructions();
+   void addJProfilingValueProfilingGuardInstructionToList(TR::Instruction *instr);
+   TR::list<TR::Instruction *>* getJProfilingValueProfilingGuardInstructionsList() { return _jProfilingValueProfilingGuardInstructions; }
 
    bool getSupportsBigDecimalLongLookasideVersioning() { return _flags3.testAny(SupportsBigDecimalLongLookasideVersioning);}
    void setSupportsBigDecimalLongLookasideVersioning() { _flags3.set(SupportsBigDecimalLongLookasideVersioning);}
