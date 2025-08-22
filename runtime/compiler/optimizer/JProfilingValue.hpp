@@ -68,11 +68,12 @@ class TR_JProfilingValue : public TR::Optimization
     */
    void performOnNode(TR::Node *node, TR::TreeTop *cursor, TR_BitVector *alreadyProfiledValues, TR::NodeChecklist *checklist, TR::list<TR::TreeTop *> &valueProfilingPlaceHolderCalls);
 
-   static bool addProfilingTrees(
+   static TR::TreeTop* addProfilingTrees(
       TR::Compilation *comp,
       TR::TreeTop *insertionPoint,
       TR::Node *value,
       TR_AbstractHashTableProfilerInfo *table,
+      TR::TreeTop *lastTreeTop,
       bool addNullCheck = false,
       bool extendBlocks = true,
       bool trace = false);
