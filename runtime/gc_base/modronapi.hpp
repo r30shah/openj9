@@ -95,6 +95,7 @@ UDATA j9gc_get_total_cycle_count(J9JavaVM *javaVM);
 UDATA j9gc_get_unique_cycle_ID(J9VMThread *vmThread);
 U_64 j9gc_get_cycle_start_time(J9VMThread *vmThread);
 U_64 j9gc_get_cycle_end_time(J9VMThread *vmThread);
+UDATA j9gc_get_tenure_threshold(J9JavaVM *javaVM);
 j9object_t j9gc_get_memoryController(J9VMThread *vmContext, j9object_t objectPtr);
 void j9gc_set_memoryController(J9VMThread *vmThread, j9object_t objectPtr, j9object_t memoryController);
 void j9gc_set_allocation_sampling_interval(J9JavaVM *vm, UDATA samplingInterval);
