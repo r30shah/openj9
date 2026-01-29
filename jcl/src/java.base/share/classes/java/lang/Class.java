@@ -2420,7 +2420,7 @@ public int getModifiers() {
 	} else {
 		rawModifiers &= Modifier.PUBLIC | Modifier.PRIVATE | Modifier.PROTECTED
 /*[IF INLINE-TYPES]*/
-				| AccessFlag.IDENTITY.mask() | Modifier.STRICT
+				| AccessFlag.IDENTITY.mask()
 /*[ENDIF] INLINE-TYPES */
 				| Modifier.STATIC | Modifier.FINAL | Modifier.INTERFACE
 				| Modifier.ABSTRACT | SYNTHETIC | ENUM | ANNOTATION;

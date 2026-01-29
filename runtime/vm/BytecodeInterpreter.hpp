@@ -3221,7 +3221,9 @@ done:
 			modifiers |= (J9AccAbstract | J9AccFinal);
 
 #if defined(J9VM_OPT_VALHALLA_VALUE_TYPES)
-			if (J9_IS_CLASSFILE_OR_ROMCLASS_VALUETYPE_VERSION(romClass)) {
+			if (J9_IS_CLASSFILE_OR_ROMCLASS_VALUETYPE_VERSION(romClass)
+				&& J9_ARE_ANY_BITS_SET(_vm->extendedRuntimeFlags2, J9_EXTENDED_RUNTIME2_ENABLE_PREVIEW)
+			) {
 				modifiers |= J9AccClassHasIdentity;
 			}
 #endif /* defined(J9VM_OPT_VALHALLA_VALUE_TYPES) */

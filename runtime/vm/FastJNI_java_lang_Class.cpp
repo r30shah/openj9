@@ -190,7 +190,14 @@ Fast_java_lang_Class_getModifiersImpl(J9VMThread *currentThread, j9object_t rece
 	
 	if (isArray) {
 		/* OR in the required Sun bits */
-		modifiers |= (J9AccAbstract + J9AccFinal);
+		modifiers |= (J9AccAbstract | J9AccFinal);
+#if defined(J9VM_OPT_VALHALLA_VALUE_TYPES)
+		if (J9_IS_CLASSFILE_OR_ROMCLASS_VALUETYPE_VERSION(romClass)
+			&& J9_ARE_ANY_BITS_SET(currentThread->javaVM->extendedRuntimeFlags2, J9_EXTENDED_RUNTIME2_ENABLE_PREVIEW)
+		) {
+			modifiers |= J9AccClassHasIdentity;
+		}
+#endif /* defined(J9VM_OPT_VALHALLA_VALUE_TYPES) */
 	}
 	return (jint)modifiers;
 }
