@@ -230,6 +230,11 @@ public abstract sealed class Reference<T> extends Object permits PhantomReferenc
 	 * @param r the referent
 	 */
 	void initReference (T r) {
+/*[IF INLINE-TYPES]*/
+		if ((null != r) && r.getClass().isValue()) {
+			throw new IdentityException(r.getClass());
+		}
+/*[ENDIF] INLINE-TYPES */
 		state = STATE_INITIAL;
 		referent = r;
 	}
@@ -242,6 +247,11 @@ public abstract sealed class Reference<T> extends Object permits PhantomReferenc
 	 * @param q the ReferenceQueue
 	 */
 	void initReference (T r, ReferenceQueue q) {
+/*[IF INLINE-TYPES]*/
+		if ((null != r) && r.getClass().isValue()) {
+			throw new IdentityException(r.getClass());
+		}
+/*[ENDIF] INLINE-TYPES */
 		/*[PR 101461] Reference should allow null queues */
 		queue = q;
 		state = STATE_INITIAL;
