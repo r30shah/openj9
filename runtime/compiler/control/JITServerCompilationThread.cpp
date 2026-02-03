@@ -299,6 +299,7 @@ TR::CompilationInfoPerThreadRemote::CompilationInfoPerThreadRemote(TR::Compilati
    _classOfStaticMap(NULL),
    _fieldAttributesCache(NULL),
    _staticAttributesCache(NULL),
+   _nullClassSignatureCache(NULL),
    _isUnresolvedStrCache(NULL),
    _classUnloadReadMutexDepth(0),
    _aotCacheStore(false),
@@ -1805,6 +1806,26 @@ TR::CompilationInfoPerThreadRemote::getCachedFieldOrStaticAttributes(TR_OpaqueCl
       return getCachedValueFromPerCompilationMap(_fieldAttributesCache, std::make_pair(ramClass, cpIndex), attrs);
    }
 
+void
+TR::CompilationInfoPerThreadRemote::addClassToNullClassSignatureCache(const ClassLoaderStringPair &clsp)
+   {
+   if (!_nullClassSignatureCache)
+      {
+      initializePerCompilationCache(_nullClassSignatureCache);
+      }
+   _nullClassSignatureCache->insert(clsp);
+   }
+
+bool
+TR::CompilationInfoPerThreadRemote::classIsInNullClassSignatureCache(const ClassLoaderStringPair &clsp)
+   {
+   if (!_nullClassSignatureCache)
+      {
+      return false;
+      }
+   return _nullClassSignatureCache->find(clsp) != _nullClassSignatureCache->end();
+   }
+
 /**
  * @brief Method executed by JITServer to cache unresolved string
  *
@@ -1845,6 +1866,7 @@ TR::CompilationInfoPerThreadRemote::clearPerCompilationCaches()
    clearPerCompilationCache(_classOfStaticMap);
    clearPerCompilationCache(_fieldAttributesCache);
    clearPerCompilationCache(_staticAttributesCache);
+   clearPerCompilationCache(_nullClassSignatureCache);
    clearPerCompilationCache(_isUnresolvedStrCache);
    }
 
