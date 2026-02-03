@@ -183,8 +183,16 @@ GCC_MAJOR_VERSION := $(shell ($(CC) -dumpversion 2>/dev/null || echo 1) | cut -d
 ifeq (,$(findstring $(GCC_MAJOR_VERSION),1 2 3 4))
   CFLAGS += -fgnu89-inline
 endif
-</#if>
 
+ifneq (,$(findstring $(GCC_MAJOR_VERSION),14))
+  <#if uma.spec.processor.s390>
+    INTERP_FLAGS_TO_ADD += fno-unroll-loops
+  </#if>
+  <#if uma.spec.processor.x86 || uma.spec.processor.amd64>
+    INTERP_FLAGS_TO_ADD += -frename-registers -fprefetch-loop-arrays
+  </#if>
+endif
+</#if>
 <#if !uma.spec.processor.ppc>
   CXXFLAGS += -fno-exceptions -fno-rtti -fno-threadsafe-statics
 <#else>
@@ -555,6 +563,28 @@ MHInterpreterCompressed$(UMA_DOT_O) : MHInterpreterCompressed.cpp
 
 endif
 </#if>
+
+ifdef INTERP_FLAGS_TO_ADD
+BytecodeInterpreterFull$(UMA_DOT_O) : BytecodeInterpreterFull.cpp
+	$(CXX) $(CXXFLAGS) $(INTERP_FLAGS_TO_ADD) -c $<
+
+BytecodeInterpreterCompressed$(UMA_DOT_O) : BytecodeInterpreterCompressed.cpp
+	$(CXX) $(CXXFLAGS) $(INTERP_FLAGS_TO_ADD) -c $<
+
+DebugBytecodeInterpreterFull$(UMA_DOT_O) : DebugBytecodeInterpreterFull.cpp
+	$(CXX) $(CXXFLAGS) $(INTERP_FLAGS_TO_ADD) -c $<
+
+DebugBytecodeInterpreterCompressed$(UMA_DOT_O) : DebugBytecodeInterpreterCompressed.cpp
+	$(CXX) $(CXXFLAGS) $(INTERP_FLAGS_TO_ADD) -c $<
+
+MHInterpreterFull$(UMA_DOT_O) : MHInterpreterFull.cpp
+	$(CXX) $(CXXFLAGS) $(INTERP_FLAGS_TO_ADD) -c $<
+
+MHInterpreterCompressed$(UMA_DOT_O) : MHInterpreterCompressed.cpp
+	$(CXX) $(CXXFLAGS) $(INTERP_FLAGS_TO_ADD) -c $<
+
+endif
+
 <#if uma.spec.processor.amd64 || uma.spec.processor.riscv64>
 # Special handling for unused result warnings.
 closures$(UMA_DOT_O) : closures.c
