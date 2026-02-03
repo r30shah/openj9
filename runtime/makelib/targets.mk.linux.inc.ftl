@@ -184,7 +184,7 @@ ifeq (,$(findstring $(GCC_MAJOR_VERSION),1 2 3 4))
   CFLAGS += -fgnu89-inline
 endif
 
-ifneq (,$(findstring $(GCC_MAJOR_VERSION),14))
+ifeq (,$(filter $(GCC_MAJOR_VERSION),1 2 3 4 5 6 7 8 9 10 11 12))
   <#if uma.spec.processor.s390>
     INTERP_FLAGS_TO_ADD += fno-unroll-loops
   </#if>
