@@ -771,13 +771,12 @@ jfrOldGarbageCollection(J9HookInterface **hook, UDATA eventNum, void *eventData,
 	OMR_VMThread *omrVMThread = (OMR_VMThread *)event->omrVMThread;
 	J9VMThread *currentThread = (J9VMThread *)omrVMThread->_language_vmthread;
 	J9JavaVM *javaVM = currentThread->javaVM;
-	PORT_ACCESS_FROM_JAVAVM(javaVM);
 
 	J9JFROldGarbageCollection *jfrEvent = (J9JFROldGarbageCollection *)reserveBuffer(currentThread, sizeof(J9JFROldGarbageCollection));
 	if (NULL != jfrEvent) {
 		initializeEventFields(currentThread, (J9JFREvent *)jfrEvent, J9JFR_EVENT_TYPE_OLD_GC_ENTRY);
-		jfrEvent->startTicks = 0;
-		jfrEvent->duration = j9time_nano_time();
+		jfrEvent->startTicks = javaVM->memoryManagerFunctions->j9gc_get_cycle_start_time(currentThread);
+		jfrEvent->duration = javaVM->memoryManagerFunctions->j9gc_get_cycle_end_time(currentThread) - jfrEvent->startTicks;
 		jfrEvent->gcID = javaVM->memoryManagerFunctions->j9gc_get_unique_cycle_ID(currentThread);
 	}
 }
