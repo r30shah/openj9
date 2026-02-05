@@ -781,6 +781,36 @@ jfrOldGarbageCollection(J9HookInterface **hook, UDATA eventNum, void *eventData,
 	}
 }
 
+/**
+ * Hook for young garbage collection event. Called without VM access.
+ *
+ * @param hook[in] the VM hook interface
+ * @param eventNum[in] the event number
+ * @param eventData[in] the event data
+ * @param userData[in] the registered user data
+ */
+static void
+jfrYoungGarbageCollection(J9HookInterface **hook, UDATA eventNum, void *eventData, void* userData)
+{
+	MM_GCCycleEndEvent *event = (MM_GCCycleEndEvent *)eventData;
+	/* Wrong cycle type, only want scavenge and pgc cycles. */
+	if ((OMR_GC_CYCLE_TYPE_SCAVENGE != event->cycleType) && (OMR_GC_CYCLE_TYPE_VLHGC_PARTIAL_GARBAGE_COLLECT != event->cycleType)) {
+		return;
+	}
+	OMR_VMThread *omrVMThread = (OMR_VMThread *)event->omrVMThread;
+	J9VMThread *currentThread = (J9VMThread *)omrVMThread->_language_vmthread;
+	J9JavaVM *javaVM = currentThread->javaVM;
+
+	J9JFRYoungGarbageCollection *jfrEvent = (J9JFRYoungGarbageCollection *)reserveBuffer(currentThread, sizeof(J9JFRYoungGarbageCollection));
+	if (NULL != jfrEvent) {
+		initializeEventFields(currentThread, (J9JFREvent *)jfrEvent, J9JFR_EVENT_TYPE_YOUNG_GC_ENTRY);
+		jfrEvent->startTicks = javaVM->memoryManagerFunctions->j9gc_get_cycle_start_time(currentThread);
+		jfrEvent->duration = javaVM->memoryManagerFunctions->j9gc_get_cycle_end_time(currentThread) - jfrEvent->startTicks;
+		jfrEvent->gcID = javaVM->memoryManagerFunctions->j9gc_get_unique_cycle_ID(currentThread);
+		jfrEvent->tenureThreshold = javaVM->memoryManagerFunctions->j9gc_get_tenure_threshold(javaVM);
+	}
+}
+
 jint
 initializeJFR(J9JavaVM *vm, BOOLEAN lateInit)
 {
@@ -844,6 +874,9 @@ initializeJFR(J9JavaVM *vm, BOOLEAN lateInit)
 		goto fail;
 	}
 	if ((*gcOmrHooks)->J9HookRegisterWithCallSite(gcOmrHooks, J9HOOK_MM_OMR_GC_CYCLE_END, jfrOldGarbageCollection, OMR_GET_CALLSITE(), NULL)) {
+		goto fail;
+	}
+	if ((*gcOmrHooks)->J9HookRegisterWithCallSite(gcOmrHooks, J9HOOK_MM_OMR_GC_CYCLE_END, jfrYoungGarbageCollection, OMR_GET_CALLSITE(), NULL)) {
 		goto fail;
 	}
 
@@ -981,6 +1014,7 @@ tearDownJFR(J9JavaVM *vm)
 	(*vmHooks)->J9HookUnregister(vmHooks, J9HOOK_VM_UNPARKED, jfrVMThreadParked, NULL);
 	(*vmHooks)->J9HookUnregister(vmHooks, J9HOOK_SYSTEM_GC_CALLED, jfrSystemGC, NULL);
 	(*gcOmrHooks)->J9HookUnregister(gcOmrHooks, J9HOOK_MM_OMR_GC_CYCLE_END, jfrOldGarbageCollection, NULL);
+	(*gcOmrHooks)->J9HookUnregister(gcOmrHooks, J9HOOK_MM_OMR_GC_CYCLE_END, jfrYoungGarbageCollection, NULL);
 
 	/* Free global data */
 	VM_JFRConstantPoolTypes::freeJFRConstantEvents(vm);

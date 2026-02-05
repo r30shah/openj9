@@ -981,7 +981,7 @@ j9gc_get_object_total_footprint_in_bytes(J9JavaVM *javaVM, j9object_t objectPtr)
 /**
  * API to return is explicit GC disabled
  *
- * @parm[in] javaVM The J9JavaVM
+ * @param[in] javaVM the J9JavaVM
  * @return true if explicit GC is disabled
  */
 BOOLEAN
@@ -993,7 +993,7 @@ j9gc_get_explicit_GC_disabled(J9JavaVM *javaVM)
 /**
  * API to return a unique GC cycle count based on all counts
  *
- * @parm[in] javaVM The J9JavaVM
+ * @param[in] javaVM the J9JavaVM
  * @return unique GC cycle count
  */
 UDATA
@@ -1028,7 +1028,7 @@ j9gc_get_unique_cycle_ID(J9VMThread *vmThread)
  * API to return the start time of the cycle. Start time is a snapshot taken at the beggining of each cycle.
  *
  * @param[in] vmThread the J9VMThread
- * @return start time of the cycle
+ * @return start time of the cycle, 0 if there is no active GC cycle
  */
 U_64
 j9gc_get_cycle_start_time(J9VMThread *vmThread)
@@ -1047,7 +1047,7 @@ j9gc_get_cycle_start_time(J9VMThread *vmThread)
  * API to return the end time of the cycle. End time is a snapshot taken at the end of each cycle.
  *
  * @param[in] vmThread the J9VMThread
- * @return end time of the cycle
+ * @return end time of the cycle, 0 if there is no active GC cycle
  */
 U_64
 j9gc_get_cycle_end_time(J9VMThread *vmThread)
@@ -1060,6 +1060,19 @@ j9gc_get_cycle_end_time(J9VMThread *vmThread)
 	}
 
 	return result;
+}
+
+/**
+ * API to return tenure threshold value for a GC cycle.
+ *
+ * @param[in] javaVM the J9JavaVM
+ * @return tenure threshold of the cycle, 0 if there is no active GC cycle
+ */
+UDATA
+j9gc_get_tenure_threshold(J9JavaVM *javaVM)
+{
+	MM_GCExtensions *extensions = MM_GCExtensions::getExtensions(javaVM);
+	return extensions->getTenureThreshold();
 }
 
 /**
