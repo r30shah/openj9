@@ -627,7 +627,7 @@ public final class Unsafe {
 	 * @param exchangeValue value that will be set in obj at offset if the comparison is successful
 	 * @return value in obj at offset before this operation. This will be compareValue if the exchange was successful
 	 */
-	public final native long compareAndExchangeLong(Object obj, long offset, long compareValue, long exchangeVale);
+	public final native long compareAndExchangeLong(Object obj, long offset, long compareValue, long exchangeValue);
 
 /*[IF JAVA_SPEC_VERSION < 23]*/
 	/**
@@ -928,6 +928,7 @@ public final class Unsafe {
 	 * Reallocates a block of memory.
 	 * If size passed is 0, no memory will be allocated.
 	 *
+	 * @param address starting address of memory block
 	 * @param size requested size of memory in bytes
 	 * @return starting address of memory
 	 *
@@ -1177,7 +1178,7 @@ public final class Unsafe {
 	 * Gets the value of the byte in memory referenced by offset.
 	 * This is a non-volatile operation.
 	 *
-	 * @param locations where to retrieve value in memory
+	 * @param offset where to retrieve value in memory
 	 * @return byte value stored in memory
 	 */
 	public byte getByte(long offset) {
@@ -1380,6 +1381,7 @@ public final class Unsafe {
 	 * Reallocates a block of memory.
 	 * If size passed is 0, no memory will be allocated.
 	 *
+	 * @param address starting address of memory block
 	 * @param size requested size of memory in bytes
 	 * @return starting address of memory, or 0 if size is 0
 	 *
@@ -1547,8 +1549,8 @@ public final class Unsafe {
 	/**
 	 * Returns byte offset to field.
 	 *
-	 * @param class with desired field
-	 * @param string name of desired field
+	 * @param c class with desired field
+	 * @param fieldName name of desired field
 	 * @return offset to start of class or interface
 	 *
 	 * @throws NullPointerException if field parameter is null
@@ -1592,7 +1594,7 @@ public final class Unsafe {
 	/**
 	 * Determines whether class has been initialized.
 	 *
-	 * @param class to verify
+	 * @param c class to verify
 	 * @return true if method has not been initialized, false otherwise
 	 *
 	 * @throws NullPointerException if class is null
@@ -2291,9 +2293,9 @@ public final class Unsafe {
 	 * @param setValue value that will be set in obj at offset if the comparison is successful
 	 * @return boolean value indicating whether the field was updated
 	 */
-	public final boolean weakCompareAndSetDoublePlain(Object obj, long offset, double compareValue, double swapValue) {
+	public final boolean weakCompareAndSetDoublePlain(Object obj, long offset, double compareValue, double setValue) {
 		return weakCompareAndSetLongPlain(obj, offset, Double.doubleToRawLongBits(compareValue),
-				Double.doubleToRawLongBits(swapValue));
+				Double.doubleToRawLongBits(setValue));
 	}
 
 	/**
@@ -2309,9 +2311,9 @@ public final class Unsafe {
 	 * @return boolean value indicating whether the field was updated
 	 */
 	public final boolean weakCompareAndSetDoubleAcquire(Object obj, long offset, double compareValue,
-			double swapValue) {
+			double setValue) {
 		return weakCompareAndSetLongAcquire(obj, offset, Double.doubleToRawLongBits(compareValue),
-				Double.doubleToRawLongBits(swapValue));
+				Double.doubleToRawLongBits(setValue));
 	}
 
 	/**
@@ -2327,9 +2329,9 @@ public final class Unsafe {
 	 * @return boolean value indicating whether the field was updated
 	 */
 	public final boolean weakCompareAndSetDoubleRelease(Object obj, long offset, double compareValue,
-			double swapValue) {
+			double setValue) {
 		return weakCompareAndSetLongRelease(obj, offset, Double.doubleToRawLongBits(compareValue),
-				Double.doubleToRawLongBits(swapValue));
+				Double.doubleToRawLongBits(setValue));
 	}
 
 	/**
@@ -2344,9 +2346,9 @@ public final class Unsafe {
 	 * @param setValue value that will be set in obj at offset if the comparison is successful
 	 * @return boolean value indicating whether the field was updated
 	 */
-	public final boolean weakCompareAndSetDouble(Object obj, long offset, double compareValue, double swapValue) {
+	public final boolean weakCompareAndSetDouble(Object obj, long offset, double compareValue, double setValue) {
 		return weakCompareAndSetLong(obj, offset, Double.doubleToRawLongBits(compareValue),
-				Double.doubleToRawLongBits(swapValue));
+				Double.doubleToRawLongBits(setValue));
 	}
 
 	/**
@@ -6691,6 +6693,7 @@ public final class Unsafe {
 	 * Determines the size of an object in bytes
 	 *
 	 * @param o the object to determine the size of
+	 * @return the object's size
 	 */
 	public native long getObjectSize(Object o);
 
@@ -6852,16 +6855,32 @@ public final class Unsafe {
 
 	/**
 	 * This method will always return false since OpenJ9 does not use null markers.
+	 *
+	 * @param f field to check
 	 * @return false
 	 */
 	public boolean hasNullMarker(Field f) {
 		return false;
 	}
 
+	/**
+	 * Returns the offset of the null marker of the field,
+	 * or -1 if the field doesn't have a null marker.
+	 *
+	 * @param f field to check for null marker
+	 * @return offset of the null marker in the field
+	 */
 	public int nullMarkerOffset(Field f) {
 		throw new Error("jdk.internal.misc.Unsafe.nullMarkerOffset unimplemented"); //$NON-NLS-1$
 	}
 
+	/**
+	 * Reports the kind of layout used for an element in the storage
+	 * allocation of the given array.
+	 *
+	 * @param arrayClass array class to inspect
+	 * @return layout kind of the array elements
+	 */
 	public int arrayLayout(Class<?> arrayClass) {
 		if (null == arrayClass) {
 			throw new NullPointerException();
@@ -6869,6 +6888,13 @@ public final class Unsafe {
 		return isFlatArray(arrayClass) ? ARRAY_LAYOUT_FLATTENED : ARRAY_LAYOUT_REFERENCE;
 	}
 
+	/**
+	 * Reports the kind of layout used for a given field in the storage
+	 * allocation of its class.
+	 *
+	 * @param f field to inspect
+	 * @return layout kind of the field
+	 */
 	public int fieldLayout(Field f) {
 		if (null == f) {
 			throw new NullPointerException();
@@ -6903,8 +6929,8 @@ public final class Unsafe {
 	 public native <V> void putFlatValue(Object obj, long offset, int layoutKind, Class<?> valueType, V v);
 
 	/**
-	 * Atomically retrieves the value type in the base parameter referenced by offset.
-	 * The value type in base at the given offset must be flattened.
+	 * Atomically retrieves the value type in the obj parameter referenced by offset.
+	 * The value type in obj at the given offset must be flattened.
 	 *
 	 * @param obj object from which to retrieve the value type
 	 * @param offset position of the value type in obj
@@ -6912,40 +6938,40 @@ public final class Unsafe {
 	 * @param valueType the class of value type to return
 	 * @return value type stored in obj
 	 */
-	public <V> Object getFlatValueVolatile(Object base, long offset, int layout, Class<?> valueType) {
+	public <V> Object getFlatValueVolatile(Object obj, long offset, int layout, Class<?> valueType) {
 		synchronized (inlineTypesLock) {
-			return getFlatValue(base, offset, layout, valueType);
+			return getFlatValue(obj, offset, layout, valueType);
 		}
 	}
 
 	/**
-	 * Retrieves the value type in the base parameter referenced by offset.
-	 * The value type in base at the given offset must be flattened.
+	 * Retrieves the value type in the obj parameter referenced by offset.
+	 * The value type in obj at the given offset must be flattened.
 	 * The operation is in program order, but does enforce ordering with respect to other threads.
 	 *
-	 * @param base object from which to retrieve the value type
-	 * @param offset position of the value type in base
+	 * @param obj object from which to retrieve the value type
+	 * @param offset position of the value type in obj
 	 * @param layout layout of the field or array element
 	 * @param valueType the class of value type to return
 	 * @return value type stored in obj
 	 */
-	public <V> Object getFlatValueOpaque(Object base, long offset, int layout, Class<?> valueType) {
-		return getFlatValueVolatile(base, offset, layout, valueType);
+	public <V> Object getFlatValueOpaque(Object obj, long offset, int layout, Class<?> valueType) {
+		return getFlatValueVolatile(obj, offset, layout, valueType);
 	}
 
 	/**
-	 * Retrieves the value type in the base parameter referenced by offset using acquire semantics.
-	 * The value type in base at the given offset must be flattened.
+	 * Retrieves the value type in the obj parameter referenced by offset using acquire semantics.
+	 * The value type in obj at the given offset must be flattened.
 	 * Preceding loads will not be reordered with subsequent loads/stores.
 	 *
-	 * @param base object from which to retrieve the value type
-	 * @param offset position of the value type in base
+	 * @param obj object from which to retrieve the value type
+	 * @param offset position of the value type in obj
 	 * @param layout layout of the field or array element
 	 * @param valueType the class of value type to return
 	 * @return value type stored in obj
 	 */
-	public <V> Object getFlatValueAcquire(Object base, long offset, int layout, Class<?> valueType) {
-		return getFlatValueVolatile(base, offset, layout, valueType);
+	public <V> Object getFlatValueAcquire(Object obj, long offset, int layout, Class<?> valueType) {
+		return getFlatValueVolatile(obj, offset, layout, valueType);
 	}
 
 	/**
