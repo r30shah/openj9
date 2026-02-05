@@ -10062,8 +10062,8 @@ TR::CompilationInfoPerThreadBase::compile(
             if (bodyInfo)
                {
                TR_PersistentMethodInfo *methodInfo = bodyInfo->getMethodInfo();
-               if (methodInfo->getRecentProfileInfo() != NULL && compiler->getOptions()->getLogFile() != NULL)
-                  methodInfo->getRecentProfileInfo()->dumpInfo(compiler->getOptions()->getLogFile(), compiler);
+               if (methodInfo->getRecentProfileInfo() != NULL && compiler->log() != NULL)
+                  methodInfo->getRecentProfileInfo()->dumpInfo(compiler->log());
                }
             }
 
