@@ -31,6 +31,7 @@
 #include "AllocationContextTarok.hpp"
 #include "AtomicOperations.hpp"
 #include "Bits.hpp"
+#include "OMR/Bytes.hpp"
 #include "CardTable.hpp"
 #include "ClassLoaderRememberedSet.hpp"
 #include "CollectionStatisticsVLHGC.hpp"
@@ -254,7 +255,7 @@ MM_InterRegionRememberedSet::initialize(MM_EnvironmentVLHGC *env)
 	/* buffer size has to be a power of 2 */
 	uintptr_t const cardSize = MM_RememberedSetCard::cardSize(env->compressObjectReferences());
 	UDATA bufferSize = MM_RememberedSetCardBucket::MAX_BUFFER_SIZE * cardSize;
-	Assert_MM_true(((UDATA)1 << MM_Bits::leadingZeroes(bufferSize)) == bufferSize);
+	Assert_MM_true(OMR::isPow2(bufferSize));
 
 	/* All Buffer Control Block are pre-allocated on startup, based on maximum heap size. Buffers themselves are allocated as regions are used first time.
 	 * Since Control Blocks consume considerable amount of memory, they are allocated as virtual memory,
@@ -274,8 +275,8 @@ MM_InterRegionRememberedSet::initialize(MM_EnvironmentVLHGC *env)
 
 	/* Cache and make sure region size is a power of 2 */
 	_regionSize = _heapRegionManager->getRegionSize();
-	Assert_MM_true(((UDATA)1 << MM_Bits::leadingZeroes(_regionSize)) == _regionSize);
-	
+	Assert_MM_true(OMR::isPow2(_regionSize));
+
 	/* Initialize fields related to RememberedSetCard calculations*/
 	_regionTable = _heapRegionManager->_regionTable;
 	_tableDescriptorSize = _heapRegionManager->_tableDescriptorSize;
