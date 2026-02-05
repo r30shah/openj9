@@ -1919,11 +1919,12 @@ TR_BlockFrequencyInfo::getRawCount(TR_ByteCodeInfo &bci, TR_CallSiteInfo *callSi
    {
    // Try to find a block profiling slot that matches the requested block
    //
-   OMR::Logger *log = comp->log();
-   bool trace = comp->getOption(TR_TraceBFGeneration);
+   OMR::Logger *log = comp != NULL ? comp->log() : NULL;
+   bool trace = comp != NULL ? comp->getOption(TR_TraceBFGeneration) : false;
    int64_t frequency = 0;
    int32_t blocksMatched = 0;
-   bool currentCallSiteInfo = TR_CallSiteInfo::getCurrent(comp) == callSiteInfo;
+
+   bool currentCallSiteInfo = (callSiteInfo != NULL && comp != NULL) ? TR_CallSiteInfo::getCurrent(comp) == callSiteInfo : false;
 
    for (uint32_t i = 0; i < _numBlocks; ++i)
       {
@@ -2588,8 +2589,15 @@ void TR_ValueProfileInfo::dumpInfo(OMR::Logger *log)
 void TR_BlockFrequencyInfo::dumpInfo(OMR::Logger *log)
    {
    log->prints("\nDumping block frequency info\n");
+   int32_t maxCount = getMaxRawCount();
+   log->printf("\tmaxRawCount = %d\n", maxCount);
    for (int32_t i = 0; i < _numBlocks; i++)
-      log->printf("   Block index = %d, caller = %d, frequency = %d\n", _blocks[i].getByteCodeIndex(), _blocks[i].getCallerIndex(), _frequencies[i]);
+      {
+      log->printf("\t\tBlock index = %d, caller = %d, frequency = %d\n",
+         _blocks[i].getByteCodeIndex(),
+         _blocks[i].getCallerIndex(),
+         getRawCount(_blocks[i], NULL, static_cast<int64_t> maxCount, NULL));
+      }
    }
 
 
