@@ -28,7 +28,6 @@ import org.testng.annotations.BeforeClass;
 
 import jdk.internal.value.ValueClass;
 import jdk.internal.vm.annotation.NullRestricted;
-import jdk.internal.vm.annotation.Strict;
 
 @Test(groups = { "level.sanity" })
 public class ValueTypeSystemArraycopyTests {
@@ -60,14 +59,10 @@ public class ValueTypeSystemArraycopyTests {
 	}
 
 	public static value class SomeValueClass implements SomeInterface {
-		@Strict
 		double val1;
-		@Strict
 		long val2;
-		@Strict
 		@NullRestricted
 		SomeValueClass2 val3;
-		@Strict
 		int val4;
 
 		SomeValueClass(int i) {
@@ -79,9 +74,7 @@ public class ValueTypeSystemArraycopyTests {
 	}
 
 	public static value class SomeValueClass2 implements SomeInterface {
-		@Strict
 		long val1;
-		@Strict
 		double val2;
 
 		SomeValueClass2(int i) {

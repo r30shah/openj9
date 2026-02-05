@@ -27,7 +27,6 @@ import org.testng.annotations.Test;
 
 import jdk.internal.value.ValueClass;
 import jdk.internal.vm.annotation.NullRestricted;
-import jdk.internal.vm.annotation.Strict;
 
 /**
  * Test array element assignment involving arrays of type {@code Object},
@@ -60,9 +59,7 @@ public class ValueTypeArrayTests {
 	 * A simple primitive value type class
 	 */
 	static value class PointPV implements SomeIface {
-		@Strict
 		double x;
-		@Strict
 		double y;
 
 		PointPV(double x, double y) {
@@ -365,7 +362,6 @@ public class ValueTypeArrayTests {
 	}
 
 	static value class SomePrimitiveClassWithDoubleField {
-		@Strict
 		public double d;
 
 		SomePrimitiveClassWithDoubleField(double x) {
@@ -374,7 +370,6 @@ public class ValueTypeArrayTests {
 	}
 
 	static value class SomePrimitiveClassWithFloatField {
-		@Strict
 		public float f;
 
 		SomePrimitiveClassWithFloatField(float x) {
@@ -383,7 +378,6 @@ public class ValueTypeArrayTests {
 	}
 
 	static value class SomePrimitiveClassWithLongField {
-		@Strict
 		public long l;
 
 		SomePrimitiveClassWithLongField(long x) {
@@ -420,9 +414,7 @@ public class ValueTypeArrayTests {
 	interface SomeInterface2WithSingleImplementer {}
 
 	static value class SomePrimitiveClassImplIf implements SomeInterface1WithSingleImplementer {
-		@Strict
 		public double d;
-		@Strict
 		public long l;
 
 		SomePrimitiveClassImplIf(double val1, long val2) {
