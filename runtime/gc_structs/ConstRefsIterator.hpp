@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright IBM Corp. and others 2024
+ * Copyright IBM Corp. and others 2026
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -43,6 +43,7 @@ class GC_ConstRefsIterator
 	J9ConstRefArray * const _sentinel;
 	J9ConstRefArray *_node;
 	UDATA _index;
+	bool _jitWriteProtectDisabled;
 	const bool _empty;
 
 public:
@@ -50,21 +51,14 @@ public:
 		: _sentinel(clazz->constRefArrays)
 		, _node(NULL == _sentinel ? NULL : _sentinel->nextInClass)
 		, _index(0)
+		, _jitWriteProtectDisabled(false)
 		, _empty(_node == _sentinel)
-	{
-		if (!_empty) {
-			omrthread_jit_write_protect_disable();
-		}
-	}
-
-	~GC_ConstRefsIterator()
-	{
-		if (!_empty) {
-			omrthread_jit_write_protect_enable();
-		}
-	}
+	{}
 
 	/**
+	 * Get the next constant reference slot in the class. Disables JIT write
+	 * protection when this function is to return the first slot (if non-empty)
+	 * and enables write protection for the last entry (NULL).
 	 * @return the next constant reference slot in the class.
 	 * @return NULL if there are no more such such slots.
 	 */
@@ -72,7 +66,16 @@ public:
 	nextSlot()
 	{
 		if (_sentinel == _node) {
+			if (_jitWriteProtectDisabled) {
+				omrthread_jit_write_protect_enable();
+				_jitWriteProtectDisabled = false;
+			}
 			return NULL;
+		}
+
+		if (!_jitWriteProtectDisabled && !_empty) {
+			omrthread_jit_write_protect_disable();
+			_jitWriteProtectDisabled = true;
 		}
 
 		j9object_t *slotPtr = &_node->references[_index++];

@@ -8528,7 +8528,6 @@ freeClassNativeMemory(J9HookInterface** hook, UDATA eventNum, void* eventData, v
 
 #if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
 	/* Free the MemberName list. */
-
 	omrthread_monitor_enter(vm->memberNameListsMutex);
 
 	if (NULL != clazz->memberNames) {
@@ -8560,7 +8559,6 @@ freeClassNativeMemory(J9HookInterface** hook, UDATA eventNum, void* eventData, v
 	 * not necessary to find a surviving node (if there is one) to put into
 	 * J9JITExceptionTable.constRefArrays.
 	 */
-
 	omrthread_monitor_enter(vm->constRefsMutex);
 
 	if (NULL != clazz->constRefArrays) {

@@ -865,7 +865,7 @@ typedef struct J9JITExceptionTable {
 	J9JITInvokeBasicCallInfoPtrForJITMetadata invokeBasicCallInfo;
 
 	/**
-	 * The contant reference arrays within this body, if any, or else null.
+	 * The constant reference arrays within this body, if any, or else null.
 	 *
 	 * If there are multiple such arrays (e.g. owned by different classes),
 	 * then the choice of which one appears here is arbitrary. They can all be
