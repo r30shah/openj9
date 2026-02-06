@@ -341,11 +341,11 @@ public String toString() {
 }
 
 /*[IF JAVA_SPEC_VERSION >= 19]*/
-/*[IF JAVA_SPEC_VERSION >= 27]*/
+/*[IF (JAVA_SPEC_VERSION >= 27) & !INLINE-TYPES]*/
 static StackTraceElement[] finishInit(StackTraceElement[] stackTrace) {
-/*[ELSE] JAVA_SPEC_VERSION >= 27 */
+/*[ELSE] (JAVA_SPEC_VERSION >= 27) & !INLINE-TYPES */
 static StackTraceElement[] of(StackTraceElement[] stackTrace) {
-/*[ENDIF] JAVA_SPEC_VERSION >= 27 */
+/*[ENDIF] (JAVA_SPEC_VERSION >= 27) & !INLINE-TYPES */
 	// TODO: determine need action before return
 	return stackTrace;
 }
