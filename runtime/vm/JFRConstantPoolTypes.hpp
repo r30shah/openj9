@@ -304,7 +304,7 @@ struct YoungGarbageCollectionEntry {
 	I_64 ticks;
 	I_64 duration;
 	UDATA gcID;
-	U_32 tenureThreshold;
+	UDATA tenureThreshold;
 };
 
 struct GarbageCollectionEntry {

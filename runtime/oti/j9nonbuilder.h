@@ -518,7 +518,7 @@ typedef struct J9JFRYoungGarbageCollection {
 	J9JFR_EVENT_COMMON_FIELDS
 	I_64 duration;
 	UDATA gcID;
-	U_32 tenureThreshold;
+	UDATA tenureThreshold;
 } J9JFRYoungGarbageCollection;
 
 typedef struct J9JFRGarbageCollection {
