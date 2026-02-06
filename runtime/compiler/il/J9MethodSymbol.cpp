@@ -237,6 +237,7 @@ static TR::RecognizedMethod stringCanSkipNullChecks[] =
    TR::java_lang_String_subString,
    TR::java_lang_String_valueOf_C,
    TR::java_lang_StringBuilder_append_String,
+   TR::java_lang_StringConcatHelper_newArray,
    TR::java_lang_StringLatin1_charAt,
    TR::java_lang_StringLatin1_indexOf_BB,
    TR::java_lang_StringLatin1_indexOf_BIII,
