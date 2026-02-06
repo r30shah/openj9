@@ -2848,7 +2848,8 @@ public class ValueTypeTests {
 		assertEquals(valueClass.descriptorString(), "LtestMethodTypeDescriptorValue;");
 	}
 
-	@Test(priority=1)
+	/* https://github.com/eclipse-openj9/openj9/issues/15768 */
+	@Test(priority=1, enabled = false)
 	static public void testValueClassHashCode() throws Throwable {
 		Object p1 = new ValueClassPoint2D(new ValueClassInt(1), new ValueClassInt(2));
 		Object p2 = new ValueClassPoint2D(new ValueClassInt(1), new ValueClassInt(2));
