@@ -1028,4 +1028,11 @@ final class Access implements JavaLangAccess {
 		return module.tryEnableFinalMutation();
 	}
 	/*[ENDIF] JAVA_SPEC_VERSION >= 26 */
+
+	/*[IF JAVA_SPEC_VERSION >= 27]*/
+	@Override
+	public void finishInit(StackTraceElement[] stackTrace) {
+		StackTraceElement.finishInit(stackTrace);
+	}
+	/*[ENDIF] JAVA_SPEC_VERSION >= 27 */
 }
