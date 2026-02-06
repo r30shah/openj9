@@ -30,6 +30,7 @@
 #include "runtime/CodeCacheManager.hpp"
 #include "runtime/CodeCacheExceptions.hpp"
 #include "control/JITServerHelpers.hpp"
+#include "control/JITServerCompilationThread.hpp"
 #include "env/JITServerPersistentCHTable.hpp"
 #include "env/J9ConstProvenanceGraph.hpp"
 #include "exceptions/AOTFailure.hpp"
@@ -369,6 +370,10 @@ TR_J9ServerVM::getClassFromSignature(const char *sig, int32_t sigLength, J9Const
          return it->second;
       }
 
+   // Check a per-compilation null cache
+   if (((TR::CompilationInfoPerThreadRemote*)_compInfoPT)->classIsInNullClassSignatureCache(key))
+      return NULL;
+
    // classname not found; ask the client and cache the answer
    JITServer::ServerStream *stream = _compInfoPT->getMethodBeingCompiled()->_stream;
    std::string str(sig, sigLength);
@@ -399,12 +404,7 @@ TR_J9ServerVM::getClassFromSignature(const char *sig, int32_t sigLength, J9Const
       }
    else
       {
-      // Class with given name does not exist yet, but it could be
-      // loaded in the future, thus we should not cache NULL pointers.
-      // Note: many times we get in here due to Ljava/lang/String$StringCompressionFlag;
-      // In theory we could consider this a special case and watch the CHTable updates
-      // for a class load event for Ljava/lang/String$StringCompressionFlag, but it may not
-      // be worth the trouble.
+      ((TR::CompilationInfoPerThreadRemote*)_compInfoPT)->addClassToNullClassSignatureCache(key);
       }
    return clazz;
    }

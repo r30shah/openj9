@@ -35,6 +35,7 @@ using IPTableHeap_t = UnorderedMap<J9Method *, IPTableHeapEntry *>;
 using ResolvedMirrorMethodsPersistIP_t = Vector<TR_ResolvedJ9Method *>;
 using ClassOfStatic_t = UnorderedMap<std::pair<TR_OpaqueClassBlock *, int32_t>, TR_OpaqueClassBlock *>;
 using FieldOrStaticAttrTable_t = UnorderedMap<std::pair<TR_OpaqueClassBlock *, int32_t>, TR_J9MethodFieldAttributes>;
+using NullClassSignatureCache_t = UnorderedSet<ClassLoaderStringPair>;
 
 using CompilationRequest = std::tuple<
    uint64_t, uint32_t, uint32_t, J9Method *, J9Class *, TR_OptimizationPlan, std::string,
@@ -108,6 +109,9 @@ public:
 
    void cacheFieldOrStaticAttributes(TR_OpaqueClassBlock *ramClass, int32_t cpIndex, const TR_J9MethodFieldAttributes &attrs, bool isStatic);
    bool getCachedFieldOrStaticAttributes(TR_OpaqueClassBlock *ramClass, int32_t cpIndex, TR_J9MethodFieldAttributes &attrs, bool isStatic);
+
+   void addClassToNullClassSignatureCache(const ClassLoaderStringPair &clsp);
+   bool classIsInNullClassSignatureCache(const ClassLoaderStringPair &clsp);
 
    void cacheIsUnresolvedStr(TR_OpaqueClassBlock *ramClass, int32_t cpIndex, const TR_IsUnresolvedString &stringAttrs);
    bool getCachedIsUnresolvedStr(TR_OpaqueClassBlock *ramClass, int32_t cpIndex, TR_IsUnresolvedString &stringAttrs);
@@ -208,6 +212,7 @@ private:
    ClassOfStatic_t *_classOfStaticMap;
    FieldOrStaticAttrTable_t *_fieldAttributesCache;
    FieldOrStaticAttrTable_t *_staticAttributesCache;
+   NullClassSignatureCache_t *_nullClassSignatureCache;
    UnorderedMap<std::pair<TR_OpaqueClassBlock *, int32_t>, TR_IsUnresolvedString> *_isUnresolvedStrCache;
    int32_t _classUnloadReadMutexDepth;
    bool _aotCacheStore; // True if the result of this compilation will be stored in AOT cache

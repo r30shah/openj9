@@ -550,8 +550,6 @@ class CompilationInfoPerThread : public TR::CompilationInfoPerThreadBase
 #if defined(J9VM_OPT_JITSERVER)
    TR_J9ServerVM         *_serverVM;
    TR_J9SharedCacheServerVM *_sharedCacheServerVM;
-   // The following hastable caches <classLoader,classname> --> <J9Class> mappings
-   // The cache only lives during a compilation due to class unloading concerns
    PersistentUnorderedSet<TR_OpaqueClassBlock*> *_classesThatShouldNotBeNewlyExtended;
 #endif /* defined(J9VM_OPT_JITSERVER) */
 
