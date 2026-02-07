@@ -64,6 +64,10 @@ UDATA initializeVMThreading(J9JavaVM *vm)
 		omrthread_monitor_init_with_name(&vm->jniFrameMutex, 0, "VM JNI frame") ||
 #endif
 
+#if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
+		omrthread_monitor_init_with_name(&vm->constRefsMutex, 0, "JIT/GC const refs") ||
+#endif /* defined(J9VM_OPT_OPENJDK_METHODHANDLE) */
+
 #ifdef J9VM_GC_FINALIZATION
 		omrthread_monitor_init_with_name(&vm->finalizeMainMonitor, 0, "VM GC finalize main") ||
 		omrthread_monitor_init_with_name(&vm->finalizeRunFinalizationMutex, 0, "VM GC finalize run finalization") ||
@@ -158,6 +162,9 @@ void terminateVMThreading(J9JavaVM *vm)
 	if (vm->classLoaderBlocksMutex) omrthread_monitor_destroy(vm->classLoaderBlocksMutex);
 	if (vm->jniFrameMutex) omrthread_monitor_destroy(vm->jniFrameMutex);
 #endif
+#if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
+	if (vm->constRefsMutex) omrthread_monitor_destroy(vm->constRefsMutex);
+#endif /* defined(J9VM_OPT_OPENJDK_METHODHANDLE) */
 
 	if (vm->runtimeFlagsMutex) omrthread_monitor_destroy(vm->runtimeFlagsMutex);
 	if (vm->extendedMethodFlagsMutex) omrthread_monitor_destroy(vm->extendedMethodFlagsMutex);
@@ -225,4 +232,3 @@ void terminateVMThreading(J9JavaVM *vm)
 
 	destroyMonitorTable(vm);
 }
-
