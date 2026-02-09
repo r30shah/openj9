@@ -3146,7 +3146,16 @@ done:
 	inlClassIsValue(REGISTER_ARGS_LIST)
 	{
 		J9Class *receiverClazz = J9VM_J9CLASS_FROM_HEAPCLASS(_currentThread, *(j9object_t*)_sp);
-		bool isValue = J9_IS_J9CLASS_VALUETYPE(receiverClazz);
+
+		bool previewEnabled = J9_ARE_ANY_BITS_SET(
+			_currentThread->javaVM->extendedRuntimeFlags2,
+			J9_EXTENDED_RUNTIME2_ENABLE_PREVIEW);
+
+		bool isValue = false;
+		if (previewEnabled) {
+			isValue = J9_IS_J9CLASS_VALUETYPE(receiverClazz);
+		}
+
 		returnSingleFromINL(REGISTER_ARGS, (isValue ? 1 : 0), 1);
 		return EXECUTE_BYTECODE;
 	}
