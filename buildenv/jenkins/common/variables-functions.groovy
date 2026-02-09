@@ -111,14 +111,14 @@ class Buildspec {
      * - <parent>.getVectorField()
      * if <name> is a map:
      *   - <name>.all
-     *   - <name>.sdk
+     *   - <name>.sdk (or <name>.default)
      * else:
      *   - <name>
      * with parents being evaluated in the order they are listed in the yaml file.
-     * - Note: any list elements which are themselves list ar flattened.
+     * - Note: any list elements which are themselves lists are flattened.
      */
     public List getVectorField(name, sdk_ver) {
-        // Yaml will use an integer key if possible, otherwise it falls back to string
+        // Yaml will use an integer key if possible, otherwise it falls back to string.
         def sdk_key = toKey(sdk_ver)
 
         def field_value = []
@@ -129,20 +129,23 @@ class Buildspec {
         if (my_value != null) {
             // Do we specify different values for different SDK versions?
             if (isMap(my_value)) {
-                // If there is an "all" definition put that first
                 if (my_value.containsKey('all')) {
+                    // There is a definition for 'all': Put that first.
                     field_value += my_value['all']
                 }
-                // If we have an SDK specific value, add that as well
                 if (my_value.containsKey(sdk_key)) {
+                    // We have a value for the specific SDK: Add that as well.
                     def sdk_val = my_value[sdk_key]
-                    // Special case handling for old style variables where
-                    // excluded tests are stored as a map rather than a list
+                    // Special case handling for old-style variables where
+                    // excluded tests are stored as a map rather than a list.
                     if (isMap(sdk_val)) {
                         field_value += sdk_val.keySet()
                     } else {
                         field_value += sdk_val
                     }
+                } else if (my_value.containsKey('default')) {
+                    // We have no value for the specific SDK, but there is a default: Add that as well.
+                    field_value += my_value['default']
                 }
             } else {
                 field_value += my_value
