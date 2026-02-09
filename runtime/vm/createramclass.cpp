@@ -2080,13 +2080,14 @@ loadFlattenableFieldClasses(J9VMThread *currentThread, J9ClassLoader *classLoade
 #endif /* defined(J9VM_OPT_VALHALLA_FLATTENABLE_VALUE_TYPES) */
 		} else {
 			/* All static null-restricted fields should also be strict. This will be verified
-			 * during the preparation stage of linking. */
+			 * during the preparation stage of linking.
+			 */
 			if (J9_ARE_ANY_BITS_SET(modifiers, J9AccStrictInit | J9FieldFlagIsNullRestricted)) {
 				J9FlattenedClassCacheEntry *entry = J9_VM_FCC_ENTRY_FROM_FCC(flattenedClassCache, numberOfCacheEntries);
 				UDATA flags = J9_VM_FCC_CLASS_FLAGS_STATIC_FIELD;
-				if (J9_ARE_ALL_BITS_SET(modifiers, J9AccStrictInit)) {
+				if (J9_ARE_ANY_BITS_SET(modifiers, J9AccStrictInit)) {
 					/* If field is initialized through the ConstantValue attribute set as written. */
-					if (J9_ARE_ALL_BITS_SET(modifiers, J9FieldFlagConstant)) {
+					if (J9_ARE_ANY_BITS_SET(modifiers, J9FieldFlagConstant)) {
 						flags |= J9_VM_FCC_CLASS_FLAGS_STRICT_STATIC_FIELD_WRITTEN;
 					} else {
 						strictStaticFieldCounter += 1;

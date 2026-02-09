@@ -178,8 +178,8 @@
 #if defined(J9VM_OPT_VALHALLA_FLATTENABLE_VALUE_TYPES)
 #define J9StaticFieldRefNullRestricted 0x40
 #endif /* defined(J9VM_OPT_VALHALLA_FLATTENABLE_VALUE_TYPES) */
-#if defined(J9VM_OPT_VALHALLA_STRICT_FIELDS)
-#define J9StaticFieldRefStrict 0x80
-#endif /* defined(J9VM_OPT_VALHALLA_STRICT_FIELDS) */
+/* The bit 0x80 is reserved and used to indicate when a field is
+ * unresolved. See VMHelpers::staticFieldRefIsResolved.
+ */
 
 #endif /*J9JAVAACCESSFLAGS_H */

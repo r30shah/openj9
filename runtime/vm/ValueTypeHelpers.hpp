@@ -590,26 +590,26 @@ done:
 	/**
 	 * Finds the J9FlattenedClassCacheEntry in the ramClass corresponding
 	 * to an offset. Asserts that an entry exists to a strict field.
-	 * @param ramClass class to search for field entry
+	 * @param ramClass class with a flattened class cache to search for field entry
 	 * @param matchOffset static field offset
-	 * @return J9FlattenedClassCacheEntry corresponding to matchOffset.
+	 * @return J9FlattenedClassCacheEntry corresponding to matchOffset, or
+	 * null if no match exists
 	 */
 	static VMINLINE J9FlattenedClassCacheEntry *
 	findJ9FlattenedClassCacheEntryForStaticAddress(J9Class *ramClass, UDATA matchOffset)
 	{
 		J9FlattenedClassCacheEntry *entry = NULL;
-		UDATA numberOfEntries = 0;
-		Assert_VM_true(NULL != ramClass->flattenedClassCache);
-		numberOfEntries = ramClass->flattenedClassCache->numberOfEntries;
+		UDATA numberOfEntries = ramClass->flattenedClassCache->numberOfEntries;
 		for (UDATA i = 0; i < numberOfEntries; i++) {
 			J9FlattenedClassCacheEntry *tempEntry = J9_VM_FCC_ENTRY_FROM_CLASS(ramClass, i);
-			if (tempEntry->offset == matchOffset) {
+			if (J9_VM_FCC_ENTRY_IS_STATIC_FIELD(tempEntry)
+				&& (tempEntry->offset == matchOffset)
+			) {
+				Assert_VM_true(J9ROMFIELD_IS_STRICT(tempEntry->field->modifiers));
 				entry = tempEntry;
 				break;
 			}
 		}
-		Assert_VM_true(NULL != entry);
-		Assert_VM_true(J9_VM_FCC_ENTRY_IS_STATIC_FIELD(entry));
 		return entry;
 	}
 #endif /* defined(J9VM_OPT_VALHALLA_STRICT_FIELDS) */
