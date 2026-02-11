@@ -735,11 +735,6 @@ TR_JProfilingValue::addProfilingTrees(
    TR::Block *quickTestBlock = iter;
    iter = iter->split(incTree, cfg);
    iter->setIsExtensionOfPreviousBlock();
-   if (glRegDepsToCopyInProfilingCodeExit != NULL)
-      {
-      TR::Node *exitGlRegDeps = copyGlRegDeps(comp, glRegDepsToCopyInProfilingCodeExit);
-      iter->getExit()->getNode()->addChildren(&exitGlRegDeps, 1);
-      }
    logprintf(trace, log, "\t\t\tQuickTest in block_%d, trees to increment table in block_%d\n", quickTestBlock->getNumber(), iter->getNumber());
 
    /********************* helper call block *********************/
