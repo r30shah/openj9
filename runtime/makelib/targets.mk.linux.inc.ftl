@@ -561,7 +561,7 @@ endif
 INTERP_FLAGS_TO_ADD :=
 ifeq (,$(filter $(GCC_MAJOR_VERSION),1 2 3 4 5 6 7 8 9 10 11 12))
   <#if uma.spec.processor.s390>
-    INTERP_FLAGS_TO_ADD := fno-unroll-loops
+    INTERP_FLAGS_TO_ADD := -fno-unroll-loops
   <#elseif uma.spec.processor.x86 || uma.spec.processor.amd64>
     INTERP_FLAGS_TO_ADD := -frename-registers -fprefetch-loop-arrays
   </#if>
