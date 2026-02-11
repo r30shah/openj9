@@ -77,31 +77,30 @@ class Buildspec {
     }
 
     /*
-     * look up a scalar field for the first field in this list to have a value:
+     * Look up a scalar field for the first field in this list to have a value:
      * if <name> is a map:
      *    - <name>.<sdk_ver>
-     *    - <name>.all
+     *    - <name>.default
      * else:
      *    - <name>
-     *  - <parent>.getScalarField()
-     * with the parents being evaluated in the order they are listed in the yaml file
+     * - <parent>.getScalarField()
+     * with the parents being evaluated in the order they are listed in the yaml file.
      */
     public getScalarField(name, sdk_ver) {
         def sdk_key = toKey(sdk_ver)
         def field = getNestedField(name)
-        if (field == null) {
-            field = parents.findResult {it.getScalarField(name, sdk_ver)}
-        }
-
         // Does this entry specify different values for different sdk versions?
         if (null != field && isMap(field)) {
-            // If we have an sdk specific value use that
+            // If we have an sdk specific value use that.
             if (field.containsKey(sdk_key)) {
                 field = field[sdk_key]
             } else {
-                // else fall back to the "all" key
-                field = field['all']
+                // else fall back to the "default" key
+                field = field['default']
             }
+        }
+        if (field == null) {
+            field = parents.findResult {it.getScalarField(name, sdk_ver)}
         }
         return field
     }

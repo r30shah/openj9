@@ -91,7 +91,7 @@ artifactory:
 #========================================#
 misc:
   jdk_image_dir:
-    all: 'jdk'
+    default: 'jdk'
     8: 'j2sdk-image'
   test_keep_reportdir:
     sanity.openjdk: 'true'
@@ -156,7 +156,7 @@ openjdk_reference_repo:
 boot_jdk_default:
   boot_jdk:
     location:
-      all: '${HOME}/bootjdks'
+      default: '${HOME}/bootjdks'
     version:
       8: '8'
       11: '11'
@@ -166,9 +166,9 @@ boot_jdk_default:
       26: '25'
       next: '25'
     dir_strip:
-      all: '1'
+      default: '1'
     url:
-      all: 'https://api.adoptopenjdk.net/v3/binary/latest/${bootJDKVersion}/ga/${os}/${arch}/jdk/openj9/normal/adoptopenjdk?project=jdk'
+      default: 'https://api.adoptopenjdk.net/v3/binary/latest/${bootJDKVersion}/ga/${os}/${arch}/jdk/openj9/normal/adoptopenjdk?project=jdk'
 #========================================#
 # CUDA
 #========================================#
@@ -221,7 +221,7 @@ ppc64le_linux:
     arch: 'ppc64le'
     os: 'linux'
   release:
-    all: 'linux-ppc64le-server-release'
+    default: 'linux-ppc64le-server-release'
     8: 'linux-ppc64le-normal-server-release'
     11: 'linux-ppc64le-normal-server-release'
   node_labels:
@@ -229,7 +229,7 @@ ppc64le_linux:
     docker_image: 'adoptopenjdk/centos7_build_image:latest'
   build_env:
     vars:
-      all: 'CC=/usr/local/gcc11/bin/gcc-11.2 CXX=/usr/local/gcc11/bin/g++-11.2'
+      default: 'CC=/usr/local/gcc11/bin/gcc-11.2 CXX=/usr/local/gcc11/bin/g++-11.2'
 #========================================#
 # Linux PPCLE 64bits /w JITSERVER
 #========================================#
@@ -244,14 +244,14 @@ s390x_linux:
     arch: 's390x'
     os: 'linux'
   release:
-    all: 'linux-s390x-server-release'
+    default: 'linux-s390x-server-release'
     8: 'linux-s390x-normal-server-release'
     11: 'linux-s390x-normal-server-release'
   node_labels:
     build: 'ci.role.build && hw.arch.s390x && sw.os.rhel.7'
   build_env:
     cmd:
-      all: 'source /home/jenkins/set_gcc_11.2.0_env'
+      default: 'source /home/jenkins/set_gcc_11.2.0_env'
 #========================================#
 # Linux S390 64bits /w JITSERVER
 #========================================#
@@ -267,12 +267,12 @@ ppc64_aix:
     arch: 'ppc64'
     os: 'aix'
   release:
-    all: 'aix-ppc64-server-release'
+    default: 'aix-ppc64-server-release'
     8: 'aix-ppc64-normal-server-release'
     11: 'aix-ppc64-normal-server-release'
   node_labels:
     build:
-      all: 'ci.role.build && hw.arch.ppc64 && sw.os.aix.7_2 && sw.tool.c++runtime.16_1'
+      default: 'ci.role.build && hw.arch.ppc64 && sw.os.aix.7_2 && sw.tool.c++runtime.16_1'
       25: 'ci.role.build && hw.arch.ppc64 && sw.os.aix.7_2 && sw.tool.c++runtime.17_1'
       26: 'ci.role.build && hw.arch.ppc64 && sw.os.aix.7_2 && sw.tool.c++runtime.17_1'
       next: 'ci.role.build && hw.arch.ppc64 && sw.os.aix.7_2 && sw.tool.c++runtime.17_1'
@@ -287,7 +287,7 @@ ppc64_aix:
     next: '--disable-warnings-as-errors'
   build_env:
     cmd:
-      all: 'unset LIBPATH'
+      default: 'unset LIBPATH'
     vars:
       8: 'PATH+XLC=/opt/IBM/xlC/16.1.0/bin:/opt/IBM/xlc/16.1.0/bin CC=xlclang CXX=xlclang++'
       11: 'PATH+XLC=/opt/IBM/xlC/16.1.0/bin:/opt/IBM/xlc/16.1.0/bin CC=xlclang CXX=xlclang++'
@@ -309,19 +309,19 @@ x86-64_linux:
     arch: 'x64'
     os: 'linux'
   release:
-    all: 'linux-x86_64-server-release'
+    default: 'linux-x86_64-server-release'
     8: 'linux-x86_64-normal-server-release'
     11: 'linux-x86_64-normal-server-release'
   node_labels:
     build:
-      all: 'ci.role.build && hw.arch.x86 && sw.tool.docker'
+      default: 'ci.role.build && hw.arch.x86 && sw.tool.docker'
     docker_image:
       8: 'adoptopenjdk/centos6_build_image:latest'
       11: 'adoptopenjdk/centos6_build_image:latest'
-      all: 'adoptopenjdk/centos7_build_image:latest'
+      default: 'adoptopenjdk/centos7_build_image:latest'
   build_env:
     vars:
-      all: 'CC=/usr/local/gcc11/bin/gcc-11.2 CXX=/usr/local/gcc11/bin/g++-11.2'
+      default: 'CC=/usr/local/gcc11/bin/gcc-11.2 CXX=/usr/local/gcc11/bin/g++-11.2'
   extra_test_labels:
     11: '!sw.os.cent.6'
     17: '!sw.os.cent.6'
@@ -343,7 +343,7 @@ aarch64_linux:
     arch: 'aarch64'
     os: 'linux'
   release:
-    all: 'linux-aarch64-server-release'
+    default: 'linux-aarch64-server-release'
     8: 'linux-aarch64-normal-server-release'
     11: 'linux-aarch64-normal-server-release'
   node_labels:
@@ -351,7 +351,7 @@ aarch64_linux:
     docker_image: 'adoptopenjdk/centos7_build_image'
   build_env:
     vars:
-      all: 'CC=/usr/local/gcc10/bin/gcc-10.3 CXX=/usr/local/gcc10/bin/g++-10.3'
+      default: 'CC=/usr/local/gcc10/bin/gcc-10.3 CXX=/usr/local/gcc10/bin/g++-10.3'
   fail_pattern: 'IOException caught during compilation:.*Resource deadlock avoided'
 #========================================#
 # Linux Aarch 64bits /w JITSERVER
@@ -367,7 +367,7 @@ x86-64_windows:
     arch: 'x64'
     os: 'windows'
   release:
-    all: 'windows-x86_64-server-release'
+    default: 'windows-x86_64-server-release'
     8: 'windows-x86_64-normal-server-release'
     11: 'windows-x86_64-normal-server-release'
   extra_configure_options:
@@ -405,9 +405,9 @@ x86-64_mac:
     arch: 'x64'
     os: 'mac'
     dir_strip:
-      all: '3'
+      default: '3'
   release:
-    all: 'macosx-x86_64-server-release'
+    default: 'macosx-x86_64-server-release'
     8: 'macosx-x86_64-normal-server-release'
     11: 'macosx-x86_64-normal-server-release'
   extra_configure_options:
@@ -427,9 +427,9 @@ aarch64_mac:
     arch: 'aarch64'
     os: 'mac'
     dir_strip:
-      all: '3'
+      default: '3'
   release:
-    all: 'macosx-aarch64-server-release'
+    default: 'macosx-aarch64-server-release'
     8: 'macosx-aarch64-normal-server-release'
     11: 'macosx-aarch64-normal-server-release'
   extra_configure_options:
