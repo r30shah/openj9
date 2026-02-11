@@ -2353,9 +2353,12 @@ J9::SymbolReferenceTable::immutableConstructorId(TR::MethodSymbol *methodSymbol)
    TR::RecognizedMethod method = methodSymbol->getRecognizedMethod();
    switch (method)
       {
+      case TR::java_lang_String_init_AbstractStringBuilder_Void:
+      case TR::java_lang_String_init_int_int_char_boolean:
+      case TR::java_lang_String_init_int_String_int_String_String:
       case TR::java_lang_String_init_String:
       case TR::java_lang_String_init_String_char:
-      case TR::java_lang_String_init_int_int_char_boolean:
+      case TR::java_lang_String_init_StringBuilder:
          // All String constructors share the same ID
          method = TR::java_lang_String_init;
          break;

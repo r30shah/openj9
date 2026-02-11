@@ -2843,6 +2843,12 @@ void TR_ResolvedJ9Method::construct()
       {  TR::unknownMethod}
       };
 
+   static X StringConcatHelperMethods[] =
+      {
+      {x(TR::java_lang_StringConcatHelper_newArray, "newArray", "(J)[B")},
+      {  TR::unknownMethod}
+      };
+
    static X StringCoding_StringDecoderMethods[] =
       {
       {x(TR::java_lang_StringCoding_StringDecoder_decode, "decode", "([BII)[C")},
@@ -4310,6 +4316,7 @@ void TR_ResolvedJ9Method::construct()
       { "java/lang/invoke/CatchHandle", CatchHandleMethods },
       { "com/ibm/tenant/TenantContext", MTTenantContext },
       { "java/util/stream/IntPipeline", JavaUtilStreamIntPipelineMethods },
+      { "java/lang/StringConcatHelper", StringConcatHelperMethods },
       { 0 }
       };
 

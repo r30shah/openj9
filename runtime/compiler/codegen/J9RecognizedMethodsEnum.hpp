@@ -270,6 +270,8 @@
    java_lang_StringUTF16_toUpperCase,
    java_lang_StringUTF16_trim,
 
+   java_lang_StringConcatHelper_newArray,
+
    java_lang_StringBuffer_append,
    java_lang_StringBuffer_capacityInternal,
    java_lang_StringBuffer_ensureCapacityImpl,
