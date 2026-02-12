@@ -39,7 +39,6 @@
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "MethodTypesIterator.hpp"
-#include "ValueTypesIterator.hpp"
 
 /**
  * State constants representing the current stage of the iteration process
@@ -82,7 +81,6 @@ protected:
 #if defined(J9VM_OPT_METHOD_HANDLE)
 	GC_MethodTypesIterator _varHandlesMethodTypesIterator;
 #endif /* defined(J9VM_OPT_METHOD_HANDLE) */
-	GC_ValueTypesIterator _valueTypesIterator;
 #if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
 	GC_ConstRefsIterator _constRefsIterator;
 #endif /* defined(J9VM_OPT_OPENJDK_METHODHANDLE) */
@@ -102,7 +100,6 @@ public:
 		, _methodTypesIterator(clazz->romClass->methodTypeCount, clazz->methodTypes)
 		, _varHandlesMethodTypesIterator(clazz->romClass->varHandleMethodTypeCount, clazz->varHandleMethodTypes)
 #endif /* defined(J9VM_OPT_OPENJDK_METHODHANDLE) */
-		, _valueTypesIterator(clazz)
 #if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
 		, _constRefsIterator(clazz)
 #endif
@@ -122,7 +119,6 @@ public:
 		, _methodTypesIterator(clazz->romClass->methodTypeCount, clazz->methodTypes)
 		, _varHandlesMethodTypesIterator(clazz->romClass->varHandleMethodTypeCount, clazz->varHandleMethodTypes)
 #endif /* defined(J9VM_OPT_OPENJDK_METHODHANDLE) */
-		, _valueTypesIterator(clazz)
 #if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
 		, _constRefsIterator(clazz)
 #endif /* defined(J9VM_OPT_OPENJDK_METHODHANDLE) */
