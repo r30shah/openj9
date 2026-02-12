@@ -103,8 +103,8 @@ private:
 protected:
 public:
 	/**
- 	* Return values for getScanType().
- 	*/
+	 * Return values for getScanType().
+	 */
 	enum ScanType {
 		SCAN_INVALID_OBJECT = 0,
 		SCAN_MIXED_OBJECT = 1,
@@ -126,11 +126,11 @@ public:
 	 */
 	enum ReferenceState {
 		REF_STATE_INITIAL = 0, /**< indicates the initial (normal) state for a Reference object. Referent is weak. */
-		REF_STATE_CLEARED = 1, /**< indicates that the Reference object has been cleared, either by the GC or by the Java clear() API. Referent is null or strong. */ 
+		REF_STATE_CLEARED = 1, /**< indicates that the Reference object has been cleared, either by the GC or by the Java clear() API. Referent is null or strong. */
 		REF_STATE_ENQUEUED = 2, /**< indicates that the Reference object has been cleared and enqueued on its ReferenceQueue. Referent is null or strong. */
 		REF_STATE_REMEMBERED = 3, /**< indicates that the Reference object was discovered by a global cycle and that the current local GC cycle must return it to that list and restore the state to INITIAL. */
 	};
-	
+
 /*
  * Member functions
  */
@@ -139,10 +139,10 @@ private:
 	 * Determine the scan type for an instant of the specified class.
 	 * The class has the J9AccClassGCSpecial bit set.
 	 * @param[in] objectClazz the class of the object to identify
-	 * @return one of the ScanType constants 
+	 * @return one of the ScanType constants
 	 */
 	ScanType getSpecialClassScanType(J9Class *objectClazz);
-	
+
 	/**
 	 * Examine all classes as they are loaded to determine if they require the J9AccClassGCSpecial bit.
 	 * These classes are handled specially by GC_ObjectModel::getScanType()
@@ -154,7 +154,7 @@ private:
 	 * redefinition has occurred.
 	 */
 	static void classesRedefinedHook(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
-	
+
 	/**
 	 * Returns the shape of an class.
 	 * @param objectPtr Pointer to object whose shape is required.
@@ -235,7 +235,7 @@ public:
 		J9Class *clazz = J9GC_J9OBJECT_CLAZZ(objectPtr, this);
 		return getScanType(clazz);
 	}
-	
+
 	/**
 	 * Returns the depth of an object.
 	 * @param objectPtr Pointer to object whose depth is required.
@@ -280,7 +280,7 @@ public:
 	{
 		return isObjectArray((J9Object*)objectPtr);
 	}
-	
+
 	/**
 	 * Returns TRUE if an object is primitive array, FALSE otherwise.
 	 * @param objectPtr Pointer to an object
@@ -314,7 +314,7 @@ public:
 	{
 		return isPrimitiveArray((J9Object*)objectPtr);
 	}
-	
+
 	/**
 	 * Determine whether or not the given object is a double array
 	 *
@@ -335,7 +335,7 @@ public:
 	{
 		return isDoubleArray((J9Object*)objectPtr);
 	}
-	
+
 	/**
 	 * Check is indexable bit set properly:
 	 * must be set for arrays and primitive arrays
@@ -359,13 +359,13 @@ public:
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Determine the basic hash code for the specified object. This may modify the object. For example, it may
 	 * set the HAS_BEEN_HASHED bit in the object's header. Object must not be NULL.
-	 * 
+	 *
 	 * @param object[in] the object to be hashed
-	 * @return the persistent, basic hash code for the object 
+	 * @return the persistent, basic hash code for the object
 	 */
 	MMINLINE int32_t
 	getObjectHashCode(J9JavaVM *vm, J9Object *object)
@@ -675,11 +675,11 @@ public:
 
 	/**
 	 * Initialize the receiver, a new instance of GC_ObjectModel
-	 * 
+	 *
 	 * @return true on success, false on failure
 	 */
 	virtual bool initialize(MM_GCExtensionsBase *extensions);
-	
+
 	/**
 	 * Tear down the receiver
 	 */

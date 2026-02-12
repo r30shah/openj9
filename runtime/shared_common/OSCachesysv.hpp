@@ -29,8 +29,8 @@
 #include "pool_api.h"
 
 /* DO NOT use UDATA/IDATA in the cache headers so that 32-bit/64-bit JVMs can read each others headers
- * This is why OSCache_sysv_header3 was added.  
- * 
+ * This is why OSCache_sysv_header3 was added.
+ *
  * Versioning is achieved by using the typedef aliases below
  */
 
@@ -96,7 +96,7 @@ typedef enum SH_SysvShmAccess {
 
 /**
  * A class to manage Shared Classes on Operating System level
- * 
+ *
  * This class provides and abstraction of a shared memory region and its control
  * mutex.
  *
@@ -122,7 +122,7 @@ public:
 	static SH_OSCache* newInstance(J9PortLibrary* portlib, SH_OSCache* memForConstructor);
 
 	static UDATA getRequiredConstrBytes(void);
-	
+
 	IDATA destroy(bool suppressVerbose, bool isReset = false);
 
 	void cleanup(void);
@@ -132,27 +132,27 @@ public:
 	IDATA acquireWriteLock(UDATA lockID);
 	IDATA releaseWriteLock(UDATA lockID);
 	U_64 getCreateTime(void);
-  	
+
 	static IDATA getCacheStats(J9JavaVM* vm, const char* ctrlDirName, UDATA groupPerm, const char* cacheNameWithVGen, SH_OSCache_Info* cacheInfo, UDATA reason, J9Pool** lowerLayerList);
-	
+
 	static IDATA getNonTopLayerCacheInfo(J9JavaVM* vm, const char* ctrlDirName, UDATA groupPerm, const char *cacheNameWithVGen, SH_OSCache_Info *cacheInfo, UDATA reason, SH_OSCachesysv* oscache);
-	
+
 	void *attach(J9VMThread *currentThread, J9PortShcVersion* expectedVersionData);
-	
+
 	virtual IDATA detach(void);
-	
+
 #if defined(J9VM_OPT_SHR_MSYNC_SUPPORT)
-	IDATA syncUpdates(void* start, UDATA length, U_32 flags); 
+	IDATA syncUpdates(void* start, UDATA length, U_32 flags);
 #endif /* defined(J9VM_OPT_SHR_MSYNC_SUPPORT) */
-	
+
 	IDATA getError(void);
-	
+
 	void runExitCode(void);
-	
+
 	IDATA getLockCapabilities(void);
-	
+
 	IDATA setRegionPermissions(struct J9PortLibrary* portLibrary, void *address, UDATA length, UDATA flags);
-	
+
 	UDATA getPermissionsRegionGranularity(struct J9PortLibrary* portLibrary);
 
 	virtual U_32 getTotalSize();
@@ -162,9 +162,9 @@ public:
 	static IDATA findAllKnownCaches(struct J9PortLibrary* portlib, UDATA j2seVersion, struct J9Pool* cacheList);
 
 	static UDATA findfirst(struct J9PortLibrary *portLibrary, char *cacheDir, char *resultbuf);
-	
+
 	static I_32 findnext(struct J9PortLibrary *portLibrary, UDATA findHandle, char *resultbuf);
-	
+
 	static void findclose(struct J9PortLibrary *portLibrary, UDATA findhandle);
 
 	static IDATA getSysvHeaderFieldOffsetForGen(UDATA headerGen, UDATA fieldID);
@@ -181,10 +181,10 @@ public:
 	virtual void initialize(J9PortLibrary* portLib_, char* memForConstructor, UDATA generation, I_8 layer);
 
 protected :
-	
+
 	virtual void errorHandler(U_32 moduleName, U_32 id, LastErrorInfo *lastErrorInfo);
 	virtual void * getAttachedMemory();
-  
+
 private:
 	j9shmem_handle* _shmhandle;
 	j9shsem_handle* _semhandle;
@@ -197,7 +197,7 @@ private:
 	char* _shmFileName;
 	char* _semFileName;
 	bool _openSharedMemory;
-	
+
 	UDATA _storageKeyTesting;
 
 	const J9SharedClassPreinitConfig* config;
@@ -236,7 +236,7 @@ private:
 	static void* getSysvHeaderFieldAddressForGen(void* header, UDATA headerGen, UDATA fieldID);
 
 	IDATA getNewWriteLockID(void);
-	
+
 	SH_SysvSemAccess checkSemaphoreAccess(LastErrorInfo *lastErrorInfo);
 	SH_SysvShmAccess checkSharedMemoryAccess(LastErrorInfo *lastErrorInfo);
 
@@ -258,6 +258,3 @@ private:
 };
 
 #endif /* !defined(OSCACHESYSV_HPP_INCLUDED) */
-
-
-

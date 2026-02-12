@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  * Copyright IBM Corp. and others 1991
  *
@@ -67,11 +66,11 @@ protected:
 
 public:
 	virtual UDATA getVMStateID() { return OMRVMSTATE_GC_SWEEP; };
-	
+
 	virtual void run(MM_EnvironmentBase *env);
 	virtual void setup(MM_EnvironmentBase *env);
 	virtual void cleanup(MM_EnvironmentBase *env);
-	
+
 	void mainSetup(MM_EnvironmentBase *env);
 	void mainCleanup(MM_EnvironmentBase *env);
 
@@ -103,7 +102,7 @@ class MM_ParallelSweepSchemeVLHGC : public MM_BaseVirtual
  * Data members
  */
 private:
-	UDATA _chunksPrepared; 
+	UDATA _chunksPrepared;
 	MM_GCExtensions *_extensions;
 	MM_ParallelDispatcher *_dispatcher;
 	MM_CycleState _cycleState;  /**< Current cycle state information used to formulate receiver state for any operations  */
@@ -114,19 +113,19 @@ private:
 
 	MM_SweepHeapSectioning *_sweepHeapSectioning;	/**< pointer to Sweep Heap Sectioning */
 
-	J9Pool *_poolSweepPoolState;				/**< Memory pools for SweepPoolState*/ 
+	J9Pool *_poolSweepPoolState;				/**< Memory pools for SweepPoolState*/
 	omrthread_monitor_t _mutexSweepPoolState;	/**< Monitor to protect memory pool operations for sweepPoolState*/
 	bool _noCompactionAfterSweep;	/**< if true, no compaction would be expected after current sweep */
-	
+
 protected:
 public:
-	
+
 /*
  * Function members
  */
 private:
 protected:
-	
+
 	virtual bool initialize(MM_EnvironmentVLHGC *env);
 	virtual void tearDown(MM_EnvironmentVLHGC *env);
 
@@ -145,27 +144,27 @@ protected:
 	 * Leading dark matter (before the first marked object) is not included.
 	 * Trailing dark matter (after the last marked object) is included, even if it falls outside of the
 	 * mark map range.
-	 * 
+	 *
 	 * For each heap visit, collect information whether the object is scannable.
 	 *
 	 * @param sweepChunk[in] the sweepChunk to be measured
-	 * @param markMapCurrent[in] the address of the mark map word to be measured 
+	 * @param markMapCurrent[in] the address of the mark map word to be measured
 	 * @param heapSlotFreeCurrent[in] the first slot in the section of heap to be measured
-	 * 
-	 * @return the dark matter, measured in bytes, in the range 
+	 *
+	 * @return the dark matter, measured in bytes, in the range
 	 */
 	UDATA performSamplingCalculations(MM_ParallelSweepChunk *sweepChunk, UDATA* markMapCurrent, UDATA* heapSlotFreeCurrent);
 
 	/**
 	 * Accurately measure the dark matter within the specified sweepChunk.
 	 *
-	 * @param env[in] the current thread 
+	 * @param env[in] the current thread
 	 * @param sweepChunk[in] the sweepChunk to be measured
-	 * 
-	 * @return the dark matter, measured in bytes, in the chunk 
+	 *
+	 * @return the dark matter, measured in bytes, in the chunk
 	 */
 	UDATA measureAllDarkMatter(MM_EnvironmentVLHGC *env, MM_ParallelSweepChunk *sweepChunk);
-	
+
 	virtual void connectChunk(MM_EnvironmentVLHGC *env, MM_ParallelSweepChunk *chunk);
 	void connectAllChunks(MM_EnvironmentVLHGC *env, UDATA totalChunkCount);
 
@@ -183,7 +182,7 @@ protected:
 	MMINLINE MM_Heap *getHeap() { return _extensions->heap; };
 
 	void internalSweep(MM_EnvironmentVLHGC *env);
-	
+
 	virtual void setupForSweep(MM_EnvironmentVLHGC *env);
 
 	void recycleFreeRegions(MM_EnvironmentVLHGC *env);
@@ -194,20 +193,20 @@ protected:
 	void updateProjectedLiveBytesAfterSweep(MM_EnvironmentVLHGC *env);
 
 public:
-	static MM_ParallelSweepSchemeVLHGC *newInstance(MM_EnvironmentVLHGC *env); 
+	static MM_ParallelSweepSchemeVLHGC *newInstance(MM_EnvironmentVLHGC *env);
 	virtual void kill(MM_EnvironmentVLHGC *env);
-	
+
 	/**
- 	* Request to create sweepPoolState class for pool
- 	* @param  memoryPool memory pool to attach sweep state to
- 	* @return pointer to created class
- 	*/
+	 * Request to create sweepPoolState class for pool
+	 * @param  memoryPool memory pool to attach sweep state to
+	 * @return pointer to created class
+	 */
 	virtual void *createSweepPoolState(MM_EnvironmentBase *env, MM_MemoryPool *memoryPool);
 
 	/**
- 	* Request to destroy sweepPoolState class for pool
- 	* @param  sweepPoolState class to destroy
- 	*/
+	 * Request to destroy sweepPoolState class for pool
+	 * @param  sweepPoolState class to destroy
+	 */
 	virtual void deleteSweepPoolState(MM_EnvironmentBase *env, void *sweepPoolState);
 
 	virtual void sweep(MM_EnvironmentVLHGC *env);
@@ -238,7 +237,7 @@ public:
 	 * Called after the heap geometry changes to allow any data structures dependent on this to be updated.
 	 * This call could be triggered by memory ranges being added to or removed from the heap or memory being
 	 * moved from one subspace to another.
-	 * @param env[in] The thread which performed the change in heap geometry 
+	 * @param env[in] The thread which performed the change in heap geometry
 	 */
 	void heapReconfigured(MM_EnvironmentVLHGC *env);
 

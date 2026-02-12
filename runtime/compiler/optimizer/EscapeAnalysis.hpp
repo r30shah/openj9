@@ -145,7 +145,7 @@ class Candidate : public TR_Link<Candidate>
         _callSites(c->trMemory()),
         _dememoizedMethodSymRef(NULL),
         _dememoizedConstructorCall(NULL),
-    	_virtualCallSitesToBeFixed(c->trMemory()),
+        _virtualCallSitesToBeFixed(c->trMemory()),
         _coldBlockEscapeInfo(c->trMemory())
          {
           static const char *forceContinguousAllocation = feGetEnv("TR_forceContinguousAllocation");

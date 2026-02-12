@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  * Copyright IBM Corp. and others 1991
  *
@@ -20,10 +19,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
  *******************************************************************************/
- 
+
 #if !defined(EVENT_AF_START_HPP_)
 #define EVENT_AF_START_HPP_
- 
+
 #include "j9.h"
 #include "j9cfg.h"
 #include "mmhook.h"
@@ -36,27 +35,27 @@
  */
 class MM_VerboseEventAFStart : public MM_VerboseEventGCStart
 {
-private:	
+private:
 	/**
 	 * Passed Data
-	 * @{ 
+	 * @{
 	 */
 	UDATA _requestedBytes; /**< the minimum number of bytes requested */
 	UDATA _subSpaceType; /**< the type of subspace, old or new */
 	/** @} */
- 	
+
 	/**
 	 * External Data
-	 * @{ 
+	 * @{
 	 */
 	U_64 _lastAFTime; /**< the timestamp of the last AF of the same subspace type */
 	UDATA _AFCount; /**< the allocation failure count */
 	/** @} */
-	
+
 public:
 
 	static MM_VerboseEvent *newInstance(MM_AllocationFailureStartEvent *event, J9HookInterface** hookInterface);
-	
+
 	UDATA getSubSpaceType(void)		{	return _subSpaceType;	};
 	virtual void consumeEvents();
 	virtual void formattedOutput(MM_VerboseOutputAgent *agent);

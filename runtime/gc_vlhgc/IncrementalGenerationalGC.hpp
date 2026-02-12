@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  * Copyright IBM Corp. and others 1991
  *
@@ -68,31 +67,31 @@ protected:
 
 private:
 	J9PortLibrary *_portLibrary;
-	
+
 	MM_HeapRegionManager *_regionManager;	/**< The manager which will be walked to configure the collection flags on regions in the heap */
-	
+
 	MM_MemorySubSpaceTarok *_configuredSubspace;	/**< The subspace which is configured in the system and triggers early AF - must be reset after a collection to allow the mutator to proceed */
-	
+
 	MM_MarkMapManager *_markMapManager;  /**< Tracking and managing all mark map assets */
 
 	MM_InterRegionRememberedSet *_interRegionRememberedSet;	/**< An abstraction layer over the tracking of inter-region references which is built by marking and used/updated by compact */
 
 	MM_ClassLoaderRememberedSet *_classLoaderRememberedSet;	/**< An abstraction layer over the tracking where instances defined by each class loader can be found*/
-	
+
 	MM_CopyForwardDelegate _copyForwardDelegate;  /**< Delegate responsible for handling copy and forward GC operations */
 
 	MM_GlobalMarkDelegate _globalMarkDelegate; /**< Delegate for marking in global collections */
 
 	MM_ReclaimDelegate _reclaimDelegate;
-	
+
 	MM_SchedulingDelegate _schedulingDelegate;
-	
+
 	MM_CollectionSetDelegate _collectionSetDelegate;
 	MM_ProjectedSurvivalCollectionSetDelegate _projectedSurvivalCollectionSetDelegate;	/** Collection set delegate based on using a region's projected survival rate in order to select collection set */
 
 	MM_CollectionStatisticsVLHGC _globalCollectionStatistics;	 /** Common collect stats (memory, time etc.), specifically for Global collects */
 	MM_CollectionStatisticsVLHGC _partialCollectionStatistics;	 /** Common collect stats (memory, time etc.), specifically for Partial collects */
-	
+
 	MM_ConcurrentPhaseStatsBase _concurrentPhaseStats; /**< GMP concurrent stats */
 
 	MM_WorkPacketsVLHGC *_workPacketsForPartialGC; /**< WorkPackets used by Partial Mark-Sweep Collector */
@@ -101,11 +100,11 @@ private:
 	UDATA _taxationThreshold;	/**< The number of bytes which can be allocated between taxation points */
 	UDATA _allocatedSinceLastPGC;	/**< The number of bytes which can be allocated between PGCs */
 
-	MM_MainGCThread _mainGCThread; /**< An object which manages the state of the main GC thread */ 
-	
+	MM_MainGCThread _mainGCThread; /**< An object which manages the state of the main GC thread */
+
 	MM_CycleStateVLHGC _persistentGlobalMarkPhaseState; /**< Since the GMP can be fragmented into increments running across several pauses, we need to store the cycle state data */
 	volatile bool _forceConcurrentTermination;	/**< Setting this to true will cause any concurrent GMP work being done for this collector to stop and return.  It is volatile because it is shared state between this and the concurrent task's increment manager */
-	
+
 	UDATA _globalMarkPhaseIncrementBytesStillToScan;	/**< The number of bytes which must be scanned in the next GMP increment.  This is used by the concurrent GMP task to determine when it can terminate */
 
 private:
@@ -114,14 +113,14 @@ private:
 	static void globalGCHookAFCycleEnd(J9HookInterface** hook, UDATA eventNum, void* eventData, void* userData);
 	static void globalGCHookSysStart(J9HookInterface** hook, UDATA eventNum, void* eventData, void* userData);
 	static void globalGCHookSysEnd(J9HookInterface** hook, UDATA eventNum, void* eventData, void* userData);
-	static void globalGCHookIncrementStart(J9HookInterface** hook, UDATA eventNum, void* eventData, void* userData); 
-	static void globalGCHookIncrementEnd(J9HookInterface** hook, UDATA eventNum, void* eventData, void* userData); 
+	static void globalGCHookIncrementStart(J9HookInterface** hook, UDATA eventNum, void* eventData, void* userData);
+	static void globalGCHookIncrementEnd(J9HookInterface** hook, UDATA eventNum, void* eventData, void* userData);
 
 	/**
 	 * Called after an operation which has completed the env's mark map (either a GMP completed, a global mark
 	 * completed, a partial mark completed, or a copy-forward completed) so that operations which rely on a
 	 * mark map can be performed (class unloading and finalization).
-	 * 
+	 *
 	 * @param env[in] The main GC thread
 	 */
 	void postMarkMapCompletion(MM_EnvironmentVLHGC *env);
@@ -216,12 +215,12 @@ public:
 	void initializeTaxationThreshold(MM_EnvironmentVLHGC *env);
 
 	virtual void kill(MM_EnvironmentBase *env);
-	
+
 	virtual UDATA getVMStateID() { return OMRVMSTATE_GC_COLLECTOR_GLOBALGC; };
-	
+
 	virtual bool collectorStartup(MM_GCExtensionsBase* extensions);
 	virtual void collectorShutdown(MM_GCExtensionsBase *extensions);
-	
+
 	virtual bool heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, UDATA size, void *lowAddress, void *highAddress);
 	virtual bool heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, UDATA size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress);
 	virtual void heapReconfigured(MM_EnvironmentBase *env, HeapReconfigReason reason, MM_MemorySubSpace *subspace, void *lowAddress, void *highAddress);
@@ -237,7 +236,7 @@ public:
 	 * @return true if resize is successful
 	 */
 	bool attemptHeapResize(MM_EnvironmentVLHGC *env, MM_AllocateDescription *allocDescription);
-	
+
 	virtual	U_32 getGCTimePercentage(MM_EnvironmentBase *env);
 
 	/**
@@ -253,7 +252,7 @@ public:
 	 * Get the last (actual) sden size
 	 * @returns eden size
 	 */
-	
+
 	UDATA getAllocatedSinceLastPGC() {
 		return _allocatedSinceLastPGC;
 	}
@@ -262,7 +261,7 @@ public:
 	 * The _configuredSubspace ivar is mutable via this method only to simplify start-up in the Configuration framework but it should only be set once (implementation asserts this).
 	 */
 	void setConfiguredSubspace(MM_EnvironmentBase *env, MM_MemorySubSpaceTarok *configuredSubspace);
-		
+
 	/**
 	 * Increment the nursery age of every region which contains objects, up to the maximum age.
 	 * @param env[in] The main GC thread
@@ -294,7 +293,7 @@ public:
 	 * @param env[in] The main GC thread
 	 */
 	void setRegionAgesToMax(MM_EnvironmentVLHGC *env);
-	
+
 	/**
 	 * flush RS Lists for CollectionSet and dirty card table
 	 */
@@ -313,7 +312,7 @@ public:
 	bool isGlobalMarkPhaseRunning() { return (MM_CycleState::state_mark_idle != _persistentGlobalMarkPhaseState._markDelegateState); }
 
 	/**
-	 * @return The number of bytes we have scanned so far in the current Global Mark Phase.  
+	 * @return The number of bytes we have scanned so far in the current Global Mark Phase.
 	 * If we are not currently running in a GMP, returns 0.
 	 */
 	UDATA getBytesScannedInGlobalMarkPhase();
@@ -324,22 +323,22 @@ public:
 	void setupBeforeGC(MM_EnvironmentBase *env);
 
 	/**
- 	* Request to create sweepPoolState class for pool
- 	* @param  memoryPool memory pool to attach sweep state to
- 	* @return pointer to created class
- 	*/
+	 * Request to create sweepPoolState class for pool
+	 * @param  memoryPool memory pool to attach sweep state to
+	 * @return pointer to created class
+	 */
 	virtual void *createSweepPoolState(MM_EnvironmentBase *env, MM_MemoryPool *memoryPool);
 
 	/**
- 	* Request to destroy sweepPoolState class for pool
- 	* @param  sweepPoolState class to destroy
- 	*/
+	 * Request to destroy sweepPoolState class for pool
+	 * @param  sweepPoolState class to destroy
+	 */
 	virtual void deleteSweepPoolState(MM_EnvironmentBase *env, void *sweepPoolState);
 
 	/**
- 	* Get InterRegionRememberedSet. InterRegionRememberedSet exposed only if tgc. 
- 	* TODO: Try fetching it through cycleState (currently not doable, due to relative order of reportGCStart and cycleState initialization)
- 	*/
+	 * Get InterRegionRememberedSet. InterRegionRememberedSet exposed only if tgc.
+	 * TODO: Try fetching it through cycleState (currently not doable, due to relative order of reportGCStart and cycleState initialization)
+	 */
 	MM_InterRegionRememberedSet *getInterRegionRememberedSet() { return _interRegionRememberedSet; }
 
 	/**
@@ -408,7 +407,7 @@ public:
 	 * @param env[in] the current thread
 	 */
 	virtual void preMainGCThreadInitialize(MM_EnvironmentBase *env);
-	
+
 	virtual MM_ConcurrentPhaseStatsBase *getConcurrentPhaseStats() { return &_concurrentPhaseStats; }
 
 	MMINLINE UDATA getCurrentEdenSizeInBytes(MM_EnvironmentVLHGC *env)
@@ -486,7 +485,7 @@ private:
 	 * @param packets[in] The packets structure to verify is empty
 	 */
 	void assertWorkPacketsEmpty(MM_EnvironmentVLHGC *env, MM_WorkPacketsVLHGC *packets);
-	
+
 	/**
 	 * Tests that all marked objects in the given mark map have the following properties:
 	 * 1)  refer only to other marked objects
@@ -554,7 +553,7 @@ private:
 	 * @param env[in] The main GC thread
 	 */
 	void triggerGlobalGCEndHook(MM_EnvironmentVLHGC *env);
-	
+
 	/**
 	 * Report the start of a copy forward operation.
 	 * @param env a GC thread.

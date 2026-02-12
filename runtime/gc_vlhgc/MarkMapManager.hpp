@@ -62,9 +62,9 @@ public:
 	void kill(MM_EnvironmentVLHGC *env);
 
 	/**
- 	 * Perform any initialization required by the delegate once the VM is up and ready to start.
- 	 * @return TRUE if startup completes OK, FALSE otherwise 
- 	 */
+	 * Perform any initialization required by the delegate once the VM is up and ready to start.
+	 * @return TRUE if startup completes OK, FALSE otherwise
+	 */
 	bool collectorStartup(MM_GCExtensions *extensions);
 
 	/**
@@ -106,7 +106,7 @@ public:
 	MM_MarkMap *getPartialGCMap() {
 		return _previousMarkMap;
 	}
-	
+
 	/**
 	 * Swaps the _inProgressMarkMap and the _completeMarkMap.  Called at the end of a GMP when it has completed a new map.
 	 */

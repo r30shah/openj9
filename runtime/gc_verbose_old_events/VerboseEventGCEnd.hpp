@@ -19,10 +19,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
  *******************************************************************************/
- 
+
 #if !defined(EVENT_GC_END_HPP_)
 #define EVENT_GC_END_HPP_
- 
+
 #include "j9.h"
 #include "j9cfg.h"
 #include "mmhook.h"
@@ -39,20 +39,20 @@ class MM_VerboseEventGCEnd : public MM_VerboseEvent
 protected:
 	/**
 	 * Passed Data
-	 * @{ 
+	 * @{
 	 */
 	MM_CommonGCEndData _gcEndData; /**< data which is common to all GC end events */
 	/** @} */
- 	
+
 	/**
 	 * External Data
-	 * @{ 
+	 * @{
 	 */
 	I_64 _timeInMilliSeconds;
 	/** @} */
-	
+
 	void initialize(void);
-	
+
 	bool hasDetailedTenuredOutput();
 	//void tlhFormattedOutput(MM_VerboseOutputAgent *agent);
 	void loaFormattedOutput(MM_VerboseOutputAgent *agent);

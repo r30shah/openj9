@@ -107,7 +107,7 @@ private:
 		uintptr_t historicalBytesScanned;		/**< Historical number of bytes scanned for mark operations */
 		uint64_t historicalScanMicroseconds;	/**< Historical scan times for mark operations */
 		double microSecondsPerByteScanned; /**< The average scan rate, measured in microseconds per byte */
-		
+
 		MM_SchedulingDelegate_ScanRateStats() :
 			historicalBytesScanned(0),
 			historicalScanMicroseconds(0),
@@ -120,10 +120,10 @@ private:
 
 protected:
 public:
-	
+
 	/* Member Functions */
-	
-	
+
+
 	/* Add up macro defragmentation work for this region for total work accumulated during this PGC, as we find out
 	 * that the region is retired and its RSCL is still valid.
 	 * The work is the min of two: free spece (used as dest region) or occupied space (used as source).
@@ -142,8 +142,8 @@ public:
 private:
 	/**
 	 * Internal helper for determining the next taxation threshold. This does all
-	 * of the work, except that it does not honour the GMP intermission. 
-	 * getNextTaxationThreshold calls this in a loop until the intermission has 
+	 * of the work, except that it does not honour the GMP intermission.
+	 * getNextTaxationThreshold calls this in a loop until the intermission has
 	 * been consumed.
 	 */
 	uintptr_t getNextTaxationThresholdInternal(MM_EnvironmentVLHGC *env);
@@ -206,13 +206,13 @@ private:
 	double predictPgcTime(MM_EnvironmentVLHGC *env, uintptr_t currentEdenSize, intptr_t edenSizeChange);
 
 	/**
-	 * @return The estimated number of bytes which we have remaining to scan for the current GMP cycle.  
+	 * @return The estimated number of bytes which we have remaining to scan for the current GMP cycle.
 	 * If there is not currently a GMP running, returns calculateEstimatedGlobalBytesToScan()
 	 */
 	uintptr_t estimateRemainingGlobalBytesToScan() const;
 
 	/**
-	 * @return The estimated amount of time (wall-clock time in millis) we need to spend scanning to finish the current GMP.  
+	 * @return The estimated amount of time (wall-clock time in millis) we need to spend scanning to finish the current GMP.
 	 * If there is no GMP currently running, returns the estimated amount of time we'd need to scan
 	 * to finish a GMP.
 	 */
@@ -227,23 +227,23 @@ private:
 	 * @return the estimated number of increments required
 	 */
 	uintptr_t estimateGlobalMarkIncrements(MM_EnvironmentVLHGC *env, double liveSetAdjustedForScannableBytesRatio) const;
-	
+
 	/**
 	 * Monitor influx of regions into the oldest age group,
 	 * measure their occupancy and estimate how much extra compact work
 	 * has to be done do defragment those regions.
- 	 * @param env[in] the current thread
+	 * @param env[in] the current thread
 	 */
 	void estimateMacroDefragmentationWork(MM_EnvironmentVLHGC *env);
 
 	/**
-	 * Using the region reclaimability and consumption data collected after the most recent PGC, 
-	 * estimate the number of PGCs remaining until allocation failure will occur. 
+	 * Using the region reclaimability and consumption data collected after the most recent PGC,
+	 * estimate the number of PGCs remaining until allocation failure will occur.
 	 * @param env[in] The main GC thread
 	 * @return the estimated number of PGCs remaining before AF (anything from 0 to UDATA_MAX)
 	 */
 	uintptr_t estimatePartialGCsRemaining(MM_EnvironmentVLHGC *env) const;
-	
+
 	/**
 	 * Called after a PGC has been completed in order to measure the region consumption and update
 	 * the consumption rate.
@@ -252,7 +252,7 @@ private:
 	 * @param defragmentReclaimableRegions he estimated number of reclaimable defragment regions
 	 */
 	void measureConsumptionForPartialGC(MM_EnvironmentVLHGC *env, uintptr_t currentReclaimableRegions, uintptr_t defragmentReclaimableRegions);
-	
+
 	/**
 	 * Called after marking to update statistics related to the scan rate. This data is used
 	 * to estimate how long a GMP will take.
@@ -260,17 +260,17 @@ private:
 	 * @param env[in] the main GC thread
 	 */
 	void measureScanRate(MM_EnvironmentVLHGC *env, double historicWeight);
-	
+
 	/**
 	 * Recalculate the intermission until kick-off based on current estimates, if automatic
 	 * intermissions are enabled. Store the result in _remainingGMPIntermissionIntervals.
 	 * @param env[in] the main GC thread
 	 */
 	void calculateAutomaticGMPIntermission(MM_EnvironmentVLHGC *env);
-	
+
 	/**
 	 * Following a GC, recalculate the Eden size for the next PGC.
-	 * This is typically the same as GCExtensions->tarokeEdenSize, but may be smaller if 
+	 * This is typically the same as GCExtensions->tarokeEdenSize, but may be smaller if
 	 * insufficient memory is available
 	 * @param env[in] the main GC thread
 	 */
@@ -398,7 +398,7 @@ private:
 	uintptr_t calculateKickoffHeadroom(MM_EnvironmentVLHGC *env, uintptr_t totalFreeMemory);
 
 protected:
-	
+
 public:
 	/**
 	 * Initialize the receiver.
@@ -424,13 +424,13 @@ public:
 
 	/**
 	 * Determine what work should be performed during the current increment.
-	 * 
+	 *
 	 * @param env[in] the main GC thread
 	 * @param doPartialGarbageCollection[out] set to true if a PGC should be performed, false otherwise
 	 * @param doGlobalMarkPhase[out] set to true if a GMP increment should be performed, false otherwise
 	 */
 	void getIncrementWork(MM_EnvironmentVLHGC *env, bool* doPartialGarbageCollection, bool* doGlobalMarkPhase);
-	
+
 	/**
 	 * Return region consumption rate.
 	 */
@@ -445,7 +445,7 @@ public:
 
 	/**
 	 * Returns the average copy forward rate.  Disregards time spent related to RSCL clearing. Measured in bytes/microseconds
-	 * 
+	 *
 	 * @return the average copy forward rate.
 	 */
 	double getAverageCopyForwardRate() { return _averageCopyForwardRate; }
@@ -454,9 +454,9 @@ public:
 	 * Returns the scan time cost (in microseconds) we attribute to performing a GMP.  Attempts to
 	 * factor in stop-the-world global mark increment time as well as any concurrent global marking which
 	 * slows down the mutator.
-	 * 
-	 * @return the scan time cost (in microseconds) we attribute to performing a GMP.  
-	 * 
+	 *
+	 * @return the scan time cost (in microseconds) we attribute to performing a GMP.
+	 *
 	 */
 	uint64_t getScanTimeCostPerGMP(MM_EnvironmentVLHGC *env);
 
@@ -498,7 +498,7 @@ public:
 	 * Calculate how much of live-set-data-after-PGC increase is real and how much of it garbage
 	 */
 	void calculateHeapOccupancyTrend(MM_EnvironmentVLHGC *env);
-	
+
 	/**
 	 * recalculate PGCCompactionRate, HeapOccupancyTrend, ScannableBytesRatio at the end of First PGC After GMP
 	 * it should be called before estimating defragmentReclaimableRegions in order to calculate GMPIntermission more accurate.
@@ -572,7 +572,7 @@ public:
 	 * @param env[in] the main GC thread
 	 */
 	void globalMarkPhaseCompleted(MM_EnvironmentVLHGC *env);
-	
+
 	/**
 	 * Inform the receiver that an increment in the Global Mark Phase, or the mark portion of a global collect, has completed
 	 * @param env[in] the main GC thread
@@ -586,7 +586,7 @@ public:
 	 * @param defragmentReclaimableRegions[in] an estimate of the reclaimable defragment memory
 	 */
 	void globalGarbageCollectCompleted(MM_EnvironmentVLHGC *env, uintptr_t reclaimableRegions, uintptr_t defragmentReclaimableRegions);
-	
+
 	/**
 	 * Inform the receiver that a Partial GC has started.
 	 * @param env[in] the main GC thread
@@ -658,11 +658,10 @@ public:
 	 * Adjust internal structures to reflect the change in heap size.
 	 */
 	void heapReconfigured(MM_EnvironmentVLHGC *env);
-	
+
 	double getAvgEdenSurvivalRateCopyForward(MM_EnvironmentVLHGC *env) { return _edenSurvivalRateCopyForward; }
 
 	MM_SchedulingDelegate(MM_EnvironmentVLHGC *env, MM_HeapRegionManager *manager);
 };
-
 
 #endif /* THRESHOLDDELEGATE_HPP_ */

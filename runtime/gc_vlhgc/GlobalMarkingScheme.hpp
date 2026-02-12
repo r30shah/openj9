@@ -83,14 +83,14 @@ private:
 	bool _timeLimitWasHit;	/**< true if any requests to check the time came in after we had hit our time threshold */
 	const U_64 _timeThreshold;	/**< The ticks which represents the end of this increment */
 	MM_CycleState *_cycleState; /**< Current cycle state information */
-	
+
 public:
 	virtual UDATA getVMStateID() { return OMRVMSTATE_GC_MARK; };
-	
+
 	virtual void run(MM_EnvironmentBase *env);
 	virtual void setup(MM_EnvironmentBase *env);
 	virtual void cleanup(MM_EnvironmentBase *env);
-	
+
 	virtual void mainSetup(MM_EnvironmentBase *env);
 	virtual void mainCleanup(MM_EnvironmentBase *env);
 
@@ -111,8 +111,8 @@ public:
 	 * Create a ParallelMarkTask object.
 	 */
 	MM_ParallelGlobalMarkTask(MM_EnvironmentBase *env,
-			MM_ParallelDispatcher *dispatcher, 
-			MM_GlobalMarkingScheme *markingScheme, 
+			MM_ParallelDispatcher *dispatcher,
+			MM_GlobalMarkingScheme *markingScheme,
 			MarkAction action,
 			U_64 timeThreshold,
 			MM_CycleState *cycleState) :
@@ -143,8 +143,8 @@ public:
 private:
 protected:
 public:
-	virtual UDATA getVMStateID() 
-	{ 
+	virtual UDATA getVMStateID()
+	{
 		return OMRVMSTATE_GC_CONCURRENT_MARK_TRACE;
 	}
 
@@ -164,8 +164,8 @@ public:
 	 * Create a MM_ConcurrentGlobalMarkTask object.
 	 */
 	MM_ConcurrentGlobalMarkTask(MM_EnvironmentBase *env,
-			MM_ParallelDispatcher *dispatcher, 
-			MM_GlobalMarkingScheme *markingScheme, 
+			MM_ParallelDispatcher *dispatcher,
+			MM_GlobalMarkingScheme *markingScheme,
 			MarkAction action,
 			UDATA bytesToScan,
 			volatile bool *forceExit,
@@ -198,7 +198,7 @@ private:
 	MM_MarkMap *_markMap;
 	UDATA _arraySplitSize;
 	MM_HeapRegionManager *const _heapRegionManager;	/**< This HRM is retained since it is needed to quickly resolve the table region of a given object */
-	
+
 #if defined(J9VM_GC_DYNAMIC_CLASS_UNLOADING)
 	bool _dynamicClassUnloadingEnabled;  /**< Local cached value from cycle state for performance reasons (TODO: Reevaluate) */
 #endif /* J9VM_GC_DYNAMIC_CLASS_UNLOADING */
@@ -214,8 +214,8 @@ private:
 		SCAN_REASON_DIRTY_CARD = 2, /**< Indicates the object being scanned was found in a dirty card */
 		SCAN_REASON_OVERFLOWED_REGION = 3, /**< Indicates the object being scanned was in an overflowed region */
 	};
-	
-	/* 
+
+	/*
 	 * Function members
 	 */
 private:
@@ -251,13 +251,13 @@ private:
 	 * @param env[in] the current thread
 	 */
 	void scanPhantomReferenceObjects(MM_EnvironmentVLHGC *env);
-	
+
 	/**
 	 * Process the list of reference objects recorded in the specified list.
 	 * References with unmarked referents are cleared and optionally enqueued.
 	 * SoftReferences have their ages incremented.
 	 * @param env[in] the current thread
-	 * @param headOfList[in] the first object in the linked list 
+	 * @param headOfList[in] the first object in the linked list
 	 * @param referenceStats copy forward stats substructure to be updated
 	 */
 	void processReferenceList(MM_EnvironmentVLHGC *env, J9Object* headOfList, MM_ReferenceStats *referenceStats);
@@ -315,13 +315,13 @@ private:
 	 * 1. Mark any objects it points to, optionally including it's class
 	 * 2. Enqueue those objects for scanning, if necessary
 	 * 3. Update the remembered set
-	 * 
+	 *
 	 * @param env[in] the current thread
 	 * @param objectPtr[in] the mixed object to scan
- 	 * @param reason a code indicating why the object is being scanned
+	 * @param reason a code indicating why the object is being scanned
 	 */
 	void scanMixedObject(MM_EnvironmentVLHGC *env, J9Object *objectPtr, ScanReason reason);
-	
+
 	void scanContinuationNativeSlots(MM_EnvironmentVLHGC *env, J9Object *objectPtr, ScanReason reason);
 	void scanContinuationObject(MM_EnvironmentVLHGC *env, J9Object *objectPtr, ScanReason reason);
 
@@ -332,25 +332,25 @@ private:
 	 * 3. Mark and enqueue any objects in the constant pool
 	 * 4. Also scan any replaced (how-swapped) versions of the class
 	 * @note This may safely be called for initialized or uninitialized class objects.
-	 * 
+	 *
 	 * @param env[in] the current thread
 	 * @param objectPtr[in] an instance of java.lang.Class
 	 * @param reason a code indicating why the object is being scanned
 	 */
 	void scanClassObject(MM_EnvironmentVLHGC *env, J9Object *objectPtr, ScanReason reason);
-	
+
 	/**
 	 * Scan the specified instance of java.lang.ClassClassLoader, or one of its subclasses.
 	 * 1. Scan the object itself, as in scanMixedObject()
 	 * 2. Mark and enqueue any classes found in the class table
 	 * @note This may safely be called for initialized or uninitialized class loader objects.
-	 * 
+	 *
 	 * @param env[in] the current thread
 	 * @param objectPtr[in] an instance of java.lang.ClassLoader or one of its subclasses
 	 * @param reason a code indicating why the object is being scanned
 	 */
 	void scanClassLoaderObject(MM_EnvironmentVLHGC *env, J9Object *objectPtr, ScanReason reason);
-	
+
 	/**
 	 * Scan the slots of a J9ClassLoader object.
 	 * Mark all relevant slots values found in the object.  This includes the java.lang.ClassLoader object.
@@ -368,18 +368,18 @@ private:
 	 * 1. Scan the object itself, as in scanMixedObject()
 	 * 2. Except, use special handling for the weak referent field
 	 * @note The reference object must be on one of the reference object queues.
-	 * 
+	 *
 	 * @param env[in] the current thread
 	 * @param objectPtr[in] an instance of a reference object
 	 * @param reason a code indicating why the object is being scanned
 	 */
 	void scanReferenceMixedObject(MM_EnvironmentVLHGC *env, J9Object *objectPtr, ScanReason reason);
-	
+
 	/**
 	 * Scan the specified portion of the specified object array.
 	 * If the function does not scan to the end of the array, the remaining portion of the
 	 * array is enqueued for further scanning.
-	 * 
+	 *
 	 * @param env[in] the current thread
 	 * @param objectPtr[in] an object array
 	 * @param indexArg the index to start scanning from
@@ -391,7 +391,7 @@ private:
 	 * Scan the specified object array.
 	 * If the function does not scan to the end of the array, the remaining portion of the
 	 * array is enqueued for further scanning.
-	 * 
+	 *
 	 * @param env[in] the current thread
 	 * @param objectPtr[in] an object array
 	 * @param reason a code indicating why the object is being scanned
@@ -408,7 +408,7 @@ private:
 	 * Rescan all objects in the specified overflowed region.
 	 */
 	void cleanRegion(MM_EnvironmentVLHGC *env, MM_HeapRegionDescriptorVLHGC *region, U_8 flagToClean);
-		
+
 	/**
 	 * Clean cards for the purpose of finding "roots" into the collection set.
 	 * @param env A GC thread involved in the cleaning.
@@ -438,9 +438,9 @@ protected:
 	}
 
 public:
-	static MM_GlobalMarkingScheme *newInstance(MM_EnvironmentVLHGC *env); 
+	static MM_GlobalMarkingScheme *newInstance(MM_EnvironmentVLHGC *env);
 	virtual void kill(MM_EnvironmentVLHGC *env);
-	
+
 	void mainSetupForGC(MM_EnvironmentVLHGC *env);
 	void mainCleanupAfterGC(MM_EnvironmentVLHGC *env);
 	void workerSetupForGC(MM_EnvironmentVLHGC *env);
@@ -460,29 +460,29 @@ public:
 	/**
 	 *  Initialization for Mark
 	 *  Actual startup for Mark procedure
-	 *  @param[in] env - passed Environment 
+	 *  @param[in] env - passed Environment
 	 */
 	void markLiveObjectsInit(MM_EnvironmentVLHGC *env);
 
 	/**
 	 *  Mark Roots
 	 *  Create Root Scanner and Mark all roots including classes and classloaders if dynamic class unloading is enabled
-	 *  @param[in] env - passed Environment 
+	 *  @param[in] env - passed Environment
 	 */
 	void markLiveObjectsRoots(MM_EnvironmentVLHGC *env);
 
 	/**
 	 *  Scan (complete)
 	 *  Process all work packets from queue, including classes and work generated during this phase.
-	 *  On return, all live objects will be marked, although some unreachable objects (such as finalizable 
+	 *  On return, all live objects will be marked, although some unreachable objects (such as finalizable
 	 *  objects) may still be revived by subsequent stages.
-	 *  @param[in] env - passed Environment 
+	 *  @param[in] env - passed Environment
 	 */
 	void markLiveObjectsScan(MM_EnvironmentVLHGC *env);
-	
+
 	/**
 	 *  Final Mark services including scanning of Clearables
-	 *  @param[in] env - passed Environment 
+	 *  @param[in] env - passed Environment
 	 */
 	void markLiveObjectsComplete(MM_EnvironmentVLHGC *env);
 
@@ -495,7 +495,7 @@ public:
 	bool markObject(MM_EnvironmentVLHGC *env, J9Object *objectPtr, bool leafType = false);
 
 	void completeScan(MM_EnvironmentVLHGC *env);
-	
+
 	bool heapAddRange(MM_EnvironmentVLHGC *env, MM_MemorySubSpace *subspace, UDATA size, void *lowAddress, void *highAddress);
 	bool heapRemoveRange(MM_EnvironmentVLHGC *env, MM_MemorySubSpace *subspace, UDATA size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress);
 
@@ -503,7 +503,7 @@ public:
 	 * Scans the marked objects in the [lowAddress..highAddress) range.  If rememberedObjectsOnly is set, we will further constrain
 	 * this scanned set by only scanning objects in the range which have the OBJECT_HEADER_REMEMBERED bit set.  The receiver uses
 	 * its _markMap to determine which objects in the range are marked.
-	 * 
+	 *
 	 * @param env[in] A GC thread (note that this method could be called by multiple threads, in parallel, but on disjoint address ranges)
 	 * @param lowAddress[in] The heap address where the receiver will begin walking objects
 	 * @param highAddress[in] The heap address after the last address we will potentially find a live object
@@ -515,7 +515,7 @@ public:
 	 * @param env[in] the current thread
 	 */
 	void flushBuffers(MM_EnvironmentVLHGC *env);
-	
+
 	MMINLINE void doSlot(MM_EnvironmentVLHGC *env, J9Object *fromObject, J9Object** slotPtr);
 #if JAVA_SPEC_VERSION >= 24
 	void doContinuationSlot(MM_EnvironmentVLHGC *env, J9Object *fromObject, J9Object** slotPtr, GC_ContinuationSlotIterator *continuationSlotIterator);
@@ -541,7 +541,7 @@ public:
 	{
 		_typeId = __FUNCTION__;
 	}
-	
+
 	/*
 	 * Friends
 	 */

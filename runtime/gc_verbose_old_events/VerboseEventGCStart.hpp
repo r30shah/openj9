@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  * Copyright IBM Corp. and others 1991
  *
@@ -20,10 +19,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
  *******************************************************************************/
- 
+
 #if !defined(EVENT_GC_START_HPP_)
 #define EVENT_GC_START_HPP_
- 
+
 #include "j9.h"
 #include "j9cfg.h"
 #include "mmhook.h"
@@ -39,20 +38,20 @@ class MM_VerboseEventGCStart : public MM_VerboseEvent
 protected:
 	/**
 	 * Passed Data
-	 * @{ 
+	 * @{
 	 */
 	MM_CommonGCStartData _gcStartData; /**< data which is common to all GC start events */
 	/** @} */
- 	
+
 	/**
 	 * External Data
-	 * @{ 
+	 * @{
 	 */
 	I_64 _timeInMilliSeconds;
 	/** @} */
-	
+
 	void initialize(void);
-	
+
 	bool hasDetailedTenuredOutput();
 	void tlhFormattedOutput(MM_VerboseOutputAgent *agent);
 	void loaFormattedOutput(MM_VerboseOutputAgent *agent);

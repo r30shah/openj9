@@ -171,9 +171,9 @@ class TR_J9EstimateCodeSize : public TR_EstimateCodeSize
 
 #define NUM_PREV_BC 5
 class TR_prevArgs
-{
+   {
    public:
-      TR_prevArgs() { for (int32_t i = 0 ; i < NUM_PREV_BC ; i++ ) { _prevBC[i] = J9BCunknown ; } }
+      TR_prevArgs() { for (int32_t i = 0 ; i < NUM_PREV_BC ; i++ ) { _prevBC[i] = J9BCunknown; } }
 
       void printIndexes(TR::Compilation *comp)
          {
@@ -230,18 +230,14 @@ class TR_prevArgs
                 count++;
                 break;
              default:
-            	 break;
+                break;
              }
          }
       return count;
       }
 
-
    protected:
       TR_J9ByteCode _prevBC[NUM_PREV_BC];
-};
-
-
-
+   };
 
 #endif
