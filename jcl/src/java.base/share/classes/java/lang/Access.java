@@ -1033,12 +1033,13 @@ final class Access implements JavaLangAccess {
 	}
 	/*[ENDIF] JAVA_SPEC_VERSION >= 26 */
 
-	/*[IF (JAVA_SPEC_VERSION >= 27) & !INLINE-TYPES]*/
+	/*[IF JAVA_SPEC_VERSION >= 27]*/
 	@Override
 	public void finishInit(StackTraceElement[] stackTrace) {
 		StackTraceElement.finishInit(stackTrace);
 	}
 
+	/*[IF !INLINE-TYPES]*/
 	@Override
 	public long nativeThreadID(Thread thread) {
 		return thread.nativeThreadID();
@@ -1048,5 +1049,6 @@ final class Access implements JavaLangAccess {
 	public void setThreadNativeID(long id) {
 		Thread.currentThread().setNativeThreadID(id);
 	}
-	/*[ENDIF] (JAVA_SPEC_VERSION >= 27) & !INLINE-TYPES */
+	/*[ENDIF] !INLINE-TYPES */
+	/*[ENDIF] JAVA_SPEC_VERSION >= 27 */
 }
