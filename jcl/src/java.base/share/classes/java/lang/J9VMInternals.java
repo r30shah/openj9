@@ -226,11 +226,12 @@ final class J9VMInternals {
 	 * If the Throwable is an Error, throw that, otherwise, wrap the Throwable
 	 * in an ExceptionInInitializerError and throw that instead.
 	 */
-	private static void recordInitializationFailure(Class clazz, Throwable err) {
+	private static void recordInitializationFailure(Class<?> clazz, Throwable err) {
 		if (initialized) {
 			// if exceptions is null, we're initializing and running single threaded
-			if (exceptions == null)
-				exceptions = new WeakHashMap();
+			if (exceptions == null) {
+				exceptions = new WeakHashMap<>();
+			}
 			synchronized(exceptions) {
 /*[IF JAVA_SPEC_VERSION >= 18]*/
 				if (!(err instanceof Error)) {
