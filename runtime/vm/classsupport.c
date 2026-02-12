@@ -780,7 +780,9 @@ callLoadClass(J9VMThread* vmThread, U_8* className, UDATA classNameLength, J9Cla
 			omrthread_monitor_enter(vm->classTableMutex);
 			/* Verify that the actual name matches the expected */
 			foundClassName = J9ROMCLASS_CLASSNAME(foundClass->romClass);
-			if (!J9UTF8_DATA_EQUALS(className, classNameLength, J9UTF8_DATA(foundClassName), J9UTF8_LENGTH(foundClassName))) {
+			if (!J9UTF8_DATA_EQUALS(className, classNameLength, J9UTF8_DATA(foundClassName), J9UTF8_LENGTH(foundClassName))
+				|| J9ROMCLASS_IS_PRIMITIVE_TYPE(foundClass->romClass)
+			) {
 				/* force failure */
 				foundClass = NULL;
 			} else {
