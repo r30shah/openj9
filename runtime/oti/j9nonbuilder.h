@@ -2122,14 +2122,21 @@ typedef struct J9FlattenedClassCache {
 
 #define J9_VM_FCC_ENTRY_FROM_FCC(flattenedClassCache, index) (((J9FlattenedClassCacheEntry *)((flattenedClassCache) + 1)) + (index))
 #define J9_VM_FCC_ENTRY_FROM_CLASS(clazz, index) J9_VM_FCC_ENTRY_FROM_FCC((clazz)->flattenedClassCache, index)
-#define J9_VM_FCC_CLASS_FROM_ENTRY(entry) ((J9Class *)((UDATA)(entry)->clazz & ~J9_VM_FCC_CLASS_FLAGS_MASK))
-#define J9_VM_FCC_ENTRY_IS_STATIC_FIELD(entry) J9_ARE_ALL_BITS_SET((UDATA)(entry)->clazz, J9_VM_FCC_CLASS_FLAGS_STATIC_FIELD)
-#define J9_VM_FCC_ENTRY_IS_STRICT_STATIC_UNSET(entry) J9_ARE_NO_BITS_SET((UDATA)(entry)->clazz, J9_VM_FCC_CLASS_FLAGS_STRICT_STATIC_FIELD_WRITTEN)
-#define J9_VM_FCC_ENTRY_IS_STRICT_STATIC_READ(entry) J9_ARE_ALL_BITS_SET((UDATA)(entry)->clazz, J9_VM_FCC_CLASS_FLAGS_STRICT_STATIC_FIELD_READ)
-#define J9_VM_FCC_ENTRY_IS_STRICT_STATIC_PRIMITIVE(entry) J9_ARE_ALL_BITS_SET((UDATA)(entry)->clazz, J9_VM_FCC_CLASS_FLAGS_STRICT_STATIC_FIELD_PRIMITIVE)
+#define J9_VM_FCC_CLASS_FROM_ENTRY(entry) \
+	((J9Class *)((UDATA)(entry)->clazz & ~J9_VM_FCC_CLASS_FLAGS_MASK))
+#define J9_VM_FCC_ENTRY_IS_STATIC_FIELD(entry) \
+	J9_ARE_ANY_BITS_SET((UDATA)(entry)->clazz, J9_VM_FCC_CLASS_FLAGS_STATIC_FIELD)
+#define J9_VM_FCC_ENTRY_IS_STRICT_STATIC_UNSET(entry) \
+	J9_ARE_NO_BITS_SET((UDATA)(entry)->clazz, J9_VM_FCC_CLASS_FLAGS_STRICT_STATIC_FIELD_WRITTEN)
+#define J9_VM_FCC_ENTRY_IS_STRICT_STATIC_READ(entry) \
+	J9_ARE_ANY_BITS_SET((UDATA)(entry)->clazz, J9_VM_FCC_CLASS_FLAGS_STRICT_STATIC_FIELD_READ)
+#define J9_VM_FCC_ENTRY_IS_STRICT_STATIC_PRIMITIVE(entry) \
+	J9_ARE_ANY_BITS_SET((UDATA)(entry)->clazz, J9_VM_FCC_CLASS_FLAGS_STRICT_STATIC_FIELD_PRIMITIVE)
 
-#define J9_VM_FCC_ENTRY_SET_AS_READ(entry) (entry)->clazz = (J9Class *)((UDATA)(entry)->clazz | J9_VM_FCC_CLASS_FLAGS_STRICT_STATIC_FIELD_READ)
-#define J9_VM_FCC_ENTRY_SET_AS_WRITTEN(entry) (entry)->clazz = (J9Class *)((UDATA)(entry)->clazz | J9_VM_FCC_CLASS_FLAGS_STRICT_STATIC_FIELD_WRITTEN)
+#define J9_VM_FCC_ENTRY_SET_AS_READ(entry) \
+	(entry)->clazz = (J9Class *)((UDATA)(entry)->clazz | J9_VM_FCC_CLASS_FLAGS_STRICT_STATIC_FIELD_READ)
+#define J9_VM_FCC_ENTRY_SET_AS_WRITTEN(entry) \
+	(entry)->clazz = (J9Class *)((UDATA)(entry)->clazz | J9_VM_FCC_CLASS_FLAGS_STRICT_STATIC_FIELD_WRITTEN)
 
 struct J9TranslationBufferSet;
 typedef struct J9VerboseStruct {

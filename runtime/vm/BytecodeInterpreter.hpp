@@ -4462,7 +4462,7 @@ done:
 		j9object_t clz = *(j9object_t *)(_sp + 3);
 		J9Class *ramClass = NULL;
 		void *valueAddress = NULL;
-		J9FlattenedClassCacheEntry *entry = NULL;
+		J9FlattenedClassCacheEntry *strictStaticEntry = NULL;
 
 		/* clz can't be null. */
 		if (NULL == clz) {
@@ -4489,19 +4489,21 @@ done:
 
 		/* Find flattenedClassCache entry. */
 		valueAddress = (void*)((UDATA)ramClass->ramStatics + (staticFieldOffset & ~(UDATA)J9_SUN_FIELD_OFFSET_MASK));
-		entry = VM_ValueTypeHelpers::findJ9FlattenedClassCacheEntryForStaticAddress(ramClass, (UDATA)valueAddress);
+		Assert_VM_notNull(ramClass->flattenedClassCache);
+		strictStaticEntry = VM_ValueTypeHelpers::findJ9FlattenedClassCacheEntryForStaticAddress(ramClass, (UDATA)valueAddress);
+		Assert_VM_notNull(strictStaticEntry);
 
 		if (writing) {
 			/* putstatic:
 			 * - if the field hasn't been set mark is as set and decrement the strict fields counter
 			 * - if it has been read and the field is final throw an error
 			 */
-			if (J9_VM_FCC_ENTRY_IS_STRICT_STATIC_UNSET(entry)) {
+			if (J9_VM_FCC_ENTRY_IS_STRICT_STATIC_UNSET(strictStaticEntry)) {
 				Assert_VM_true(ramClass->flattenedClassCache->strictStaticFieldCounter > 0);
 				ramClass->flattenedClassCache->strictStaticFieldCounter -= 1;
-				J9_VM_FCC_ENTRY_SET_AS_WRITTEN(entry);
+				J9_VM_FCC_ENTRY_SET_AS_WRITTEN(strictStaticEntry);
 			} else if (J9_ARE_ALL_BITS_SET(staticFieldOffset, J9_SUN_FINAL_FIELD_OFFSET_TAG)
-				&& J9_VM_FCC_ENTRY_IS_STRICT_STATIC_READ(entry)
+				&& J9_VM_FCC_ENTRY_IS_STRICT_STATIC_READ(strictStaticEntry)
 			) {
 				rc = THROW_PUT_STRICT_STATIC_FINAL_AFTER_READ;
 				goto done;
@@ -4511,11 +4513,11 @@ done:
 			 * - if the field hasn't been set throw an error
 			 * - otherwise mark as read
 			 */
-			if (J9_VM_FCC_ENTRY_IS_STRICT_STATIC_UNSET(entry)) {
+			if (J9_VM_FCC_ENTRY_IS_STRICT_STATIC_UNSET(strictStaticEntry)) {
 				rc = THROW_GET_STRICT_STATIC_NOT_SET;
 				goto done;
 			} else {
-				J9_VM_FCC_ENTRY_SET_AS_READ(entry);
+				J9_VM_FCC_ENTRY_SET_AS_READ(strictStaticEntry);
 			}
 		}
 		returnVoidFromINL(REGISTER_ARGS, 5);
@@ -7770,15 +7772,17 @@ retry:
 		valueAddress = J9STATICADDRESS(flagsAndClass, valueOffset);
 
 #if defined(J9VM_OPT_VALHALLA_STRICT_FIELDS)
-		if (J9_ARE_ALL_BITS_SET(classAndFlags, J9StaticFieldRefStrict)
-			&& (J9ClassInitNotInitialized == (ramConstantPool->ramClass->initializeStatus & J9ClassInitStatusMask))
+		if ((J9ClassInitNotInitialized == (ramConstantPool->ramClass->initializeStatus & J9ClassInitStatusMask))
+			&& (NULL != ramConstantPool->ramClass->flattenedClassCache)
 		) {
-			J9FlattenedClassCacheEntry *entry = VM_ValueTypeHelpers::findJ9FlattenedClassCacheEntryForStaticAddress(ramConstantPool->ramClass, (UDATA)valueAddress);
-			if (J9_VM_FCC_ENTRY_IS_STRICT_STATIC_UNSET(entry)) {
-				rc = THROW_GET_STRICT_STATIC_NOT_SET;
-				goto done;
-			} else {
-				J9_VM_FCC_ENTRY_SET_AS_READ(entry);
+			J9FlattenedClassCacheEntry *strictStaticEntry = VM_ValueTypeHelpers::findJ9FlattenedClassCacheEntryForStaticAddress(ramConstantPool->ramClass, (UDATA)valueAddress);
+			if (NULL != strictStaticEntry) {
+				if (J9_VM_FCC_ENTRY_IS_STRICT_STATIC_UNSET(strictStaticEntry)) {
+					rc = THROW_GET_STRICT_STATIC_NOT_SET;
+					goto done;
+				} else {
+					J9_VM_FCC_ENTRY_SET_AS_READ(strictStaticEntry);
+				}
 			}
 		}
 #endif /* defined(J9VM_OPT_VALHALLA_STRICT_FIELDS) */
@@ -7864,22 +7868,27 @@ done:
 		valueAddress = J9STATICADDRESS(flagsAndClass, valueOffset);
 
 #if defined(J9VM_OPT_VALHALLA_STRICT_FIELDS)
-	if (J9_ARE_ALL_BITS_SET(classAndFlags, J9StaticFieldRefStrict)
-		&& (J9ClassInitNotInitialized == (ramConstantPool->ramClass->initializeStatus & J9ClassInitStatusMask))
-	) {
-		J9Class *ramClass = ramConstantPool->ramClass;
-		J9FlattenedClassCacheEntry *entry = VM_ValueTypeHelpers::findJ9FlattenedClassCacheEntryForStaticAddress(ramClass, (UDATA)valueAddress);
-		if (J9_VM_FCC_ENTRY_IS_STRICT_STATIC_UNSET(entry)) {
-			Assert_VM_true(ramClass->flattenedClassCache->strictStaticFieldCounter > 0);
-			ramClass->flattenedClassCache->strictStaticFieldCounter -= 1;
-			J9_VM_FCC_ENTRY_SET_AS_WRITTEN(entry);
-		} else if (J9_VM_FCC_ENTRY_IS_STRICT_STATIC_READ(entry)
-			&& J9_ARE_ANY_BITS_SET(classAndFlags, J9StaticFieldRefFinal)
-		) {
-			rc = THROW_PUT_STRICT_STATIC_FINAL_AFTER_READ;
-			goto done;
+		if (J9ClassInitNotInitialized == (ramConstantPool->ramClass->initializeStatus & J9ClassInitStatusMask)) {
+			J9FlattenedClassCache *flattenedClassCache = ramConstantPool->ramClass->flattenedClassCache;
+			if ((NULL != flattenedClassCache)
+					&& ((flattenedClassCache->strictStaticFieldCounter > 0)
+							|| J9_ARE_ANY_BITS_SET(classAndFlags, J9StaticFieldRefFinal))
+			) {
+				J9FlattenedClassCacheEntry *strictStaticEntry = VM_ValueTypeHelpers::findJ9FlattenedClassCacheEntryForStaticAddress(ramConstantPool->ramClass, (UDATA)valueAddress);
+				if (NULL != strictStaticEntry) {
+					if (J9_VM_FCC_ENTRY_IS_STRICT_STATIC_UNSET(strictStaticEntry)) {
+						Assert_VM_true(flattenedClassCache->strictStaticFieldCounter > 0);
+						flattenedClassCache->strictStaticFieldCounter -= 1;
+						J9_VM_FCC_ENTRY_SET_AS_WRITTEN(strictStaticEntry);
+					} else if (J9_VM_FCC_ENTRY_IS_STRICT_STATIC_READ(strictStaticEntry)
+							&& J9_ARE_ANY_BITS_SET(classAndFlags, J9StaticFieldRefFinal)
+					) {
+						rc = THROW_PUT_STRICT_STATIC_FINAL_AFTER_READ;
+						goto done;
+					}
+				}
+			}
 		}
-	}
 #endif /* defined(J9VM_OPT_VALHALLA_STRICT_FIELDS) */
 
 #if defined(DO_HOOKS)
