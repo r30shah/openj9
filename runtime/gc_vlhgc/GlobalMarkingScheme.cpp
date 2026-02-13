@@ -919,7 +919,12 @@ MM_GlobalMarkingScheme::scanClassLoaderObject(MM_EnvironmentVLHGC *env, J9Object
 		J9Class *clazz = NULL;
 		while (NULL != (clazz = iterator.nextClass())) {
 			J9Object * classObject = J9VM_J9CLASS_TO_HEAPCLASS(clazz);
-			Assert_MM_true(NULL != classObject);
+
+			Assert_GC_true_with_message3(
+					env, NULL != classObject,
+					"During scan classloader object %p, classloader %p, j9class %p has classObject set to NULL\n",
+					classLoaderObject, classLoader, clazz);
+
 			markObject(env, classObject);
 			rememberReferenceIfRequired(env, classLoaderObject, classObject);
 		}
