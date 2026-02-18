@@ -317,9 +317,9 @@ public:
 
 	/**
 	 * The following methods (defined(OMR_GC_MODRON_SCAVENGER)) are required if generational GC is
- 	 * configured for the build (--enable-OMR_GC_MODRON_SCAVENGER in configure_includes/configure_*.mk).
- 	 * They typically involve a MM_ForwardedHeader object, and allow information about the forwarded
- 	 * object to be obtained.
+	 * configured for the build (--enable-OMR_GC_MODRON_SCAVENGER in configure_includes/configure_*.mk).
+	 * They typically involve a MM_ForwardedHeader object, and allow information about the forwarded
+	 * object to be obtained.
 	 */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	/**
@@ -391,7 +391,7 @@ public:
 		if (hotClass->hotFieldsInfo != NULL) {
 			return hotClass->hotFieldsInfo->hotFieldOffset1;
 		}
-		
+
 		return U_8_MAX;
 	}
 
@@ -409,8 +409,8 @@ public:
 		if (hotClass->hotFieldsInfo != NULL) {
 			return hotClass->hotFieldsInfo->hotFieldOffset2;
 		}
-		
-		return U_8_MAX;	
+
+		return U_8_MAX;
 	}
 
 	/**
@@ -427,8 +427,8 @@ public:
 		if (hotClass->hotFieldsInfo != NULL) {
 			return hotClass->hotFieldsInfo->hotFieldOffset3;
 		}
-		
-		return U_8_MAX;	
+
+		return U_8_MAX;
 	}
 
 	/**

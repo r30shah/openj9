@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  * Copyright IBM Corp. and others 1991
  *
@@ -160,7 +159,7 @@ protected:
 	 * @param extensions[in] the GC extensions
 	 */
 	MM_TgcExtensions(MM_GCExtensions *extensions);
-	
+
 	/**
 	 * Tear down a TGC extensions object
 	 * @param extensions[in] the GC extensions
@@ -173,41 +172,41 @@ public:
 	 * @return the cached port library pointer
 	 */
 	J9PortLibrary* getPortLibrary() { return _portLibrary; }
-	
+
 	/**
 	 * Print TGC output to stderr or the TGC output file
 	 * @param format[in] a format string, see j9tty_printf
 	 * @param args[in] arguments to be formatted
 	 */
 	void vprintf(const char *format, va_list args);
-	
+
 	/**
 	 * Print TGC output to stderr or the TGC output file
 	 * @param format[in] a format string, see j9tty_printf
 	 * @param ...[in] arguments to be formatted
 	 */
 	void printf(const char *format, ...);
-	
+
 	/**
 	 * Set the output file for TGC output.
 	 * @param filename[in] the name of the file to open
 	 * @return true on success, false on failure
 	 */
 	bool setOutputFile(const char* filename);
-	
+
 	/**
 	 * Allocate and initialize a new TGC extensions object
 	 * @param extensions[in] the GC extensions
 	 * @return an initialized instance, or NULL on failure
 	 */
 	static MM_TgcExtensions * newInstance(MM_GCExtensions *extensions);
-	
+
 	/**
 	 * Tear down and free the TGC extensions object
- 	 * @param extensions[in] the GC extensions
+	 * @param extensions[in] the GC extensions
 	 */
 	void kill(MM_GCExtensions *extensions);
-	
+
 	/**
 	 * Get the TGC extensions object from the GC Extensions object
 	 * @param extensions[in] the GC extensions object
@@ -238,4 +237,3 @@ public:
 };
 
 #endif /* TGCEXTENSIONS_HPP_ */
-

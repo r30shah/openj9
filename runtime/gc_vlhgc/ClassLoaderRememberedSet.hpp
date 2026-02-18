@@ -52,10 +52,10 @@ private:
 	J9Pool *_bitVectorPool; /**< A pool of bit vectors to associate with J9ClassLoaders */
 	MM_LightweightNonReentrantLock _lock; /**< A lock to protect _bitVectorPool */
 	UDATA *_bitsToClear; /**< A bit vector which is built up before a garbage collection */
-	
+
 private:
 	MM_ClassLoaderRememberedSet(MM_EnvironmentBase *env);
-	
+
 	/**
 	 * Allocation helper for J9Pool.
 	 */
@@ -65,7 +65,7 @@ private:
 	 * Deallocation helper for J9Pool.
 	 */
 	static void poolFreeHelper(void *userData, void *address, U_32 type);
-	
+
 	/**
 	 * Upgrade the specified class loader from a single remembered region to a full bit vector.
 	 * If a bit vector can't be installed, set the loader to overflowed.
@@ -73,7 +73,7 @@ private:
 	 * @param gcRememberedSetAddress[in/out] an address of gcRememberedSet slot
 	 */
 	void installBitVector(MM_EnvironmentBase *env, volatile UDATA *gcRememberedSetAddress);
-	
+
 	/**
 	 * Atomically set the specified bit in the specified bit vector.
 	 * @param env[in] the current thread
@@ -81,13 +81,13 @@ private:
 	 * @param bit the index of the bit to set
 	 */
 	void setBit(MM_EnvironmentBase *env, volatile UDATA *bitVector, UDATA bit);
-	
+
 	/**
 	 * Determine if the specified gcRememberedSet field value represents an overflowed set.
 	 * @param rememberedSet the value of a J9ClassLoader's gcRememberedSet field
 	 * @return true if the remembered set is overflowed
 	 */
-	MMINLINE bool isOverflowedRemememberedSet(UDATA rememberedSet) { return UDATA_MAX == rememberedSet; } 
+	MMINLINE bool isOverflowedRemememberedSet(UDATA rememberedSet) { return UDATA_MAX == rememberedSet; }
 
 	/**
 	 * Determine if the specified gcRememberedSet field value represents a tagged region index.
@@ -96,30 +96,30 @@ private:
 	 * @return true if the remembered set is a tagged region index (or overflowed), false otherwise
 	 */
 	MMINLINE bool isTaggedRegionIndex(UDATA rememberedSet) { return 1 == (1 & rememberedSet); }
-	
+
 	/**
 	 * Convert the specified region index into a tagged value suitable to be stored in the gcRememberedSet field.
 	 * @param regionIndex the index to store
 	 * @return the tagged version of the index
 	 */
 	MMINLINE UDATA asTaggedRegionIndex(UDATA regionIndex) { return (regionIndex << 1) | 1; }
-	
+
 	/**
 	 * Convert a tagged region index back to the actual value
 	 * @param rememberedSet the value of a J9ClassLoader's gcRememberedSet field
 	 * @return the region index it represents
 	 */
 	MMINLINE UDATA asUntaggedRegionIndex(UDATA rememberedSet) { return rememberedSet >> 1; }
-	
+
 	/**
 	 * Determine if the specified bit is set in the specified bit vector.
 	 * @param env[in] the current thread
 	 * @param bitVector[in] the bit vector to test
 	 * @param bit the index of the bit to test
-	 * @return true if the bit is set, false otherwise 
+	 * @return true if the bit is set, false otherwise
 	 */
 	bool isBitSet(MM_EnvironmentBase *env, volatile UDATA *bitVector, UDATA bit);
-	
+
 	/**
 	 * Implementation helper for rememberInstance() based on region index.
 	 *
@@ -174,14 +174,14 @@ public:
 
 	/*
 	 * Teardown ClassLoaderRememberedSet
-	 */	
+	 */
 	virtual void tearDown(MM_EnvironmentBase *env);
 
 	/**
 	 * Update the remembered set data for the specified object's class loader to record the object.
-	 * 
-	 * The object's region and class loader are identified, and the relationship between them is recorded in the class loader. 
-	 * 
+	 *
+	 * The object's region and class loader are identified, and the relationship between them is recorded in the class loader.
+	 *
 	 * @param env[in] the current thread
 	 * @param object[in] the object to remember
 	 */
@@ -191,7 +191,7 @@ public:
 	 * Determine if there are any instances of classes defined by specified class loader.
 	 * @param env[in] the current thread
 	 * @param classLoader[in] the loader to examine
-	 * @return true if there are instances (or the loader is overflowed), false otherwise  
+	 * @return true if there are instances (or the loader is overflowed), false otherwise
 	 */
 	bool isRemembered(MM_EnvironmentBase *env, J9ClassLoader *classLoader);
 
@@ -205,20 +205,20 @@ public:
 
 	/**
 	 * Determine if the specified object is remembered in its class loader.
-	 * @note This is intended primarily for verification 
+	 * @note This is intended primarily for verification
 	 * @param env[in] the current thread
 	 * @param object[in] the object to test
-	 * @return true if the object is properly remembered  
+	 * @return true if the object is properly remembered
 	 */
 	bool isInstanceRemembered(MM_EnvironmentBase *env, J9Object *object);
-	
+
 	/**
 	 * Delete any resources associated with the remembered set for the specified class loader.
 	 * @param env[in] the current thread
 	 * @param classLoader[in] the loader to modify
 	 */
 	void killRememberedSet(MM_EnvironmentBase *env, J9ClassLoader *classLoader);
-	
+
 	/**
 	 * Called before a partial GC to initialize the preserved regions bit vector.
 	 * All bits are 1 (preserved) once this call completes.
@@ -226,7 +226,7 @@ public:
 	 * @param env[in] the current thread
 	 */
 	void resetRegionsToClear(MM_EnvironmentBase *env);
-	
+
 	/**
 	 * Ensure that the remembered bits for the specified region will be cleared when #clearRememberedSets() is called.
 	 * This may safely be called from multiple threads.
@@ -234,19 +234,19 @@ public:
 	 * @param region[in] a region which is part of the collection set and should be cleared
 	 */
 	void prepareToClearRememberedSetForRegion(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region);
-	
+
 	/**
-	 * Called before a partial GC to clear remembered sets in all class loaders for regions 
+	 * Called before a partial GC to clear remembered sets in all class loaders for regions
 	 * which have been marked using #prepareToClearRememberedSetForRegion()
 	 * @param env[in] the current thread
 	 */
 	void clearRememberedSets(MM_EnvironmentBase *env);
-	
+
 	/**
- 	 * Called by the main thread before a GC cycle to perform any setup required before a collection.
- 	 * @param env[in] the current thread
- 	 */
-	void setupBeforeGC(MM_EnvironmentBase *env); 
+	 * Called by the main thread before a GC cycle to perform any setup required before a collection.
+	 * @param env[in] the current thread
+	 */
+	void setupBeforeGC(MM_EnvironmentBase *env);
 };
 
 #endif /* CLASSLOADERREMEMBEREDSET_HPP */

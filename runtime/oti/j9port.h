@@ -255,13 +255,13 @@ typedef struct J9ControlFileStatus {
  * This structure must be initialized using @ref j9shsem_params_init
  */
 typedef struct  J9PortShSemParameters {
- 	const char *semName; /* Unique identifier of the semaphore. */
- 	uint32_t setSize; /* number of semaphores to be created in this set */
- 	uint32_t permission; /* Posix-style file permissions */
- 	const char* controlFileDir; /* Directory in which to create control files (SysV semaphores only) */
- 	uint8_t proj_id; /* parameter used with semName to generate semaphore key */
- 	uint32_t deleteBasefile : 1; /* delete the base file (used to generate the semaphore key) when destroying the semaphore */
- 	uint32_t global : 1; /* Windows only: use the global namespace for the sempahore */
+	const char *semName; /* Unique identifier of the semaphore. */
+	uint32_t setSize; /* number of semaphores to be created in this set */
+	uint32_t permission; /* Posix-style file permissions */
+	const char* controlFileDir; /* Directory in which to create control files (SysV semaphores only) */
+	uint8_t proj_id; /* parameter used with semName to generate semaphore key */
+	uint32_t deleteBasefile : 1; /* delete the base file (used to generate the semaphore key) when destroying the semaphore */
+	uint32_t global : 1; /* Windows only: use the global namespace for the sempahore */
 } J9PortShSemParameters;
 /**
  * @name Process Handle
@@ -270,7 +270,6 @@ typedef struct  J9PortShSemParameters {
  * J9ProcessHandle represents a J9Port Library process.
  */
 typedef struct J9ProcessHandleStruct *J9ProcessHandle;
-
 
 /**
  * @name Process Streams

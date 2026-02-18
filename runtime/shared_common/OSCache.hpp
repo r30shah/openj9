@@ -35,7 +35,7 @@
 #define J9SH_OSCACHE_OPEXIST_DO_NOT_CREATE	0x8
 #define J9SH_OSCACHE_UNKNOWN (~(UDATA)0)
 
-/* 
+/*
  * The different results from attempting to open/create a cache are
  * defined below. Failure cases MUST all be less than zero.
  */
@@ -115,7 +115,7 @@ typedef struct SH_OSCache_Info {
 } SH_OSCache_Info;
 
 /* DO NOT use UDATA/IDATA in the cache headers so that 32-bit/64-bit JVMs can read each others headers
- * 
+ *
  * Versioning is achieved by using the typedef aliases below
  */
 
@@ -163,7 +163,7 @@ typedef struct LastErrorInfo {
 
 /**
  * A class to manage Shared Classes on Operating System level
- * 
+ *
  * This class provides and abstraction of a shared memory region and its control
  * mutex.
  *
@@ -176,7 +176,7 @@ public:
 		public:
 		virtual void init(char* data, U_32 len, I_32 minAOT, I_32 maxAOT, I_32 minJIT, I_32 maxJIT, U_32 readWriteLen, U_32 softMaxBytes) = 0;
 	};
-  
+
 	/**
 	 * Override new operator
 	 * @param [in] size  The size of the object
@@ -189,9 +189,9 @@ public:
 	static SH_OSCache* newInstance(J9PortLibrary* portlib, SH_OSCache* memForConstructor, const char* cacheName, UDATA generation, J9PortShcVersion* versionData, I_8 layer);
 
 	static UDATA getRequiredConstrBytes(void);
-	
+
 	static IDATA getCacheDir(J9JavaVM* vm, const char* ctrlDirName, char* buffer, UDATA bufferSize, U_32 cacheType, bool allowVerbose = true);
-	
+
 	static IDATA createCacheDir(J9PortLibrary* portLibrary, char* cacheDirName, UDATA cacheDirPerm, bool cleanMemorySegments);
 
 	static void getCacheVersionAndGen(J9PortLibrary* portlib, J9JavaVM* vm, char* buffer, UDATA bufferSize, const char* cacheName,
@@ -204,23 +204,23 @@ public:
 	static J9Pool* getAllCacheStatistics(J9JavaVM* vm, const char* ctrlDirName, UDATA groupPerm, UDATA localVerboseFlags, UDATA j2seVersion, bool includeOldGenerations, bool ignoreCompatible, UDATA reason, bool isCache);
 
 	static IDATA getCacheStatistics(J9JavaVM* vm, const char* ctrlDirName, const char* cacheNameWithVGen, UDATA groupPerm, UDATA localVerboseFlags, UDATA j2seVersion, SH_OSCache_Info* result, UDATA reason, bool getLowerLayerStats, bool isTopLayer, J9Pool** lowerLayerList, SH_OSCache* oscache);
-	
+
 	static bool isTopLayerCache(J9JavaVM* vm, const char* ctrlDirName, char* nameWithVGen);
-	
+
 	static IDATA getCachePathName(J9PortLibrary* portLibrary, const char* cacheDirName, char* buffer, UDATA bufferSize, const char* cacheNameWithVGen);
-	
+
 	static void getCacheNameAndLayerFromUnqiueID(J9JavaVM* vm, const char* uniqueID, UDATA idLen, char* nameBuf, UDATA nameBuffLen, I_8* layer);
-	
+
 	static UDATA generateCacheUniqueID(J9VMThread* currentThread, const char* cacheDir, const char* cacheName, I_8 layer, U_32 cacheType, char* buf, UDATA bufLen, U_64 createtime, UDATA metadataBytes, UDATA classesBytes, UDATA lineNumTabBytes, UDATA varTabBytes);
-	
+
 	const char* getCacheUniqueID(J9VMThread* currentThread, U_64 createtime, UDATA metadataBytes, UDATA classesBytes, UDATA lineNumTabBytes, UDATA varTabBytes);
 
 	I_8 getLayer();
-	
+
 	const char* getCacheNameWithVGen();
 
 	bool isRunningReadOnly();
-	
+
 	U_32 getCacheType();
 
 	virtual bool startup(J9JavaVM* vm, const char* cacheDirName, UDATA cacheDirPerm, const char* cacheName, J9SharedClassPreinitConfig* piconfig_, IDATA numLocks,
@@ -235,21 +235,21 @@ public:
 	virtual IDATA acquireWriteLock(UDATA lockid) = 0;
 	virtual IDATA releaseWriteLock(UDATA lockid) = 0;
 	virtual U_64 getCreateTime(void) = 0;
-  	
+
 	virtual void *attach(J9VMThread* currentThread, J9PortShcVersion* expectedVersionData) = 0;
 
 #if defined(J9VM_OPT_SHR_MSYNC_SUPPORT)
 	virtual IDATA syncUpdates(void* start, UDATA length, U_32 flags) = 0;
 #endif /* defined(J9VM_OPT_SHR_MSYNC_SUPPORT) */
-	
+
 	virtual IDATA getError(void) = 0;
-	
+
 	virtual void runExitCode(void) = 0;
-	
+
 	virtual IDATA getLockCapabilities(void) = 0;
-	
+
 	virtual IDATA setRegionPermissions(struct J9PortLibrary* portLibrary, void *address, UDATA length, UDATA flags) = 0;
-	
+
 	virtual UDATA getPermissionsRegionGranularity(struct J9PortLibrary* portLibrary) = 0;
 
 	virtual U_32 getDataSize();
@@ -265,14 +265,14 @@ public:
 	virtual void getCorruptionContext(IDATA *corruptionCode, UDATA *corruptValue);
 
 	virtual void setCorruptionContext(IDATA corruptionCode, UDATA corruptValue);
-	
+
 	virtual SH_CacheAccess isCacheAccessible(void) const { return J9SH_CACHE_ACCESS_ALLOWED; }
 
 	virtual void  dontNeedMetadata(J9VMThread* currentThread, const void* startAddress, size_t length);
-	
+
 	virtual IDATA detach(void) = 0;
 
-protected:	
+protected:
 	/*This constructor should only be used by this class*/
 	SH_OSCache() {};
 
@@ -281,23 +281,23 @@ protected:
 	virtual void errorHandler(U_32 moduleName, U_32 id, LastErrorInfo *lastErrorInfo) = 0;
 
 	static IDATA removeCacheVersionAndGen(char* buffer, UDATA bufferSize, UDATA versionLen, const char* cacheNameWithVGen);
-	
+
 	IDATA commonStartup(J9JavaVM* vm, const char* ctrlDirName, UDATA cacheDirPerm, const char* cacheName, J9SharedClassPreinitConfig* piconfig_, UDATA createFlag, UDATA verboseFlags, U_64 runtimeFlags, I_32 openMode, J9PortShcVersion* versionData);
 
 	void commonInit(J9PortLibrary* portLibrary, UDATA generation, I_8 layer = 0);
 
 	void commonCleanup();
-	
+
 	void initOSCacheHeader(OSCache_header_version_current* header, J9PortShcVersion* versionData, UDATA headerLen);
-	
+
 	IDATA checkOSCacheHeader(OSCache_header_version_current* header, J9PortShcVersion* versionData, UDATA headerLen);
 
 	static void* getHeaderFieldAddressForGen(void* header, UDATA headerGen, UDATA fieldID);
 
 	static IDATA getHeaderFieldOffsetForGen(UDATA headerGen, UDATA fieldID);
-	
+
 	static UDATA getGenerationFromName(const char* cacheNameWithVGen);
-	
+
 	static U_64 getCacheVersionToU64(U_32 major, U_32 minor);
 
 	static bool getCacheStatsCommon(J9JavaVM* vm, const char* ctrlDirName, UDATA groupPerm, SH_OSCache *cache, SH_OSCache_Info *cacheInfo, J9Pool **lowerLayerList);
@@ -320,7 +320,7 @@ protected:
 	UDATA _createFlags;
 	UDATA _verboseFlags;
 	IDATA _errorCode;
-	const J9SharedClassPreinitConfig* _config;	
+	const J9SharedClassPreinitConfig* _config;
 	I_32 _openMode;
 	bool _runningReadOnly;
 	J9PortLibrary* _portLibrary;
@@ -330,7 +330,7 @@ protected:
 	IDATA _corruptionCode;
 	UDATA _corruptValue;
 	bool _isUserSpecifiedCacheDir;
-	
+
 private:
 	void setEnableVerbose(J9PortLibrary* portLib, J9JavaVM* vm, J9PortShcVersion* versionData, char* cacheNameWithVGen);
 

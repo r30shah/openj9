@@ -73,12 +73,12 @@ public:
 		_javaVM((J9JavaVM *)env->getOmrVM()->_language_vm) {}
 
 #if defined(J9VM_GC_DYNAMIC_CLASS_UNLOADING)
- 	bool _unmarkedImpliesClasses; /**< if true the mark bit can be used to check is class alive or not */
+	bool _unmarkedImpliesClasses; /**< if true the mark bit can be used to check is class alive or not */
 #endif /* defined(J9VM_GC_DYNAMIC_CLASS_UNLOADING) */
 	bool _unmarkedImpliesCleared;
 	bool _unmarkedImpliesStringsCleared; /**< If true, we can assume that unmarked strings in the string table will be cleared */
-	
-#if defined(J9VM_GC_FINALIZATION)	
+
+#if defined(J9VM_GC_FINALIZATION)
 	bool _finalizationRequired;
 #endif /* J9VM_GC_FINALIZATION */
 #if defined(J9VM_GC_DYNAMIC_CLASS_UNLOADING)
@@ -93,7 +93,7 @@ public:
 	bool allocateAndInitializeOwnableSynchronizerObjectLists(MM_EnvironmentBase *env);
 	bool allocateAndInitializeContinuationObjectLists(MM_EnvironmentBase *env);
 
-#if defined(J9VM_GC_FINALIZATION)	
+#if defined(J9VM_GC_FINALIZATION)
 	bool isFinalizationRequired() { return _finalizationRequired; }
 #endif /* J9VM_GC_FINALIZATION */
 
@@ -249,7 +249,7 @@ public:
 		default:
 			Assert_MM_unreachable();
 		}
-		
+
 		return pointersScanned;
 	}
 
@@ -257,7 +257,7 @@ public:
 	scanPointerRange(MM_EnvironmentRealtime *env, fj9object_t *startScanPtr, fj9object_t *endScanPtr)
 	{
 		UDATA pointerField = 0;
-	
+
 		if (env->compressObjectReferences()) {
 			uint32_t *scanPtr = (uint32_t *)startScanPtr;
 			uint32_t *endPtr = (uint32_t *)endScanPtr;
@@ -297,7 +297,7 @@ public:
 		UDATA *leafPtr = NULL;
 		UDATA leafBits = 0;
 #endif /* J9VM_GC_LEAF_BITS */
-		
+
 #if defined(J9VM_GC_DYNAMIC_CLASS_UNLOADING)
 		if (isDynamicClassUnloadingEnabled()) {
 			markClassOfObject(env, objectPtr);
@@ -358,7 +358,7 @@ public:
 	{
 		UDATA pointerFields = 0;
 		bool const compressed = env->compressObjectReferences();
-		
+
 #if defined(J9VM_GC_DYNAMIC_CLASS_UNLOADING)
 		if (isDynamicClassUnloadingEnabled()) {
 			markClassOfObject(env, (J9Object *)objectPtr);
@@ -428,13 +428,13 @@ public:
 		UDATA *leafPtr = NULL;
 		UDATA leafBits = 0;
 #endif /* J9VM_GC_LEAF_BITS */
-		
+
 #if defined(J9VM_GC_DYNAMIC_CLASS_UNLOADING)
 		if (isDynamicClassUnloadingEnabled()) {
 			markClassOfObject(env, objectPtr);
 		}
 #endif /* J9VM_GC_DYNAMIC_CLASS_UNLOADING */
-		
+
 		descriptionPtr = (UDATA *)J9GC_J9OBJECT_CLAZZ(objectPtr, env)->instanceDescription;
 #if defined(J9VM_GC_LEAF_BITS)
 		leafPtr = (UDATA *)J9GC_J9OBJECT_CLAZZ(objectPtr, env)->instanceLeafDescription;
@@ -492,7 +492,7 @@ public:
 				env->getGCEnvironment()->_referenceObjectBuffer->add(env, objectPtr);
 			}
 		}
-		
+
 		UDATA pointerFields = 0;
 		while (scanPtr < endScanPtr) {
 			/* Determine if the slot should be processed */
@@ -518,9 +518,9 @@ public:
 			}
 			scanPtr = GC_SlotObject::addToSlotAddress(scanPtr, 1, compressed);
 		}
-		
+
 		env->incScannedObjects();
-		
+
 		return pointerFields;
 	}
 
@@ -580,7 +580,6 @@ private:
 	 */
 	void markPermanentClassloader(MM_EnvironmentRealtime *env, J9ClassLoader *classLoader);
 
-
 	/*
 	 * Friends
 	 */
@@ -597,4 +596,3 @@ typedef struct StackIteratorData4RealtimeMarkingScheme {
 #endif /* defined(J9VM_GC_REALTIME) */
 
 #endif /* defined(METRONOMEDELEGATE_HPP_) */
-

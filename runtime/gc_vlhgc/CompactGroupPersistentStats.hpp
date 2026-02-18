@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  * Copyright IBM Corp. and others 1991
  *
@@ -73,7 +72,7 @@ public:
 	double _projectedInstantaneousSurvivalRatePerAgeUnit; /**< fraction of _projectedInstantaneousSurvivalRate, in case age group is a multiple of age units. this is an average of _projectedInstantaneousSurvivalRateThisPGCPerAgeUnit */
 	double _projectedInstantaneousSurvivalRateThisPGCPerAgeUnit; /**< same as _projectedInstantaneousSurvivalRatePerAgeUnit, but for this PGC (not an average over time) */
 
-	
+
 	UDATA _projectedLiveBytes; /** < The sum of projected live bytes of all regions in the compact group */
 	UDATA _liveBytesAbsoluteDeviation; /** < sum of the absolute value _projectedLiveBytesDeviation of every region in the compact group */
 	UDATA _regionCount; /** < count of the number of regions in the compact group */
@@ -83,7 +82,7 @@ public:
 /* member functions */
 private:
 	/* Checks if a compactGroup has been collected and set _statsHaveBeenUpdatedThisCycle to true if that is the case.
-	 * Also updates some stats (projectedInstantaneousSurvivalRate, historicalSurvivalRate, weightedSurvivalRate) that are dependant on the 
+	 * Also updates some stats (projectedInstantaneousSurvivalRate, historicalSurvivalRate, weightedSurvivalRate) that are dependant on the
 	 * live bytes stats if they have not been updated yet.
 	 *
 	 * @param env[in] the current thread
@@ -99,10 +98,10 @@ private:
 	 * @param compactGroup[in] compactGroup for which instantaneousSurvivalRate is calculated
 	 */
 	static void updateProjectedSurvivalRate(MM_EnvironmentVLHGC *env, MM_CompactGroupPersistentStats *persistentStats, UDATA compactGroup);
-	
+
 	/**
 	 * Auxiliary function used by updateProjectedSurvivalRate. If an age group is at the boundary of Eden, it returns the size fractions on either sides.
- 	 * @param env[in] The Main GC thread
+	 * @param env[in] The Main GC thread
 	 * @param ageInThisAgeGroup[in] Age-size of the age group
 	 * @param ageInThisCompactGroup[in] Age-size of the compact group
 	 * @param currentAge[in] Current age of objects in this group
@@ -123,7 +122,7 @@ private:
 	 * The init value is set to current consumed space (according to memory pool).
 	 *
 	 * TODO: Create a new class for this as it's not really tied to compact groups
- 	 * @param env[in] The Main GC thread
+	 * @param env[in] The Main GC thread
 	 */
 	static void initProjectedLiveBytes(MM_EnvironmentVLHGC *env);
 
@@ -131,15 +130,15 @@ private:
 	 * Updates the projectedLiveBytes for all regions by multiplying by their compact group's instantaneous survivor rate
 	 *
 	 * TODO: Create a new class for this as it's not really tied to compact groups
- 	 * @param env[in] The Main GC thread
+	 * @param env[in] The Main GC thread
 	 */
 	static void decayProjectedLiveBytesForRegions(MM_EnvironmentVLHGC *env);
-	
+
 	/**
 	 * Given the input list of compact group stats with initialized _historicalSurvivalRate fields, initialize the _weightedSurvivalRate fields.
 	 * The survival rate is weighted using survival data from older groups to project the future survival rate of the group.
 	 * This is used to favour compacting more stable compact groups.
-	 * 
+	 *
 	 * @param env[in] the current thread
 	 * @param persistentStats[in] an array of MM_CompactGroupPersistentStats with as many elements as there are compact groups
 	 */
@@ -147,7 +146,7 @@ private:
 
 	/**
 	 * Auxiliary function to calculation various values for measured/projected live bytes before current/after previous PGC, invoked for each region in Collection Set
-  	 * @param env[in] The Main GC thread
+	 * @param env[in] The Main GC thread
 	 * @param persistentStats[in] The list of per-compact group persistent stats
 	 * @param region[in] The region for which we take measured/projected live bytes values
 	 * @param measuredLiveBytes Passing in the actual value for measuredLiveBytes (already calculated by the caller for its own purpose)
@@ -160,14 +159,14 @@ public:
 	/**
 	 * Allocate a list of compact group stats
 	 * @param env[in] the current thread
-	 * @return an array of MM_CompactGroupPersistentStats, or NULL 
+	 * @return an array of MM_CompactGroupPersistentStats, or NULL
 	 */
 	static MM_CompactGroupPersistentStats * allocateCompactGroupPersistentStats(MM_EnvironmentVLHGC *env);
-	
+
 	/**
 	 * Free the list of compact group stats
 	 * @param env[in] the current thread
-	 * @param persistentStats[in] the list to free 
+	 * @param persistentStats[in] the list to free
 	 */
 	static void killCompactGroupPersistentStats(MM_EnvironmentVLHGC *env, MM_CompactGroupPersistentStats *persistentStats);
 

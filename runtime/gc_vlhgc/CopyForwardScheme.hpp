@@ -115,7 +115,7 @@ private:
 	uintptr_t _maxCacheSize;  /**< Maximum size in bytes that will be requested for a general purpose cache area */
 
 	MM_ParallelDispatcher *_dispatcher;
-	
+
 	MM_CopyScanCacheListVLHGC _cacheFreeList;  /**< Caches which are not bound to heap memory and available to be populated */
 	MM_CopyScanCacheListVLHGC *_cacheScanLists;  /**< An array of per-node caches which contains objects still to be scanned (1+node_count elements in array)*/
 	uintptr_t _scanCacheListSize;	/**< The number of entries in _cacheScanLists */
@@ -150,7 +150,7 @@ private:
 
 	bool _tracingEnabled;  /**< Temporary variable to enable tracing of activity */
 	MM_AllocationContextTarok *_commonContext;	/**< The common context is used as an opaque token to represent cases where we don't want to relocate objects during NUMA-aware copy-forward since relocating to the common context is currently disabled */
-	MM_CopyForwardCompactGroup *_compactGroupBlock; /**< A block of MM_CopyForwardCompactGroup structs which is subdivided among the GC threads */ 
+	MM_CopyForwardCompactGroup *_compactGroupBlock; /**< A block of MM_CopyForwardCompactGroup structs which is subdivided among the GC threads */
 	uintptr_t _arraySplitSize; /**< The number of elements to be scanned in each array chunk (this determines the degree of parallelization) */
 
 	uintptr_t _regionSublistContentionThreshold	/**< The number of threads which must be contending on the same region sublist for us to decide that another sublist should be created to alleviate contention (reset at the beginning of every CopyForward task) */;
@@ -196,10 +196,10 @@ private:
 
 	/**
 	 * Discard any remaining memory in the specified copy cache, returning it to the pool if possible, and updating
-	 * memory statistics. The implementation will attempt to return any unused portion of the cache to the owning pool 
-	 * if possible (and will internally lock to corresponding region list to ensure that the allocation pointer can be 
-	 * updated safely).  The copy cache flag is unset.  Additionally, the top of the cache will be updated to reflect 
-	 * that no further allocation is possible if the excess at the top of the cache was successfully returned to the 
+	 * memory statistics. The implementation will attempt to return any unused portion of the cache to the owning pool
+	 * if possible (and will internally lock to corresponding region list to ensure that the allocation pointer can be
+	 * updated safely).  The copy cache flag is unset.  Additionally, the top of the cache will be updated to reflect
+	 * that no further allocation is possible if the excess at the top of the cache was successfully returned to the
 	 * pool.
 	 * @param env[in] A GC thread
 	 * @param cache[in] The copy cache to retire
@@ -207,7 +207,7 @@ private:
 	 * @param wastedMemory[in] The number of bytes of memory which couldn't be used in the allocated portion of the copy cache and should be considered free memory when flushed back to the pool
 	 */
 	void discardRemainingCache(MM_EnvironmentVLHGC *env, MM_CopyScanCacheVLHGC *cache, MM_LightweightNonReentrantLock *cacheLock, uintptr_t wastedMemory);
-	
+
 	/**
 	 * Determine whether the object pointer is found within the heap proper.
 	 * @return Boolean indicating if the object pointer is within the heap boundaries.
@@ -217,7 +217,7 @@ private:
 		return (_heapBase <= (uint8_t *)objectPtr) && (_heapTop > (uint8_t *)objectPtr);
 	}
 
- 	/**
+	/**
 	 * Determine whether the object is live relying on survivor/evacuate region flags and mark map. null object is considered marked.
 	 * @return Boolean true if object is live
 	 */
@@ -273,7 +273,7 @@ private:
 	 * @param nextIndex[in] The next index in the array to scan
 	 */
 	MMINLINE void reinitArraySplitCache(MM_EnvironmentVLHGC *env, MM_CopyScanCacheVLHGC *cache, J9IndexableObject *array, uintptr_t nextIndex);
-	
+
 	MM_CopyScanCacheVLHGC *getFreeCache(MM_EnvironmentVLHGC *env);
 	/**
 	 * Adds the given newCacheEntry to the free cache list.
@@ -289,7 +289,7 @@ private:
 	 * @param newCacheEntry[in] The entry to add to cacheList
 	 */
 	void addCacheEntryToScanCacheListAndNotify(MM_EnvironmentVLHGC *env, MM_CopyScanCacheVLHGC *newCacheEntry);
-	
+
 	void flushCache(MM_EnvironmentVLHGC *env, MM_CopyScanCacheVLHGC *cache);
 	bool clearCache(MM_EnvironmentVLHGC *env, MM_CopyScanCacheVLHGC *cache);
 
@@ -333,7 +333,7 @@ private:
 	 * @param reason to scan (dirty card, packet, scan cache, overflow)	 *
 	 */
 	void  scanReferenceObjectSlots(MM_EnvironmentVLHGC *env, MM_AllocationContextTarok *reservingContext, J9Object *objectPtr, ScanReason reason);
-	
+
 	/**
 	 * Called by the root scanner to scan all WeakReference objects discovered by the mark phase,
 	 * clearing and enqueuing them if necessary.
@@ -354,7 +354,7 @@ private:
 	 * @param env[in] the current thread
 	 */
 	void scanPhantomReferenceObjects(MM_EnvironmentVLHGC *env);
-	
+
 	/**
 	 * Set region as survivor. Also set the special state if region was created by phantom reference processing.
 	 * @param env[in] the current thread
@@ -369,20 +369,20 @@ private:
 	 * SoftReferences have their ages incremented.
 	 * @param env[in] the current thread
 	 * @param region[in] the region all the objects in the list belong to
-	 * @param headOfList[in] the first object in the linked list 
+	 * @param headOfList[in] the first object in the linked list
 	 * @param referenceStats copy forward stats substructure to be updated
 	 */
 	void processReferenceList(MM_EnvironmentVLHGC *env, MM_HeapRegionDescriptorVLHGC *region, J9Object *headOfList, MM_ReferenceStats *referenceStats);
-	
+
 	/**
 	 * Walk the list of reference objects recorded in the specified list, changing them to the REMEMBERED state.
 	 * @param env[in] the current thread
-	 * @param headOfList[in] the first object in the linked list 
+	 * @param headOfList[in] the first object in the linked list
 	 */
 	void rememberReferenceList(MM_EnvironmentVLHGC *env, J9Object *headOfList);
 
 	/**
-	 * Walk all regions in the evacuate set in parallel, remembering any objects on their reference 
+	 * Walk all regions in the evacuate set in parallel, remembering any objects on their reference
 	 * lists so that they may be restored at the end of the PGC.
 	 * @param env[in] the current thread
 	 */
@@ -418,7 +418,7 @@ private:
 	 * @return number of slots scanned
 	 */
 	uintptr_t scanPointerArrayObjectSlotsSplit(MM_EnvironmentVLHGC *env, MM_AllocationContextTarok *reservingContext, J9IndexableObject *arrayPtr, uintptr_t startIndex, bool currentSplitUnitOnly = false);
-	
+
 	/**
 	 * For the given object and current starting index, determine the number of slots being scanned now, and create a work unit for the rest of the array.
 	 * Works for both copy-scan cache and workstack driven phases.
@@ -496,7 +496,7 @@ private:
 	 * @param newRegion[in] The region which the implementation must add to regionList (the implementation assumes that newRegion is not already in a region list)
 	 */
 	void insertRegionIntoLockedList(MM_EnvironmentVLHGC *env, MM_ReservedRegionListHeader::Sublist *regionList, MM_HeapRegionDescriptorVLHGC *newRegion);
-	
+
 	/**
 	 * Release a region as it is deemed to be full and no longer useful.
 	 * @param env GC thread.
@@ -522,7 +522,7 @@ private:
 	 * @param region[in] The region to remove
 	 */
 	void removeFreeMemoryCandidate(MM_EnvironmentVLHGC *env, MM_ReservedRegionListHeader *regionList, MM_HeapRegionDescriptorVLHGC *region);
-	
+
 	/**
 	 * Reserve memory for an object to be copied to survivor space.
 	 * @param env[in] GC thread.
@@ -563,7 +563,7 @@ private:
 	MMINLINE MM_CopyScanCacheVLHGC *reserveMemoryForCopy(MM_EnvironmentVLHGC *env, J9Object *objectToEvacuate, MM_AllocationContextTarok *reservingContext, uintptr_t objectReserveSizeInBytes);
 
 	void flushCaches(MM_CopyScanCacheVLHGC *cache);
-	
+
 	/**
 	 * Called at the end of the copy forward operation to flush any remaining data from copy caches and return them to the free list.
 	 * @param env[in] the thread whose copy caches should be flushed
@@ -662,8 +662,8 @@ private:
 	 * @param env[in] the current thread
 	 * @param reservingContext[in] The context to which we would prefer to copy any objects discovered in this method
 	 * @param objectPtr[in] current object being scanned
- 	 * @param reason[in] reason to scan (dirty card, packet, scan cache, overflow)
- 	 */
+	 * @param reason[in] reason to scan (dirty card, packet, scan cache, overflow)
+	 */
 	MMINLINE void scanObject(MM_EnvironmentVLHGC *env, MM_AllocationContextTarok *reservingContext, J9Object *objectPtr, ScanReason reason);
 
 	/**
@@ -673,7 +673,7 @@ private:
 	 * @param reason[in] reason to scan (dirty card, packet, scan cache, overflow)
 	 */
 	MMINLINE void updateScanStats(MM_EnvironmentVLHGC *env, J9Object *objectPtr, ScanReason reason);
-	
+
 	MMINLINE uintptr_t scanToCopyDistance(MM_CopyScanCacheVLHGC *cache);
 	MMINLINE bool bestCacheForScanning(MM_CopyScanCacheVLHGC *copyCache, MM_CopyScanCacheVLHGC **scanCache);
 
@@ -688,7 +688,7 @@ private:
 	 * @return true if the nextScanCache has been updated with the best cache to scan.
 	 */
 	MMINLINE bool aliasToCopyCache(MM_EnvironmentVLHGC *env, MM_CopyScanCacheVLHGC **nextScanCache);
-	
+
 	/**
 	 * Scans the slots of a MixedObject, remembering objects as required. Scanning is interrupted
 	 * as soon as there is a copy cache that is preferred to the current scan cache. This is returned
@@ -865,19 +865,19 @@ private:
 	 * @return an object pointer representing the new location of the object, or the original object pointer on failure.
 	 */
 	J9Object *copy(MM_EnvironmentVLHGC *env, MM_AllocationContextTarok *reservingContext, MM_ForwardedHeader *forwardedHeader, bool leafType = false);
-	
+
 
 	/* Depth copy the hot fields of an object.
 	 * @param forwardedHeader - forwarded header of an object
 	 * @param destinationObjectPtr - destinationObjectPtr of the object described by the forwardedHeader
-	 */ 
+	 */
 	MMINLINE void depthCopyHotFields(MM_EnvironmentVLHGC *env, J9Class *clazz, J9Object *destinationObjectPtr, MM_AllocationContextTarok *reservingContext);
-	
+
 	/* Copy the hot field of an object.
 	 * Valid if scavenger dynamicBreadthScanOrdering is enabled.
 	 * @param destinationObjectPtr - the object who's hot field will be copied
-	 * @param offset  - the object field offset of the hot field to be copied 
-	 */ 
+	 * @param offset  - the object field offset of the hot field to be copied
+	 */
 	MMINLINE void copyHotField(MM_EnvironmentVLHGC *env, J9Object *destinationObjectPtr, uint8_t offset, MM_AllocationContextTarok *reservingContext);
 	/**
 	 * Push any remaining cached mark map data out before the copy scan cache is released.
@@ -924,10 +924,10 @@ private:
 	/**
 	 * Determine the desired copy cache size for the specified compact group for the current thread.
 	 * The size is chosen to balance the opposing problems of fragmentation and contention.
-	 * 
+	 *
 	 * @param env[in] the current thread
 	 * @param compactGroup the compact group to calculate the size for
-	 * @return the desired copy cache size, in bytes 
+	 * @return the desired copy cache size, in bytes
 	 */
 	uintptr_t getDesiredCopyCacheSize(MM_EnvironmentVLHGC *env, uintptr_t compactGroup);
 
@@ -943,10 +943,10 @@ private:
 
 	/**
 	 * Scan the root set, copying-and-forwarding any objects found.
-	 * @param env[in] the current thread 
+	 * @param env[in] the current thread
 	 */
 	void scanRoots(MM_EnvironmentVLHGC *env);
-	
+
 #if defined(J9VM_GC_LEAF_BITS)
 	/**
 	 * Copy any leaf children of the specified object.
@@ -989,13 +989,13 @@ private:
 protected:
 
 	MM_CopyForwardScheme(MM_EnvironmentVLHGC *env, MM_HeapRegionManager *manager);
-	
+
 	/**
 	 * Initialize the receivers internal support structures and state.
 	 * @param env[in] Main thread.
 	 */
 	bool initialize(MM_EnvironmentVLHGC *env);
-	
+
 	/**
 	 * Clean up the receivers internal support structures and state.
 	 * @param env[in] Main thread.

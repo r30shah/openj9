@@ -20,7 +20,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
  *******************************************************************************/
 
-
 /**
  * @file
  * @ingroup GC_Base
@@ -69,7 +68,7 @@ public:
 		if (J9_ARE_ANY_BITS_SET(vmThread->publicFlags, J9_PUBLIC_FLAGS_JNI_CRITICAL_REGION)) {
 			/* Nested critical region; increment the count */
 			vmThread->jniCriticalDirectCount += 1;
-	  	} else {
+		} else {
 			UDATA const criticalFlags = J9_PUBLIC_FLAGS_JNI_CRITICAL_REGION | J9_PUBLIC_FLAGS_JNI_CRITICAL_ACCESS;
 #if defined(J9VM_INTERP_ATOMIC_FREE_JNI)
 			UDATA const expectedFlags = J9_PUBLIC_FLAGS_VM_ACCESS;
@@ -114,7 +113,7 @@ public:
 				}
 				omrthread_monitor_exit_using_threadId(publicFlagsMutex, osThread);
 			}
-	 	}
+		}
 	}
 
 	/**

@@ -45,7 +45,7 @@ typedef struct j9shsem_handle {
 	int32_t nsems;
 	char* baseFile;
 	int64_t timestamp;
- 	uint32_t deleteBasefile : 1; /* delete the base file (used to generate the semaphore key) when destroying the semaphore */
+	uint32_t deleteBasefile : 1; /* delete the base file (used to generate the semaphore key) when destroying the semaphore */
 	/* int32_t baseFilefd deleted: it is never assigned or used. */
 } j9shsem_handle;
 
@@ -60,5 +60,3 @@ typedef struct j9shsem_handle {
 #endif
 
 #endif     /* j9shsem_h */
-
-

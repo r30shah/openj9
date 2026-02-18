@@ -68,7 +68,7 @@ private:
 	bool _sweepingArraylets;
 
 	uintptr_t _gcPhase; /**< What gc phase are we currently in? */
-	
+
 	MM_CycleState _cycleState;  /**< Embedded cycle state to be used as the main cycle state for GC activity */
 	MM_CollectionStatistics _collectionStatistics;  /** Common collect stats (memory, time etc.) */
 
@@ -100,7 +100,7 @@ protected:
 	virtual void internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, U_32 gcCode);
 	virtual void internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace);
 	virtual bool internalGarbageCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription);
-	
+
 	void reportMarkStart(MM_EnvironmentBase *env);
 	void reportMarkEnd(MM_EnvironmentBase *env);
 	void reportSweepStart(MM_EnvironmentBase *env);
@@ -109,7 +109,7 @@ protected:
 	void reportGCEnd(MM_EnvironmentBase *env);
 	void reportGCIncrementStart(MM_EnvironmentBase *env);
 	void reportGCIncrementEnd(MM_EnvironmentBase *env);
-	
+
 public:
 	void mainSetupForGC(MM_EnvironmentBase *env);
 	void mainCleanupAfterGC(MM_EnvironmentBase *env);
@@ -124,7 +124,7 @@ public:
 		 */
 		return this;
 	}
-	
+
 	virtual void deleteSweepPoolState(MM_EnvironmentBase *env, void *sweepPoolState)
 	{
 		/*
@@ -144,13 +144,13 @@ public:
 	void reportGCCycleFinalIncrementEnding(MM_EnvironmentBase *env);
 
 	void flushCachesForGC(MM_EnvironmentBase *env) {
-	    	/* we do not want to flush caches for each increment, unless there is a reason to walk the heap
-	    	 * (for instance, fillFromOverflow requires heap be walkable) */
-	    	if (_workPackets->getIncrementalOverflowHandler()->isOverflowThisGCCycle()) {
-	    		GC_OMRVMInterface::flushCachesForGC(env);
-	    	}
-    	}
-    
+		/* we do not want to flush caches for each increment, unless there is a reason to walk the heap
+		 * (for instance, fillFromOverflow requires heap be walkable) */
+		if (_workPackets->getIncrementalOverflowHandler()->isOverflowThisGCCycle()) {
+			GC_OMRVMInterface::flushCachesForGC(env);
+		}
+	}
+
 	/**
 	 * helper function that determines if non-deterministic sweep is enabled
 	 */
@@ -176,9 +176,9 @@ public:
 	MMINLINE bool isCollectorUnloadingClassLoaders() { return (_gcPhase == GC_PHASE_UNLOADING_CLASS_LOADERS); }
 	MMINLINE bool isCollectorSweeping()			{ return (_gcPhase == GC_PHASE_SWEEP); }
 	MMINLINE bool isCollectorConcurrentTracing() { return (_gcPhase == GC_PHASE_CONCURRENT_TRACE); }
-	MMINLINE bool isCollectorConcurrentSweeping() { return (_gcPhase == GC_PHASE_CONCURRENT_SWEEP); }	
+	MMINLINE bool isCollectorConcurrentSweeping() { return (_gcPhase == GC_PHASE_CONCURRENT_SWEEP); }
 	MMINLINE bool isCollectorSweepingArraylets() { return _sweepingArraylets; }
-	MMINLINE bool isFixHeapForWalk() { return _fixHeapForWalk; }	
+	MMINLINE bool isFixHeapForWalk() { return _fixHeapForWalk; }
 
 	MMINLINE void setCollectorIdle()			{ _gcPhase = GC_PHASE_IDLE; _sched->_gcPhaseSet |= GC_PHASE_IDLE; }
 	MMINLINE void setCollectorRootMarking()		{ _gcPhase = GC_PHASE_ROOT; _sched->_gcPhaseSet |= GC_PHASE_ROOT; }
@@ -248,7 +248,7 @@ public:
 		, _osInterface(NULL)
 		, _sched(NULL)
 		, _fixHeapForWalk(false)
-		, _avgPercentFreeHeapAfterCollect(0)	
+		, _avgPercentFreeHeapAfterCollect(0)
 		, _workPackets(NULL)
 		, _stopTracing(false)
 		, _realtimeDelegate(env)

@@ -209,12 +209,12 @@ public:
 		uintptr_t numberOfArraylets = numArraylets(dataSizeInBytes);
 		return arrayletSize(objPtr, index, dataSizeInBytes, numberOfArraylets);
 	}
-	
+
 	/**
 	 * Get the spine size for the given indexable object
 	 * @param objPtr Pointer to an array object
- 	 * @param layout layout for array object
- 	 * @return The total size in bytes of objPtr's array spine;
+	 * @param layout layout for array object
+	 * @return The total size in bytes of objPtr's array spine;
 	 * 			includes header, arraylet ptrs, and (if present) padding & inline data
 	 */
 	MMINLINE uintptr_t
@@ -226,8 +226,8 @@ public:
 	/**
 	 * Get the spine size for the given indexable object
 	 * @param clazzPtr Pointer to the preserved J9Class, used in scavenger
- 	 * @param layout layout for array object
- 	 * @param size Size of indexable object
+	 * @param layout layout for array object
+	 * @param size Size of indexable object
 	 * @return The total size in bytes of objPtr's array spine;
 	 * 			includes header, arraylet ptrs, and (if present) padding & inline data
 	 */
@@ -240,8 +240,8 @@ public:
 	/**
 	 * Get the spine size without header for the given indexable object
 	 * @param clazzPtr Pointer to the preserved J9Class, used in scavenger
- 	 * @param layout layout for array object
- 	 * @param size Size of indexable object
+	 * @param layout layout for array object
+	 * @param size Size of indexable object
 	 * @return The size in bytes of objPtr's array spine without header;
 	 * 			includes arraylet ptrs, padding and inline data (if any is present)
 	 */
@@ -362,7 +362,7 @@ public:
 	 */
 	MMINLINE uintptr_t
 	getDataSizeInBytes(J9Class *clazzPtr, uintptr_t numberOfElements)
-	{	
+	{
 		uintptr_t stride = J9ARRAYCLASS_GET_STRIDE(clazzPtr);
 		uintptr_t size = numberOfElements * stride;
 		uintptr_t alignedSize = UDATA_MAX;
@@ -462,10 +462,10 @@ public:
 				GC_SlotObject destSlotObject(_omrVM, GC_SlotObject::addToSlotAddress(destArraylets, i, compressed));
 				void* srcLeafAddress = srcSlotObject.readReferenceFromSlot();
 				void* destLeafAddress = destSlotObject.readReferenceFromSlot();
-				
+
 
 				uintptr_t copySize = _omrVM->_arrayletLeafSize;
-				
+
 				if (i == arrayletCount - 1) {
 					copySize = arrayletSize(srcObject, i);
 				}
@@ -542,7 +542,7 @@ public:
 					}
 				}
 				break;
-				
+
 			default :
 				// unreachable since we currently do not expect anything other than primitive arrays to be using them.
 				{
@@ -786,7 +786,7 @@ public:
 						arrayletElementOffset = 0;
 					}
 					break;
-					
+
 				default :
 					// unreachable since we currently do not expect anything other than primitive arrays to be using them.
 					{
@@ -820,7 +820,7 @@ public:
 	MMINLINE uintptr_t
 	getSizeInBytesWithHeader(J9Class *clazz, uintptr_t numberOfElements)
 	{
-		ArrayLayout layout = InlineContiguous; 
+		ArrayLayout layout = InlineContiguous;
 		if(0 == numberOfElements) {
 			layout = Discontiguous;
 		}
@@ -1234,7 +1234,7 @@ public:
 	MMINLINE uintptr_t
 	getHashcodeOffset(J9Class *clazzPtr, uintptr_t numberOfElements)
 	{
-		ArrayLayout layout = InlineContiguous; 
+		ArrayLayout layout = InlineContiguous;
 		if(0 == numberOfElements) {
 			layout = Discontiguous;
 		}
@@ -1270,7 +1270,7 @@ public:
 		ArrayLayout layout = getArrayLayout(arrayPtr);
 		return getHashcodeOffset(J9GC_J9OBJECT_CLAZZ(arrayPtr, this), layout, getSizeInElements(arrayPtr));
 	}
-	
+
 	MMINLINE void
 	expandArrayletSubSpaceRange(MM_MemorySubSpace * subSpace, void * rangeBase, void * rangeTop, uintptr_t largestDesirableArraySpineSize)
 	{
@@ -1349,11 +1349,11 @@ public:
 
 	/**
 	 * Initialize the receiver, a new instance of GC_ObjectModel
-	 * 
+	 *
 	 * @return true on success, false on failure
 	 */
 	bool initialize(MM_GCExtensionsBase *extensions);
-	
+
 	/**
 	 * Tear down the receiver
 	 */

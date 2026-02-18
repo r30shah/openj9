@@ -91,7 +91,7 @@ public:
 	MM_RealtimeGC *_gc;
 	OMR_VM *_vm;
 	MM_GCExtensionsBase *_extensions;
- 	bool _doSchedulingBarrierEvents;
+	bool _doSchedulingBarrierEvents;
 
 	uint32_t _gcOn; /**< Are we in some long GC cycle? */
 
@@ -288,4 +288,3 @@ public:
 };
 
 #endif /* SCHEDULER_HPP_ */
-

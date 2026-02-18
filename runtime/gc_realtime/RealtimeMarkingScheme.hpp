@@ -98,17 +98,17 @@ public:
 		_markMap->atomicSetBit((omrobjectptr_t)((1 << J9VMGC_SIZECLASSES_LOG_SMALLEST) + (uintptr_t)objectPtr));
 	}
 
-	MMINLINE bool 
+	MMINLINE bool
 	markObject(MM_EnvironmentRealtime *env, omrobjectptr_t objectPtr, bool leafType = false)
-	{	
+	{
 		if (objectPtr == NULL) {
 			return false;
 		}
 
 		if (isMarked(objectPtr)) {
-	 		return false;
+			return false;
 		}
-		
+
 		if (!_markMap->atomicSetBit(objectPtr)) {
 			return false;
 		}

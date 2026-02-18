@@ -45,18 +45,18 @@ protected:
 	bool _nurseryReferencesOnly;  /**< Should the iterator only scan structures that currently contain nursery references */
 	bool _nurseryReferencesPossibly;  /**< Should the iterator only scan structures that may contain nursery references */
 	bool _includeStackFrameClassReferences;  /**< Should the iterator include Classes which have a method running on the stack */
-#if defined(J9VM_GC_MODRON_SCAVENGER)		 
+#if defined(J9VM_GC_MODRON_SCAVENGER)
 	bool _includeRememberedSetReferences;  /**< Should the iterator include references in the Remembered Set (if applicable) */
-#endif /* J9VM_GC_MODRON_SCAVENGER */	 	
+#endif /* J9VM_GC_MODRON_SCAVENGER */
 	bool _classDataAsRoots; /**< Should all classes (and class loaders) be treated as roots. Default true, should set to false when class unloading */
 	bool _includeJVMTIObjectTagTables; /**< Should the iterator include the JVMTIObjectTagTables. Default true, should set to false when doing JVMTI object walks */
 	bool _trackVisibleStackFrameDepth; /**< Should the stack walker be told to track the visible frame depth. Default false, should set to true when doing JVMTI walks that report stack slots */
-	
-	RootScannerEntity _scanningEntity; /**< The root scanner entity that is currently being scanned. Defaults to RootScannerEntity_None. */ 
+
+	RootScannerEntity _scanningEntity; /**< The root scanner entity that is currently being scanned. Defaults to RootScannerEntity_None. */
 	RootScannerEntity _lastScannedEntity; /**< The root scanner entity that was last scanned. Defaults to RootScannerEntity_None. */
-	
+
 	RootScannerEntityReachability _scanningEntityReachability;/**< Reachability of the root scanner entity that is currently being scanned. */
-	
+
 	/**
 	 * Sets the currently scanned root entity to scanningEntity. This is mainly for
 	 * debug purposes.
@@ -69,7 +69,7 @@ protected:
 		assume0(RootScannerEntity_None == _scanningEntity);
 		_scanningEntity = scanningEntity;
 	}
-	
+
 	/**
 	 * Sets the currently scanned root entity to scanningEntity. This is mainly for
 	 * debug purposes.
@@ -80,7 +80,7 @@ protected:
 	{
 		_scanningEntityReachability = reachability;
 	}
-	
+
 	/**
 	 * Sets the currently scanned root entity to None and sets the last scanned root
 	 * entity to scannedEntity. This is mainly for debug purposes.
@@ -107,7 +107,7 @@ public:
 		_includeStackFrameClassReferences(true),
 #if defined(J9VM_GC_MODRON_SCAVENGER)
 		_includeRememberedSetReferences(false),
-#endif /* J9VM_GC_MODRON_SCAVENGER */	 
+#endif /* J9VM_GC_MODRON_SCAVENGER */
 		_classDataAsRoots(true),
 		_includeJVMTIObjectTagTables(true),
 		_trackVisibleStackFrameDepth(false),
@@ -116,7 +116,7 @@ public:
 	{
 		_typeId = __FUNCTION__;
 	}
-	
+
 #if defined(J9VM_GC_MODRON_SCAVENGER)
 	/** Set whether the iterator will only scan structures which contain nursery references */
 	void setNurseryReferencesOnly(bool nurseryReferencesOnly) {
@@ -159,7 +159,7 @@ public:
 
 	/** General class handler to be reimplemented by specializing class. This handler is called once per class. */
 	virtual void doClass(J9Class *clazz) = 0;
-	
+
 	virtual void doObject(J9Object* slotPtr) = 0;
 
 #if defined(J9VM_GC_MODRON_SCAVENGER)
@@ -169,8 +169,8 @@ public:
 	virtual void scanClasses();
 	virtual void scanVMClassSlots();
 
- 	virtual bool scanOneThread(J9VMThread* walkThread);
-	
+	virtual bool scanOneThread(J9VMThread* walkThread);
+
 	virtual void scanClassLoaders();
 	virtual void scanThreads();
 #if defined(J9VM_GC_FINALIZATION)
@@ -198,7 +198,7 @@ public:
 
 #if defined(J9VM_OPT_JVMTI)
 	void scanJVMTIObjectTagTables();
-#endif /* J9VM_OPT_JVMTI */ 
+#endif /* J9VM_OPT_JVMTI */
 
 	virtual void doClassLoader(J9ClassLoader *classLoader);
 
@@ -229,6 +229,5 @@ public:
 	virtual void doVMClassSlot(J9Class *classPtr);
 	virtual void doVMThreadSlot(J9Object **slotPtr, GC_VMThreadIterator *vmThreadIterator);
 };
-
 
 #endif /* HEAPROOTSCANNER_HPP_ */

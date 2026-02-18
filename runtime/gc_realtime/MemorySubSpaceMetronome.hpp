@@ -40,7 +40,7 @@ class MM_MemoryPool;
 class MM_MemorySubSpaceMetronome : public MM_MemorySubSpaceSegregated
 {
 private:
-	/* TODO: this is temporary as a way to avoid dup code in MemorySubSpaceMetronome::allocate. 
+	/* TODO: this is temporary as a way to avoid dup code in MemorySubSpaceMetronome::allocate.
 	 * We will specifically fix this allocate method in a separate design.
 	 */
 	void *allocateMixedObjectOrArraylet(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, AllocateType allocType);
@@ -67,11 +67,10 @@ public:
 		MM_EnvironmentBase *env, MM_PhysicalSubArena *physicalSubArena, MM_MemoryPool *memoryPool,
 		bool usesGlobalCollector, UDATA minimumSize, UDATA initialSize, UDATA maximumSize
 	)
- 		: MM_MemorySubSpaceSegregated(env, physicalSubArena, memoryPool, usesGlobalCollector, minimumSize, initialSize, maximumSize)
+		: MM_MemorySubSpaceSegregated(env, physicalSubArena, memoryPool, usesGlobalCollector, minimumSize, initialSize, maximumSize)
 	{
 		_typeId = __FUNCTION__;
 	};
 };
 
 #endif /* MEMORYSUBSPACEMETRONOME_HPP_ */
-
