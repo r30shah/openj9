@@ -7877,7 +7877,10 @@ TR::CompilationInfoPerThreadBase::preCompilationTasks(J9VMThread * vmThread,
       if ((persistentInfo->getRemoteCompilationMode() == JITServer::CLIENT) &&
           TR::Options::canJITCompile())
          {
-         bool doLocalCompilation = entry->isAotLoad() || cannotDoRemoteCompilation || preferLocalComp(entry);
+         bool doLocalCompilation = entry->isAotLoad()
+            || cannotDoRemoteCompilation
+            || preferLocalComp(entry)
+            || entry->isJNINative();
 
          // If this is a remote sync compilation, change it to a local sync compilation.
          // After the local compilation is completed successfully, a remote async compilation
