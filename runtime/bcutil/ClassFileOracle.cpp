@@ -428,6 +428,8 @@ ClassFileOracle::walkFields()
 							}
 						}
 						_fieldsInfo[fieldIndex].isNullRestricted = true;
+						/* The NullRestricted annotation should always mark fields with ACC_STRICT_INIT. */
+						_fieldsInfo[fieldIndex].isStrictByNullRestrictedAnnotation = true;
 					}
 #endif /* defined(J9VM_OPT_VALHALLA_FLATTENABLE_VALUE_TYPES) */
 				}

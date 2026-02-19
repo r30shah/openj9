@@ -67,6 +67,7 @@ public:
 		bool isFieldContended;
 #if defined(J9VM_OPT_VALHALLA_FLATTENABLE_VALUE_TYPES)
 		bool isNullRestricted;
+		bool isStrictByNullRestrictedAnnotation;
 #endif /* defined(J9VM_OPT_VALHALLA_FLATTENABLE_VALUE_TYPES) */
 	};
 
@@ -376,6 +377,7 @@ class FieldIterator
 		bool isFieldContended() const { return _fieldsInfo[_index].isFieldContended; }
 #if defined(J9VM_OPT_VALHALLA_FLATTENABLE_VALUE_TYPES)
 		bool isNullRestricted() const { return _fieldsInfo[_index].isNullRestricted; }
+		bool isStrictByNullRestrictedAnnotation() const { return _fieldsInfo[_index].isStrictByNullRestrictedAnnotation; }
 #endif /* defined(J9VM_OPT_VALHALLA_FLATTENABLE_VALUE_TYPES) */
 
 		U_32 getConstantValueSlot1() const { return _classFile->constantPool[getConstantValueConstantPoolIndex()].slot1; }
