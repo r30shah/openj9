@@ -62,7 +62,10 @@ public class ValueTypeTestClasses {
 	}
 
 	static class IntWrapper {
-		IntWrapper(int i) { this.vti = new ValueTypeInt(i); }
+		IntWrapper(int i) {
+			this.vti = new ValueTypeInt(i);
+			super();
+		}
 		@NullRestricted
 		final ValueTypeInt vti;
 	}
