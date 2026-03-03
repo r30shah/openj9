@@ -124,7 +124,7 @@ J9::CFG::setFrequencies()
 
    // Do not use JIT profiler info for estimate code size.
    bool externFreq = ! comp()->getOption(TR_EnableScorchInterpBlockFrequencyProfiling);
-   bool hasJPI = hasJProfilingInfo(comp(), self());
+   bool hasJPI = hasJProfilingInfo(comp(), self()) && comp()->isInliningStartedOrDone();
    if (externFreq
        && comp()->hasBlockFrequencyInfo()
        && (

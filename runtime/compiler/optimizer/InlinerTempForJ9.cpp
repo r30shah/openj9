@@ -3360,7 +3360,7 @@ int32_t TR_Inliner::perform()
    if (sym->mayHaveInlineableCall() && optimizer()->isEnabled(OMR::inlining))
       {
       comp()->getFlowGraph()->setStructure(NULL);
-
+      comp()->setIsInliningStartedOrDone(true);
       TR_MultipleCallTargetInliner inliner(optimizer(),this);
       if (manager()->numPassesCompleted() == 0)
          inliner.setFirstPass();
