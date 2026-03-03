@@ -46,13 +46,18 @@ public:
     /**
      * Identify place holder calls to jProfileValueSymbol and jProfileValueWithNullCHKSymbol, lowering them
      * into the fast, slow and helper paths.
+     *
+     * @param valueProfilingPlaceHolderCalls A list containing tree tops which needs to be replaced by actual profiling
+     * trees.
      */
-    void lowerCalls();
+    void lowerCalls(TR::list<TR::TreeTop *> &valueProfilingPlaceHolderCalls);
     /**
      * Clean up duplicate profiling candidates and add profiling placeholder calls
      * for profiling target of virtual call dispatch and instanceOf/checkCast.
+     *
+     * @param valueProfilingPlaceHolderCalls A list to hold value profiling place holder tree tops
      */
-    void cleanUpAndAddProfilingCandidates();
+    void cleanUpAndAddProfilingCandidates(TR::list<TR::TreeTop *> &valueProfilingPlaceHolderCalls);
     /**
      * Examines node to identify profiling candidate and add place holder calls for profiling it.
      * This routine checks node and it's children for mainly two type of nodes.
@@ -66,12 +71,13 @@ public:
      * Blocks
      * @param checklist A Node checklist to make sure while recursively examining node, we do not examine node multiple
      * times.
+     * @param valueProfilingPlaceHolderCalls A list holding value profiling place holder tree tops
      */
     void performOnNode(TR::Node *node, TR::TreeTop *cursor, TR_BitVector *alreadyProfiledValues,
-        TR::NodeChecklist *checklist);
+        TR::NodeChecklist *checklist, TR::list<TR::TreeTop *> &valueProfilingPlaceHolderCalls);
 
-    static bool addProfilingTrees(TR::Compilation *comp, TR::TreeTop *insertionPoint, TR::Node *value,
-        TR_AbstractHashTableProfilerInfo *table, bool addNullCheck = false, bool extendBlocks = true,
+    static TR::TreeTop *addProfilingTrees(TR::Compilation *comp, TR::TreeTop *insertionPoint, TR::Node *node,
+        TR_AbstractHashTableProfilerInfo *table, TR::TreeTop *lastTreeTop = NULL, bool extendBlocks = true,
         bool trace = false);
 
 private:
