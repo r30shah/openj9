@@ -242,6 +242,8 @@ J9::CFG::setBlockAndEdgeFrequenciesBasedOnJITProfiler()
          nodeFrequencies[nodeNumber] = blockFrequencyInfo->getFrequencyInfo(toBlock(node), comp());
          if ((nodeFrequencies[nodeNumber] >= _maxFrequency) && (nodeFrequencies[nodeNumber] >= 0))
             _maxFrequency = nodeFrequencies[nodeNumber];
+         if (trace)
+            log->printf("NodeFrequency for block_%d = %d, maxFrequency = %d\n", nodeNumber, nodeFrequencies[nodeNumber], _maxFrequency);
          }
       }
 
@@ -268,8 +270,8 @@ J9::CFG::setBlockAndEdgeFrequenciesBasedOnJITProfiler()
      if (frequency < 0)
         {
         frequency = nodeFrequencies ? nodeFrequencies[toBlock(node)->getNumber()] : blockFrequencyInfo->getFrequencyInfo(toBlock(node), comp());
-        //frequency = nodeFrequencies[toBlock(node)->getNumber()];
-
+        if (trace)
+            log->printf("While traversing - block_%d freq = %d\n", toBlock(node)->getNumber(), frequency);
         bool isGuardedBlock = false;
         bool isProfiledGuard = false;
         bool isGuardedBlockFallThrough = false;
@@ -319,14 +321,20 @@ J9::CFG::setBlockAndEdgeFrequenciesBasedOnJITProfiler()
                predRawFrequency = blockFrequencyInfo->getFrequencyInfo(pred, comp());
                predRawFrequency = std::max(predRawFrequency, 0);
                predRawFrequency = std::min(predRawFrequency, maxCount);
+               if (trace)
+                  log->printf("pred block_%d predRawFrequency = %d\n", pred->getNumber(), predRawFrequency);
                }
             else if (nodesToBeNormalized && nodesToBeNormalized->isSet(pred->getNumber()))
                {
                // Frequency is already raw; leave it alone
+               if (trace)
+                  log->printf("nodesToBeNormalized and pred block_%d is set\n", pred->getNumber());
                }
             else
                {
                predRawFrequency = TR::CFGNode::denormalizedFrequency(predRawFrequency, origMaxFrequency);
+               if (trace)
+                  log->printf("pred block_%d rawFrequency = %d\n", predRawFrequency);
                }
 
             bool effectiveSingleton = false;
