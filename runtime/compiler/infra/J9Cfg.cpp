@@ -231,7 +231,8 @@ J9::CFG::setBlockAndEdgeFrequenciesBasedOnJITProfiler()
 
    TR_BitVector *nodesToBeNormalized = NULL;
    TR::CFGNode *node;
-
+   if (trace)
+      log->printf("_maxFrequency = %d\n", _maxFrequency);
    int32_t *nodeFrequencies = NULL;
    if (_maxFrequency < 0)
       {
