@@ -234,7 +234,7 @@ J9::CFG::setBlockAndEdgeFrequenciesBasedOnJITProfiler()
    if (trace)
       log->printf("_maxFrequency = %d\n", _maxFrequency);
    int32_t *nodeFrequencies = NULL;
-   if (_maxFrequency < 0)
+   if (_maxFrequency <= 0)
       {
       nodeFrequencies = (int32_t*) trMemory()->allocateStackMemory(sizeof(int32_t) * self()->getNextNodeNumber());
       for (node = getFirstNode(); node; node = node->getNext())
@@ -248,6 +248,8 @@ J9::CFG::setBlockAndEdgeFrequenciesBasedOnJITProfiler()
          }
       }
 
+   if (trace)
+      log->printf("_maxFrequency after = %d\n", _maxFrequency);
    int32_t origMaxFrequency = _maxFrequency;
 
    createTraversalOrder(true, stackAlloc);
