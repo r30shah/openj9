@@ -487,57 +487,6 @@ TR_JProfilingValue::lowerCalls()
             // Extract the arguments and add the profiling trees
             TR::Node *value = child->getFirstChild();
 
-            // ExceptionMeta is normally copied to a temp and then it is cleared to NULL.
-            // If we build profiling trees from the raw ExceptionMeta load, later rematerialization
-            // may reload NULL. Prefer profiling a preserved copy when we can identify it.
-            //
-            // If we can find a preserving store to a stable (non-MethodMetaData) symbol,
-            // profile that preserved symbol instead of the MethodMetaData slot.
-            //
-            // Otherwise, materialize a stable value by spilling to a compiler temporary
-            // before lowering. When the only preserved form is a post-GRA register store,
-            // first create an explicit regLoad from that register and spill that value,
-            // so we do not re-read ExceptionMeta from metadata.
-            //
-            if (isExceptionMetaLoad(value))
-               {
-               TR::Node *preservingStore = findNearestStoreForValue(cursor, value);
-
-               if (isStableNonMetaDataStoreDirect(preservingStore))
-                  {
-                  // Profile the preserved variable instead of the MethodMetaData slot.
-                  value = TR::Node::createLoad(value, preservingStore->getSymbolReference());
-                  dumpOptDetails(comp(), "%s %s: ExceptionMeta preservingStore n%dn value n%dn\n",
-                     optDetailString(), __FUNCTION__, preservingStore->getGlobalIndex(),
-                     value->getGlobalIndex());
-                  }
-               else
-                  {
-                  // If the preserved copy is held only in a register store (post-GRA) or we could not
-                  // find a stable symbol, spill to a temporary before lowering and profile the temporary.
-                  TR::SymbolReference *tmpSymRef = NULL;
-                  // Default spill source is the original value
-                  TR::Node *spillSource = value;
-                  // If we found a preserving store in a register (post-GRA), spill from the register value
-                  // rather than reloading ExceptionMeta which may already be NULL.
-                  if (preservingStore && preservingStore->getOpCode().isStoreReg())
-                     {
-                     spillSource = createRegLoadFromStoreReg(comp(), value, preservingStore);
-                     dumpOptDetails(comp(),
-                        "%s %s: ExceptionMeta preservingStore n%dn value n%dn spillSource n%dn\n",
-                        optDetailString(), __FUNCTION__, preservingStore->getGlobalIndex(),
-                        value->getGlobalIndex(), spillSource->getGlobalIndex());
-                     }
-
-                  TR::TreeTop *storeTT = TR::TreeTop::create(comp(), storeNode(comp(), spillSource, tmpSymRef));
-                  cursor->insertBefore(storeTT);
-
-                  value = TR::Node::createLoad(value, tmpSymRef);
-                  dumpOptDetails(comp(), "%s %s: ExceptionMeta value n%dn symRef #%d\n", optDetailString(),
-                     __FUNCTION__, value->getGlobalIndex(), tmpSymRef ? tmpSymRef->getReferenceNumber() : -1);
-                  }
-               }
-
             TR_AbstractHashTableProfilerInfo *table = (TR_AbstractHashTableProfilerInfo*) child->getSecondChild()->getAddress();
             bool needNullTest =  comp()->getSymRefTab()->isNonHelper(child->getSymbolReference(), TR::SymbolReferenceTable::jProfileValueWithNullCHKSymbol);
             addProfilingTrees(comp(), cursor, value, table, needNullTest, true, trace());
