@@ -683,51 +683,6 @@ TR_JProfilingValue::addProfilingTrees(
          }
       }
 
-   /*
-    * In catch blocks the preserving store of ExceptionMeta may appear before
-    * the profiling placeholder. If the profiling value is still the raw ExceptionMeta
-    * load after the forward scan, scan backwards for a preserving store so helper
-    * call construction can use the preserved value instead of reloading metadata.
-    */
-   if (profilingValue == value && isExceptionMetaLoad(value))
-      {
-      TR::Node *preservingStore = findNearestStoreForValue(insertionPoint, value);
-      if (preservingStore)
-         {
-         /* Prefer profiling a preserved copy held in a stable symbol (not MethodMetaData). */
-         if (isStableNonMetaDataStoreDirect(preservingStore))
-            {
-            profilingValue = preservingStore;
-            logprintf(trace, log,
-               "\t\t\tExceptionMeta preservingStoreDirect n%dn chosen as profilingValue (value n%dn)\n",
-               preservingStore->getGlobalIndex(), value->getGlobalIndex());
-            }
-         /*
-          * If the preserved value is only available via a register store (post-GRA),
-          * do NOT use the storeReg as profilingValue. Using storeReg can later trigger
-          * the 'must be loadReg' assertion when we can't find it in GlRegDeps.
-          * Instead, materialize a corresponding loadReg and use that for subsequent
-          * spilling/temping logic.
-          */
-         else if (preservingStore->getOpCode().isStoreReg())
-            {
-            profilingValue = createRegLoadFromStoreReg(comp, value, preservingStore);
-            logprintf(trace, log,
-               "\t\t\tExceptionMeta preservingStoreReg n%dn -> n%dn chosen as profilingValue (value n%dn)\n",
-               preservingStore->getGlobalIndex(), profilingValue->getGlobalIndex(), value->getGlobalIndex());
-            }
-         else
-            {
-            /*
-             * If we found something unexpected (e.g., MethodMetaData storeDirect or other form),
-             * leave profilingValue unchanged and let the existing temp-slot logic handle it.
-             */
-            logprintf(trace, log, "\t\t\tExceptionMeta preservingStore n%dn ignored (unstable) (value n%dn)!\n",
-               preservingStore->getGlobalIndex(), value->getGlobalIndex());
-            }
-         }
-      }
-
    logprintf(trace, log, "\t\t\tProfiling value n%dn\n", profilingValue->getGlobalIndex());
 
    TR::Block *iter = originalBlock;
@@ -922,9 +877,7 @@ TR_JProfilingValue::addProfilingTrees(
    if (valueChildOfHelperCall == NULL)
       {
       TR::SymbolReference *storedValueSymRef = NULL;
-      if (profilingValue->getOpCode().isStoreDirect()
-         || (profilingValue->getOpCode().isLoadDirect() && !profilingValue->getOpCode().isLoadConst()
-            && !isExceptionMetaLoad(profilingValue)))
+      if (profilingValue->getOpCode().isStoreDirect())
          {
          storedValueSymRef = profilingValue->getSymbolReference();
          logprintf(trace, log, "\t\t\tstoredValueSymRef #%d\n", storedValueSymRef->getReferenceNumber());
