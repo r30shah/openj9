@@ -116,7 +116,7 @@ bool J9::CFG::setFrequencies()
     if (externFreq && comp()->hasBlockFrequencyInfo()
         && ((!hasJPI && (this == comp()->getFlowGraph()))
             || (hasJPI && ((*(TR_BlockFrequencyInfo::getEnableJProfilingRecompilation())) == -1)))) {
-        if (!self()->consumePseudoRandomFrequencies()) {
+        //if (!self()->consumePseudoRandomFrequencies()) {
             _externalProfiler = comp()->fej9()->hasIProfilerBlockFrequencyInfo(*comp());
             TR_BitVector *nodesToBeNormalized = self()->setBlockAndEdgeFrequenciesBasedOnJITProfiler();
             self()->normalizeFrequencies(nodesToBeNormalized);
@@ -137,7 +137,7 @@ bool J9::CFG::setFrequencies()
                         : comp()->getInlinedResolvedMethodSymbol(bci.getCallerIndex());
                 }
             }
-        }
+        //}
 
         if (comp()->getOption(TR_VerbosePseudoRandom))
             emitVerbosePseudoRandomFrequencies();
