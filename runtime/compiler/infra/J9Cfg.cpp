@@ -201,12 +201,16 @@ TR_BitVector *J9::CFG::setBlockAndEdgeFrequenciesBasedOnJITProfiler()
     TR_BlockFrequencyInfo *blockFrequencyInfo = profileInfo->getBlockFrequencyInfo();
 
     int32_t maxCount = profileInfo->getMaxCount();
+    if (trace)
+        log->printf("TRACER : maxCount in profileInfo = %d\n", maxCount);
 
     TR_BitVector *nodesToBeNormalized = NULL;
     TR::CFGNode *node;
 
     int32_t *nodeFrequencies = NULL;
     if (_maxFrequency < 0) {
+        if (trace)
+            log->printf("TRACER : maxFrequenecy is less than 0 - going through the block numbers to populate nodeFrequencues array");
         nodeFrequencies = (int32_t *)trMemory()->allocateStackMemory(sizeof(int32_t) * self()->getNextNodeNumber());
         for (node = getFirstNode(); node; node = node->getNext()) {
             int32_t nodeNumber = toBlock(node)->getNumber();
@@ -215,6 +219,9 @@ TR_BitVector *J9::CFG::setBlockAndEdgeFrequenciesBasedOnJITProfiler()
                 _maxFrequency = nodeFrequencies[nodeNumber];
         }
     }
+
+    if (trace)
+        log->printf("TRACER: _maxFrequency = %d\n", _maxFrequency);
 
     int32_t origMaxFrequency = _maxFrequency;
 
