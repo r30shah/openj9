@@ -3217,6 +3217,7 @@ int32_t TR_Inliner::perform()
         comp()->setOption(TR_DisableMultiTargetInlining);
 
     TR::ResolvedMethodSymbol *sym = comp()->getMethodSymbol();
+    comp()->setCanUseJProfilingBlockFrequencyInfo();
     if (sym->mayHaveInlineableCall() && optimizer()->isEnabled(OMR::inlining)) {
         comp()->getFlowGraph()->setStructure(NULL);
 
