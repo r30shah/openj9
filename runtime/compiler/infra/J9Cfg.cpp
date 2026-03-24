@@ -240,6 +240,7 @@ TR_BitVector *J9::CFG::setBlockAndEdgeFrequenciesBasedOnJITProfiler()
     for (int32_t traversalIndex = 0; traversalIndex < getForwardTraversalLength(); traversalIndex++) {
         node = getForwardTraversalElement(traversalIndex);
         int32_t frequency = node->getFrequency();
+        logprintf(trace, log, "Looking at cfg node %d, frequency on node = %d\n", node->getNumber(), frequency);
         if (frequency < 0) {
             frequency = nodeFrequencies ? nodeFrequencies[toBlock(node)->getNumber()]
                                         : blockFrequencyInfo->getFrequencyInfo(toBlock(node), comp());
@@ -416,6 +417,7 @@ TR_BitVector *J9::CFG::setBlockAndEdgeFrequenciesBasedOnJITProfiler()
         // DORIT: node->frequency is finalized and set. See if can infer anything about edge frequency:
         // visitCount>1 indicates that a final frequency for the edge had been set.
         frequency = node->getFrequency();
+        logprintf(trace, log, "Frequency in node %d freq. %d\n", node->getNumber(), frequency);
         if (frequency >= 0 && (node->getSuccessors().size() == 1)
             && (node->getSuccessors().front()->getTo()->getPredecessors().size() == 1)) {
             TR::CFGEdge *edge = node->getSuccessors().front();
