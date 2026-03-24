@@ -1475,6 +1475,7 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
 
     int64_t maxCount = normalizeForCallers ? getMaxRawCount() : getMaxRawCount(queriedCallerIndex);
 
+    logprintf(trace, log, "maxFrequency - get FrequencyInfo - [%d,%d] = %ld\n", bci.getCallerIndex(), bci.getByteCodeIndex(), maxCount);
     int32_t frequency = isMatchingBCI
         ? getRawCount(callerIndex < 0 ? comp->getMethodSymbol() : comp->getInlinedResolvedMethodSymbol(callerIndex),
               bciCheck, _callSiteInfo, maxCount, comp)
