@@ -549,6 +549,11 @@ TR::TreeTop *TR_JProfilingValue::addProfilingTrees(TR::Compilation *comp, TR::Tr
     /********************* mainline Return Block *********************/
     TR::Block *mainlineReturn = originalBlock->splitPostGRA(insertionPoint->getNextTreeTop(), cfg, true, NULL);
 
+    const char *debugCounter = TR::DebugCounter::debugCounterName(comp,
+        "jProfilingValue/(%s)/%s/profilingblock_%d", comp->signature(),
+        comp->getHotnessName(comp->getMethodHotness()), originalBlock->getNumber());
+    TR::DebugCounter::prependDebugCounter(comp, debugCounter, originalBlock->getExit());
+
     logprintf(trace, log, "\t\tOriginal Block block_%d, mainline return block = block_%d\n", originalBlock->getNumber(),
         mainlineReturn->getNumber());
     bool generateProfilingTreesInMainline = comp->isProfilingCompilation();
