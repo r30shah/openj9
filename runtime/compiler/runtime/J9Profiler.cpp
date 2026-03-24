@@ -1429,13 +1429,17 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR::Block *block, TR::Compilatio
 {
     if (!block->getEntry())
         return -1;
-
+    OMR::Logger *log = comp->log();
     TR::Node *startNode = block->getEntry()->getNode();
     TR_ByteCodeInfo bci = startNode->getByteCodeInfo();
+    if (comp->getOption(TR_TraceBFGeneration))
+        log->printf("In getFrequencyInfo - block_%d startNode = n%dn\n", block->getNumber(), startNode->getGlobalIndex());
     bool normalizeForCallers = true;
     if (bci.getCallerIndex() == -10) {
         bci.setCallerIndex(comp->getCurrentInlinedSiteIndex());
         normalizeForCallers = false;
+        if (comp->getOption(TR_TraceBFGeneration))
+            log->printf("In getFrequencyInfo - caller index was -10, setting to %d\n", bci.getCallerIndex());
     }
     int32_t frequency = getFrequencyInfo(bci, comp, normalizeForCallers, comp->getOption(TR_TraceBFGeneration));
     logprintf(comp->getOption(TR_TraceBFGeneration), comp->log(), "@@ block_%d [%d,%d] has raw count %d\n",
@@ -1756,6 +1760,8 @@ int32_t TR_BlockFrequencyInfo::getRawCount(TR_ByteCodeInfo &bci, TR_CallSiteInfo
     bool trace = comp != NULL ? comp->getOption(TR_TraceBFGeneration) : false;
     int64_t frequency = 0;
     int32_t blocksMatched = 0;
+    // Note : currentCallSiteInfo - when querying the getRawCount in subsequent compilations, callSiteInfo from the current compilation would be different.
+    // So in consuming the info in other compilations, this will be set to false.
     bool currentCallSiteInfo = (callSiteInfo != NULL && comp != NULL) ? TR_CallSiteInfo::getCurrent(comp) == callSiteInfo : false;
 
     for (uint32_t i = 0; i < _numBlocks; ++i) {
