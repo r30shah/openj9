@@ -81,7 +81,11 @@ getBooleanField(JNIEnv *env, jobject obj, jfieldID fieldID)
 
 	j9object_t object = J9_JNI_UNWRAP_REFERENCE(obj);
 	valueOffset += J9VMTHREAD_OBJECT_HEADER_SIZE(currentThread);
+#if defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+	jboolean value = (jboolean)J9OBJECT_U8_LOAD(currentThread, object, valueOffset);
+#else /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 	jboolean value = (jboolean)J9OBJECT_U32_LOAD(currentThread, object, valueOffset);
+#endif /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 
 	if (j9FieldID->field->modifiers & J9AccVolatile) {
 		VM_AtomicSupport::readBarrier();
@@ -113,7 +117,11 @@ getByteField(JNIEnv *env, jobject obj, jfieldID fieldID)
 
 	j9object_t object = J9_JNI_UNWRAP_REFERENCE(obj);
 	valueOffset += J9VMTHREAD_OBJECT_HEADER_SIZE(currentThread);
+#if defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+	jbyte value = (jbyte)J9OBJECT_I8_LOAD(currentThread, object, valueOffset);
+#else /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 	jbyte value = (jbyte)J9OBJECT_U32_LOAD(currentThread, object, valueOffset);
+#endif /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 
 	if (j9FieldID->field->modifiers & J9AccVolatile) {
 		VM_AtomicSupport::readBarrier();
@@ -145,7 +153,11 @@ getCharField(JNIEnv *env, jobject obj, jfieldID fieldID)
 
 	j9object_t object = J9_JNI_UNWRAP_REFERENCE(obj);
 	valueOffset += J9VMTHREAD_OBJECT_HEADER_SIZE(currentThread);
+#if defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+	jchar value = (jchar)J9OBJECT_U16_LOAD(currentThread, object, valueOffset);
+#else /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 	jchar value = (jchar)J9OBJECT_U32_LOAD(currentThread, object, valueOffset);
+#endif /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 
 	if (j9FieldID->field->modifiers & J9AccVolatile) {
 		VM_AtomicSupport::readBarrier();
@@ -177,7 +189,11 @@ getShortField(JNIEnv *env, jobject obj, jfieldID fieldID)
 
 	j9object_t object = J9_JNI_UNWRAP_REFERENCE(obj);
 	valueOffset += J9VMTHREAD_OBJECT_HEADER_SIZE(currentThread);
+#if defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+	jshort value = (jshort)J9OBJECT_I16_LOAD(currentThread, object, valueOffset);
+#else /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 	jshort value = (jshort)J9OBJECT_U32_LOAD(currentThread, object, valueOffset);
+#endif /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 
 	if (j9FieldID->field->modifiers & J9AccVolatile) {
 		VM_AtomicSupport::readBarrier();
@@ -333,7 +349,11 @@ setByteField(JNIEnv *env, jobject obj, jfieldID fieldID, jbyte value)
 			J9Method *method = findFieldContext(currentThread, &location);
 			if (NULL != method) {
 				U_64 newValue = 0;
+#if defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+				*(I_8*)&newValue = (I_8)value;
+#else /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 				*(I_32*)&newValue = (I_32)value;
+#endif /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 				ALWAYS_TRIGGER_J9HOOK_VM_PUT_FIELD(vm->hookInterface, currentThread, method, location, object, j9FieldID->offset, newValue);
 			}
 		}
@@ -346,7 +366,11 @@ setByteField(JNIEnv *env, jobject obj, jfieldID fieldID, jbyte value)
 
 	j9object_t object = J9_JNI_UNWRAP_REFERENCE(obj);
 	valueOffset += J9VMTHREAD_OBJECT_HEADER_SIZE(currentThread);
+#if defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+	J9OBJECT_I8_STORE(currentThread, object, valueOffset, value);
+#else /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 	J9OBJECT_U32_STORE(currentThread, object, valueOffset, (U_32)value);
+#endif /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 
 	if (isVolatile) {
 		VM_AtomicSupport::readWriteBarrier();
@@ -373,7 +397,11 @@ setBooleanField(JNIEnv *env, jobject obj, jfieldID fieldID, jboolean value)
 			J9Method *method = findFieldContext(currentThread, &location);
 			if (NULL != method) {
 				U_64 newValue = 0;
+#if defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+				*(U_8*)&newValue = (U_8)value;
+#else /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 				*(I_32*)&newValue = (I_32)value;
+#endif /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 				ALWAYS_TRIGGER_J9HOOK_VM_PUT_FIELD(vm->hookInterface, currentThread, method, location, object, j9FieldID->offset, newValue);
 			}
 		}
@@ -386,7 +414,11 @@ setBooleanField(JNIEnv *env, jobject obj, jfieldID fieldID, jboolean value)
 
 	j9object_t object = J9_JNI_UNWRAP_REFERENCE(obj);
 	valueOffset += J9VMTHREAD_OBJECT_HEADER_SIZE(currentThread);
+#if defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+	J9OBJECT_U8_STORE(currentThread, object, valueOffset, value);
+#else /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 	J9OBJECT_U32_STORE(currentThread, object, valueOffset, (U_32)value);
+#endif /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 
 	if (isVolatile) {
 		VM_AtomicSupport::readWriteBarrier();
@@ -411,7 +443,11 @@ setCharField(JNIEnv *env, jobject obj, jfieldID fieldID, jchar value)
 			J9Method *method = findFieldContext(currentThread, &location);
 			if (NULL != method) {
 				U_64 newValue = 0;
+#if defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+				*(U_16*)&newValue = (U_16)value;
+#else /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 				*(I_32*)&newValue = (I_32)value;
+#endif /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 				ALWAYS_TRIGGER_J9HOOK_VM_PUT_FIELD(vm->hookInterface, currentThread, method, location, object, j9FieldID->offset, newValue);
 			}
 		}
@@ -424,7 +460,11 @@ setCharField(JNIEnv *env, jobject obj, jfieldID fieldID, jchar value)
 
 	j9object_t object = J9_JNI_UNWRAP_REFERENCE(obj);
 	valueOffset += J9VMTHREAD_OBJECT_HEADER_SIZE(currentThread);
+#if defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+	J9OBJECT_U16_STORE(currentThread, object, valueOffset, value);
+#else /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 	J9OBJECT_U32_STORE(currentThread, object, valueOffset, (U_32)value);
+#endif /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 
 	if (isVolatile) {
 		VM_AtomicSupport::readWriteBarrier();
@@ -449,7 +489,11 @@ setShortField(JNIEnv *env, jobject obj, jfieldID fieldID, jshort value)
 			J9Method *method = findFieldContext(currentThread, &location);
 			if (NULL != method) {
 				U_64 newValue = 0;
+#if defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+				*(I_16*)&newValue = (I_16)value;
+#else /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 				*(I_32*)&newValue = (I_32)value;
+#endif /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 				ALWAYS_TRIGGER_J9HOOK_VM_PUT_FIELD(vm->hookInterface, currentThread, method, location, object, j9FieldID->offset, newValue);
 			}
 		}
@@ -462,7 +506,11 @@ setShortField(JNIEnv *env, jobject obj, jfieldID fieldID, jshort value)
 
 	j9object_t object = J9_JNI_UNWRAP_REFERENCE(obj);
 	valueOffset += J9VMTHREAD_OBJECT_HEADER_SIZE(currentThread);
+#if defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+	J9OBJECT_I16_STORE(currentThread, object, valueOffset, value);
+#else /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 	J9OBJECT_U32_STORE(currentThread, object, valueOffset, (U_32)value);
+#endif /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 
 	if (isVolatile) {
 		VM_AtomicSupport::readWriteBarrier();

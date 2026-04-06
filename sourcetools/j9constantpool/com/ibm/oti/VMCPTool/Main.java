@@ -271,6 +271,8 @@ public class Main implements Constants {
 
 		flagInfo = new CmakeFlagInfo(cmakeCache);
 
+		FieldRef.configure(flagInfo);
+
 		ConstantPool pool = parseConstantPool();
 
 		pool.removeNonApplicableItems(version.intValue(), flagInfo.getAllSetFlags());

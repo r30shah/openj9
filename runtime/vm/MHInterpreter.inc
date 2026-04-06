@@ -415,6 +415,20 @@ VM_MHInterpreter::dispatchLoop(j9object_t methodHandle)
 					_currentThread->sp -= 1;
 					*(U_64*)_currentThread->sp = 
 						_objectAccessBarrier->inlineMixedObjectReadU64(_currentThread, object, fieldOffset, isVolatile);
+#if defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+				} else if (fieldClass == _vm->booleanReflectClass) {
+					*(U_32*)_currentThread->sp =
+						_objectAccessBarrier->inlineMixedObjectReadU8(_currentThread, object, fieldOffset, isVolatile);
+				} else if (fieldClass == _vm->byteReflectClass) {
+					*(I_32*)_currentThread->sp =
+						_objectAccessBarrier->inlineMixedObjectReadI8(_currentThread, object, fieldOffset, isVolatile);
+				} else if (fieldClass == _vm->charReflectClass) {
+					*(U_32*)_currentThread->sp =
+						_objectAccessBarrier->inlineMixedObjectReadU16(_currentThread, object, fieldOffset, isVolatile);
+				} else if (fieldClass == _vm->shortReflectClass) {
+					*(I_32*)_currentThread->sp =
+						_objectAccessBarrier->inlineMixedObjectReadI16(_currentThread, object, fieldOffset, isVolatile);
+#endif /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
 				} else {
 					*(U_32*)_currentThread->sp = 
 						_objectAccessBarrier->inlineMixedObjectReadU32(_currentThread, object, fieldOffset, isVolatile);
@@ -451,9 +465,24 @@ VM_MHInterpreter::dispatchLoop(j9object_t methodHandle)
 						nextAction = THROW_NPE;
 						goto done;
 					}
-					U_32 value = *(U_32*)_currentThread->sp;
-					narrow32BitValue(fieldClass, value);
-					_objectAccessBarrier->inlineMixedObjectStoreU32(_currentThread, objectref, fieldOffset, value, isVolatile);
+#if defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+					if (fieldClass == _vm->booleanReflectClass) {
+						_objectAccessBarrier->inlineMixedObjectStoreU8(_currentThread, objectref, fieldOffset, *(U_32*)_currentThread->sp, isVolatile);
+					} else if (fieldClass == _vm->byteReflectClass) {
+						_objectAccessBarrier->inlineMixedObjectStoreI8(_currentThread, objectref, fieldOffset, *(I_32*)_currentThread->sp, isVolatile);
+					} else if (fieldClass == _vm->charReflectClass) {
+						_objectAccessBarrier->inlineMixedObjectStoreU16(_currentThread, objectref, fieldOffset, *(U_32*)_currentThread->sp, isVolatile);
+					} else if (fieldClass == _vm->shortReflectClass) {
+						_objectAccessBarrier->inlineMixedObjectStoreI16(_currentThread, objectref, fieldOffset, *(I_32*)_currentThread->sp, isVolatile);
+					} else
+#endif /* defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
+					{
+						U_32 value = *(U_32*)_currentThread->sp;
+#if !defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS)
+						narrow32BitValue(fieldClass, value);
+#endif /* !defined(J9VM_OPT_VALHALLA_COMPACT_LAYOUTS) */
+						_objectAccessBarrier->inlineMixedObjectStoreU32(_currentThread, objectref, fieldOffset, value, isVolatile);
+					}
 					_currentThread->sp += 2;
 				}
 			} else {

@@ -88,6 +88,12 @@ public class FieldRef extends PrimaryItem implements Constants {
 		}
 	}
 
+	private static boolean compactLayouts;
+
+	static void configure(IFlagInfo flagInfo) {
+		compactLayouts = flagInfo.getAllSetFlags().contains("opt_valhallaCompactLayouts");
+	}
+
 	public FieldRef(Element e, Map<String, ClassRef> classes) {
 		super(e, FIELDALIAS, new Factory(classes));
 	}
@@ -104,21 +110,38 @@ public class FieldRef extends PrimaryItem implements Constants {
 		return ((Alias) primary).classRef.cMacroName() + "_SET_" + ((Alias) primary).nas.name.data.toUpperCase();
 	}
 
+	/**
+	 * Compact layouts are supported for instance fields.
+	 * This method should be overwritten for static fields.
+	 * @return true if compact layout is supported
+	 */
+	protected boolean supportsCompactLayout() {
+		return compactLayouts;
+	}
+
 	protected String fieldType() {
 		// helpers are:
-		//	j9gc_objaccess_mixedObjectReadI32
-		//	j9gc_objaccess_mixedObjectReadU32
-		//	j9gc_objaccess_mixedObjectReadI64
-		//	j9gc_objaccess_mixedObjectReadU64
-		//	j9gc_objaccess_mixedObjectReadObject
-		//	j9gc_objaccess_mixedObjectReadAddress
-		//	j9gc_objaccess_mixedObjectStoreI32
-		//	j9gc_objaccess_mixedObjectStoreU32
-		//	j9gc_objaccess_mixedObjectStoreI64
-		//	j9gc_objaccess_mixedObjectStoreU64
-		//	j9gc_objaccess_mixedObjectStoreObject
-		//	j9gc_objaccess_mixedObjectStoreAddress
-		//	j9gc_objaccess_mixedObjectStoreU64Split
+		// j9gc_objaccess_mixedObjectReadI8
+		// j9gc_objaccess_mixedObjectReadU8
+		// j9gc_objaccess_mixedObjectReadI16
+		// j9gc_objaccess_mixedObjectReadU16
+		// j9gc_objaccess_mixedObjectReadI32
+		// j9gc_objaccess_mixedObjectReadU32
+		// j9gc_objaccess_mixedObjectReadI64
+		// j9gc_objaccess_mixedObjectReadU64
+		// j9gc_objaccess_mixedObjectReadObject
+		// j9gc_objaccess_mixedObjectReadAddress
+		// j9gc_objaccess_mixedObjectStoreI8
+		// j9gc_objaccess_mixedObjectStoreU8
+		// j9gc_objaccess_mixedObjectStoreI16
+		// j9gc_objaccess_mixedObjectStoreU16
+		// j9gc_objaccess_mixedObjectStoreI32
+		// j9gc_objaccess_mixedObjectStoreU32
+		// j9gc_objaccess_mixedObjectStoreI64
+		// j9gc_objaccess_mixedObjectStoreU64
+		// j9gc_objaccess_mixedObjectStoreObject
+		// j9gc_objaccess_mixedObjectStoreAddress
+		// j9gc_objaccess_mixedObjectStoreU64Split
 
 		// Arrays and objects take precedence over cast to support pointer compression
 		switch (((Alias) primary).nas.signature.data.charAt(0)) {
@@ -126,7 +149,7 @@ public class FieldRef extends PrimaryItem implements Constants {
 		case 'L':
 			return "OBJECT";
 		default:
-			// Do nothing
+			break;
 		}
 
 		// The cast then has first dibs to determine the field type
@@ -138,10 +161,18 @@ public class FieldRef extends PrimaryItem implements Constants {
 				return "I64";
 			} else if ("I_32".equals(cast)) {
 				return "I32";
+			} else if ("I_16".equals(cast) && supportsCompactLayout()) {
+				return "I16";
+			} else if ("I_8".equals(cast) && supportsCompactLayout()) {
+				return "I8";
 			} else if ("U_64".equals(cast)) {
 				return "U64";
 			} else if ("U_32".equals(cast)) {
 				return "U32";
+			} else if ("U_16".equals(cast) && supportsCompactLayout()) {
+				return "U16";
+			} else if ("U_8".equals(cast) && supportsCompactLayout()) {
+				return "U8";
 			} else if ("UDATA".equals(cast)) {
 				return "UDATA";
 			} else {
@@ -160,8 +191,18 @@ public class FieldRef extends PrimaryItem implements Constants {
 			throw new UnsupportedOperationException("Double fields not supported by memory manager functions");
 		case 'F':
 			throw new UnsupportedOperationException("Float fields not supported by memory manager functions");
+		case 'I':
+			return "I32";
+		case 'S':
+			return supportsCompactLayout() ? "I16" : "I32";
+		case 'C':
+			return supportsCompactLayout() ? "U16" : "U32";
+		case 'B':
+			return supportsCompactLayout() ? "I8" : "I32";
+		case 'Z':
+			return supportsCompactLayout() ? "U8" : "U32";
 		default:
-			return "U32";
+			throw new UnsupportedOperationException("Unrecognized signature: " + ((Alias) primary).nas.signature.data);
 		}
 	}
 
