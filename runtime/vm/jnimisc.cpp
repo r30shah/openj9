@@ -458,9 +458,17 @@ isSameObject(JNIEnv *env, jobject ref1, jobject ref2)
 		} else {
 			J9VMThread *currentThread = (J9VMThread*)env;
 			VM_VMAccess::inlineEnterVMFromJNI(currentThread);
-			if (*(j9object_t*)ref1 != *(j9object_t*)ref2) {
+			j9object_t obj1 = *(j9object_t*)ref1;
+			j9object_t obj2 = *(j9object_t*)ref2;
+#if defined(J9VM_OPT_VALHALLA_VALUE_TYPES)
+			if (!currentThread->javaVM->internalVMFunctions->valueTypeCapableAcmp(currentThread, obj1, obj2)) {
 				result = JNI_FALSE;
 			}
+#else /* defined(J9VM_OPT_VALHALLA_VALUE_TYPES) */
+			if (obj1 != obj2) {
+				result = JNI_FALSE;
+			}
+#endif /* defined(J9VM_OPT_VALHALLA_VALUE_TYPES) */
 			VM_VMAccess::inlineExitVMToJNI(currentThread);
 		}
 	}
