@@ -240,7 +240,6 @@ void TR_JProfilingValue::performOnNode(TR::Node *node, TR::TreeTop *cursor, TR_B
     TR::TreeTop *preceedingTT = NULL;
     TR::Node *profiledNode = node->getNumChildren() > 0 ? node->getFirstChild() : NULL;
     TR::Node *constNode = NULL;
-    TR::Node *bciNode = NULL;
     TR::SymbolReference *profiler = NULL;
 
     if (profiledNode != NULL && !alreadyProfiledValues->isSet(profiledNode->getGlobalIndex())
@@ -533,19 +532,6 @@ TR::TreeTop *TR_JProfilingValue::addProfilingTrees(TR::Compilation *comp, TR::Tr
     if (!addNullCheck)
         insertionPoint->insertAfter(TR::TreeTop::create(comp, TR::Node::create(TR::treetop, 1, value)));
 
-    /*
-     * If the profiling is done for the vftLoad of an object for type test - we
-     * need to use the BCI of type test node as the BCI of the object node may
-     * have different BCI. When creating placeholder call in this opt pass, a
-     * correct BCI is used to created placeholder call, so nodes generated for
-     * lowering the profiling call should use that BCI when creating new nodes.
-     * In case this routine is called post trees lowering, it is caller's
-     * responsibility to ensure that the table is constructed using correct BCI.
-     * If the bciNode is not passed, generate the new nodes with value as
-     * originatingByteCodeNode.
-     */
-    if (bciNode == NULL)
-        bciNode = value;
     /********************* mainline Return Block *********************/
     TR::Block *mainlineReturn = originalBlock->splitPostGRA(insertionPoint->getNextTreeTop(), cfg, true, NULL);
 
@@ -818,7 +804,7 @@ TR::TreeTop *TR_JProfilingValue::addProfilingTrees(TR::Compilation *comp, TR::Tr
 
     // Add the call to the helper and return to the mainline
     TR::TreeTop *helperCallTreeTop = TR::TreeTop::create(comp, helper->getEntry(),
-        createHelperCall(comp, valueChildOfHelperCall, TR::Node::aconst(bciNode, table->getBaseAddress())));
+        createHelperCall(comp, valueChildOfHelperCall, TR::Node::aconst(node, table->getBaseAddress())));
     logprintf(trace, log, "\t\t\tHelper call in block_%d\n", helper->getNumber());
     TR::NodeChecklist checklist(comp);
     checklist.add(value);
