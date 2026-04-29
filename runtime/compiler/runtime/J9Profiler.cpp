@@ -2348,7 +2348,8 @@ void TR_BlockFrequencyInfo::dumpInfo(OMR::Logger *log)
     int32_t maxCount = getMaxRawCount();
     log->printf("\tmaxRawCount = %d\n", maxCount);
     for (int32_t i = 0; i < _numBlocks; i++) {
-        log->printf("\t\tBlock index = %d, caller = %d, frequency = %d\n",
+        log->printf("\t\tblock_%d Block index = %d, caller = %d, frequency = %d\n",
+            i,
             _blocks[i].getByteCodeIndex(),
             _blocks[i].getCallerIndex(),
             getRawCount(_blocks[i], NULL, static_cast<int64_t>(maxCount), NULL));
