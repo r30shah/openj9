@@ -7601,7 +7601,7 @@ void TR_J9InlinerTracer::dumpProfiledClasses(ListIterator<TR_ExtraAddressInfo> &
 
             if (!isClassObsolete) {
                 const char *className = TR::Compiler->cls.classNameChars(comp(), tempreceiverClass, len);
-                heuristicTrace(this, "receiverClass %s has a profiled frequency of %f", className, val);
+                heuristicTrace(this, "receiverClass %s has a profiled frequency of %f - freq = %d totalFreq = %d", className, val, freq, totalFrequency);
             } else {
                 heuristicTrace(this, "receiverClass %p is obsolete and has profiled frequency of %f", tempreceiverClass,
                     val);
