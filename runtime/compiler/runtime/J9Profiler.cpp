@@ -1511,8 +1511,10 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
         // step 2 - find the level at which the inlining has begun to differ for the previous compile
         // eg find the point where the current profiling info has no profiling data for the given bci
         TR_ByteCodeInfo lastProfiledBCI = bciToCheck;
+        logprintf(trace, log, "lastProfiledBCI is %d:%d\n", lastProfiledBCI.getCallerIndex(), lastProfiledBCI.getByteCodeIndex());
         int64_t outterProfiledFrequency
             = getRawCount(comp->getMethodSymbol(), bciToCheck, _callSiteInfo, maxCount, comp);
+        logprintf(trace, log, "outterProfiledFrequency for the top caller is %d  bci %d:%d\n", outterProfiledFrequency, bciToCheck.getCallerIndex(), bciToCheck.getByteCodeIndex());
         if (outterProfiledFrequency == 0)
             return 0;
 
