@@ -1379,9 +1379,8 @@ void TR_J9VMBase::printVerboseLogHeader(TR::Options *cmdLineOptions)
     TR_VerboseLog::writeLine(TR_Vlog_INFO, "     Vendor:%s", vendorId);
     TR_VerboseLog::writeLine(TR_Vlog_INFO, "     numProc=%u", TR::Compiler->target.numberOfProcessors());
     TR_VerboseLog::writeLine(TR_Vlog_INFO, "");
-#endif
+#endif /* defined(TR_TARGET_X86) */
 
-#if !defined(TR_TARGET_X86) // CrossCompilation, will be removed
 #if defined(TR_TARGET_POWER)
     vendorId = "Unknown";
     TR_VerboseLog::writeLine(TR_Vlog_INFO, "Processor Information:");
@@ -1405,7 +1404,7 @@ void TR_J9VMBase::printVerboseLogHeader(TR::Options *cmdLineOptions)
     TR_VerboseLog::writeLine(TR_Vlog_INFO, "     Vendor:%s", vendorId);
     TR_VerboseLog::writeLine(TR_Vlog_INFO, "     numProc=%u", TR::Compiler->target.numberOfProcessors());
     TR_VerboseLog::writeLine(TR_Vlog_INFO, "");
-#endif
+#endif /* defined(TR_TARGET_POWER) */
 
 #if defined(TR_TARGET_S390)
     vendorId = "IBM";
@@ -1430,8 +1429,16 @@ void TR_J9VMBase::printVerboseLogHeader(TR::Options *cmdLineOptions)
     TR_VerboseLog::writeLine(TR_Vlog_INFO, "          GS: %d",
         TR::Compiler->target.cpu.supportsFeature(OMR_FEATURE_S390_GUARDED_STORAGE));
     TR_VerboseLog::writeLine(TR_Vlog_INFO, "");
-#endif
-#endif
+#endif /* defined(TR_TARGET_S390) */
+
+#if defined(TR_TARGET_ARM64)
+    vendorId = "Unknown";
+    TR_VerboseLog::writeLine(TR_Vlog_INFO, "Processor Information:");
+    TR_VerboseLog::writeLine(TR_Vlog_INFO, "     Platform Info:%s", processorName);
+    TR_VerboseLog::writeLine(TR_Vlog_INFO, "     Vendor:%s", vendorId);
+    TR_VerboseLog::writeLine(TR_Vlog_INFO, "     numProc=%u", TR::Compiler->target.numberOfProcessors());
+    TR_VerboseLog::writeLine(TR_Vlog_INFO, "");
+#endif /* defined(TR_TARGET_ARM64) */
 }
 
 void TR_J9VMBase::printPID()
