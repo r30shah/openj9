@@ -74,9 +74,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 			<makefilestub data="ifeq ($(filter-out 8 9 10 11 12 13 14 15 16,$(VERSION_MAJOR)),)">
 				<include-if condition="spec.flags.arch_x86"/>
 			</makefilestub>
-			<makefilestub data="UMA_OBJECTS:=$(filter-out xvector%,$(UMA_OBJECTS))">
-				<include-if condition="spec.flags.arch_x86"/>
-			</makefilestub>
+			<makefilestub data="UMA_OBJECTS:=$(filter-out xvector%,$(UMA_OBJECTS))"/>
 			<makefilestub data="endif">
 				<include-if condition="spec.flags.arch_x86"/>
 			</makefilestub>
