@@ -37,7 +37,7 @@
 #include "optimizer/JProfilingBlock.hpp"
 #include "ras/Logger.hpp"
 
-int32_t TR_JProfilingRecompLoopTest::maxLoopRecompilationThreshold = 10000;
+int32_t TR_JProfilingRecompLoopTest::maxLoopRecompilationThreshold = 20000;
 
 /**
  * A utility function that iterates through the TR::list of byte code info and checks if passed bytecode info exists in
