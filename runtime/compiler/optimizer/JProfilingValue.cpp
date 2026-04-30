@@ -658,6 +658,8 @@ bool TR_JProfilingValue::addProfilingTrees(TR::Compilation *comp, TR::TreeTop *i
     iter->append(incIndexTreeTop);
 
     TR::Block *quickTestBlock = iter->split(incIndexTreeTop, cfg, false, true);
+    TR::DebugCounter::prependDebugCounter(comp,
+        TR::DebugCounter::debugCounterName(comp, "jprovalue/(%s)/(%d,%d)", comp->signature(), bciNode->getByteCodeInfo().getCallerIndex(), bciNode->getByteCodeInfo().getByteCodeIndex()), incIndexTreeTop);
     quickTestBlock->setIsExtensionOfPreviousBlock();
     if (lastBranchToMainlineReturnTT != NULL) {
         cfg->addEdge(iter, mainlineReturn);
