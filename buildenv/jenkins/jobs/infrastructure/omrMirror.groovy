@@ -34,7 +34,7 @@ timestamps {
                         try {
                             // Clone/update
                             if (fileExists('HEAD')) {
-                                sh 'git remote update --prune'
+                                sh 'git fetch origin master:master'
                             } else {
                                 sh "git clone --bare --no-tags --single-branch --branch master ${HTTP}${SRC_REPO} ."
                             }
