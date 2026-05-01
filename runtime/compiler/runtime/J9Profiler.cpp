@@ -1473,7 +1473,13 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
     TR_ByteCodeInfo bciCheck(bci);
     bciCheck.setCallerIndex(queriedCallerIndex);
 
-    int64_t maxCount = normalizeForCallers ? getMaxRawCount() : getMaxRawCount(queriedCallerIndex);
+    // In case the query is made for getting the frequency without normalization
+    // for callers and the similar call chain is not inlined in the profiled
+    // compilation, use the maxCount seen in this method to normalize the
+    // frequency count. When looking into the other method's profiling data in
+    // the call chain, this should be used to derive the outterProfiledFrequency
+    // which would be used to get scaled frequency.
+    int64_t maxCount = normalizeForCallers || !isMatchingBCI ? getMaxRawCount() : getMaxRawCount(queriedCallerIndex);
 
     logprintf(trace, log, "maxFrequency - get FrequencyInfo - [%d,%d] = %ld\n", bci.getCallerIndex(), bci.getByteCodeIndex(), maxCount);
     int32_t frequency = isMatchingBCI
@@ -1507,6 +1513,7 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
         int64_t outterProfiledFrequency
             = getRawCount(comp->getMethodSymbol(), bciToCheck, _callSiteInfo, maxCount, comp);
         logprintf(trace, log, "outterProfiledFrequency for the top caller is %d  bci %d:%d\n", outterProfiledFrequency, bciToCheck.getCallerIndex(), bciToCheck.getByteCodeIndex());
+
         if (outterProfiledFrequency == 0)
             return 0;
 
@@ -1520,7 +1527,7 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
             TR::ResolvedMethodSymbol *resolvedMethodSymbol
                 = callerIndex > -1 ? comp->getInlinedResolvedMethodSymbol(callerIndex) : comp->getMethodSymbol();
             int32_t callerFrequency = getRawCount(resolvedMethodSymbol, bciToCheck, _callSiteInfo, maxCount, comp);
-            double innerFrequencyScale = 1;
+            double innerFrequencyScale = 1.0;
             // we have found a frame where we don't have profiling info
             if (callerFrequency < 0) {
                 logprintf(trace, log, "  found frame for %s with no outter profiling info\n",
