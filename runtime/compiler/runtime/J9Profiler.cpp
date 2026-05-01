@@ -1517,6 +1517,12 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
         if (outterProfiledFrequency == 0)
             return 0;
 
+        // We are querying the other profiled body for frequency info.
+        // As the method was not inlined before, look at the outterProfiledFrequency which represents the
+        // callCount in this caller as maxCount scale the frequency seen as per that.
+        if (!normalizeForCallers)
+            maxCount = outterProfiledFrequency;
+
         while (!callStack.empty()) {
             auto extraCaller = callStack.back();
             bciToCheck = extraCaller.second;
