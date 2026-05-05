@@ -916,16 +916,16 @@ TR::Register *J9::Z::TreeEvaluator::inlineStringCodingHasNegativesOrCountPositiv
 
     TR::Register *returnReg = cg->allocateRegister();
     if (isCountPositives) {
-        generateRRInstruction(cg, TR::InstOpCode::LR, node, returnReg, lengthReg);
+        generateRRInstruction(cg, node, TR::InstOpCode::LR, returnReg, lengthReg);
     } else {
-        generateRIInstruction(cg, TR::InstOpCode::LGHI, node, returnReg, 0);
+        generateRIInstruction(cg, node, TR::InstOpCode::LGHI, returnReg, 0);
     }
 
 #ifdef J9VM_GC_SPARSE_HEAP_ALLOCATION
     if (TR::Compiler->om.isOffHeapAllocationEnabled()) {
         // Load first data element address for input array
         generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, inputPtrReg,
-            generateS390MemoryReference(inputPtrReg, cg->comp()->fej9()->getOffsetOfContiguousDataAddrField(), cg));
+            generateS390MemoryReference(inputPtrReg, cg->comp()->fej9()->getOffsetfContiguousDataAddrField(), cg));
     } else
 #endif /* J9VM_GC_SPARSE_HEAP_ALLOCATION */
     {
@@ -1033,7 +1033,7 @@ TR::Register *J9::Z::TreeEvaluator::inlineStringCodingHasNegativesOrCountPositiv
     cg->stopUsingRegister(numCharsLeftToProcess);
     if (isCountPositives) {
         cg->stopUsingRegister(outOfRangeCharIndexGR);
-    }
+
     node->setRegister(returnReg);
     return returnReg;
 }
