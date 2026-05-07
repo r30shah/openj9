@@ -725,7 +725,7 @@ FirstJ9Method = LastOMRMethod + 1,
     java_lang_StringCoding_decode, java_lang_StringCoding_encode, java_lang_StringCoding_StringDecoder_decode,
     java_lang_StringCoding_StringEncoder_encode, java_lang_StringCoding_implEncodeISOArray,
     java_lang_StringCoding_implEncodeAsciiArray, java_lang_StringCoding_encode8859_1,
-    java_lang_StringCoding_encodeASCII, java_lang_StringCoding_encodeUTF8,
+    java_lang_StringCoding_encodeASCII, java_lang_StringCoding_encodeUTF8, java_lang_StringCoding_hasNegatives,
 
     java_util_Arrays_copyOf_byte, java_util_Arrays_copyOf_short, java_util_Arrays_copyOf_char,
     java_util_Arrays_copyOf_int, java_util_Arrays_copyOf_long, java_util_Arrays_copyOf_float,

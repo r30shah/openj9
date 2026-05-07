@@ -552,6 +552,16 @@ public:
     void setSupportsInlineEncodeASCII() { _j9Flags.set(SupportsInlineEncodeASCII); }
 
     /** \brief
+     *   Determines whether the code generator supports inlining of java/lang/StringCoding.hasNegatives
+     */
+    bool getSupportsInlineStringCodingHasNegatives() { return _j9Flags.testAny(SupportsInlineStringCodingHasNegatives); }
+
+    /** \brief
+     *   The code generator supports inlining of java/lang/StringCoding.hasNegatives
+     */
+    void setSupportsInlineStringCodingHasNegatives() { _j9Flags.set(SupportsInlineStringCodingHasNegatives); }
+
+    /** \brief
      *   Determines whether the code generator supports inlining of jdk/internal/util/ArraysSupport.vectorizedMismatch
      */
     bool getSupportsInlineVectorizedMismatch() { return _j9Flags.testAny(SupportsInlineVectorizedMismatch); }
@@ -820,6 +830,7 @@ private:
         SupportsInlineUnsafeCompareAndExchange = 0x00040000,
         SupportsInlineStringIndexOfString = 0x00080000, /*! codegen inlining of Java string index of string */
         SupportsInlineDecodeToLatin1Impl = 0x00100000,
+        SupportsInlineStringCodingHasNegatives = 0x00200000, /*! codegen inlining of Java StringCoding.hasNegatives */
     };
 
     flags32_t _j9Flags;

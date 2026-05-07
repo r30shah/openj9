@@ -290,6 +290,183 @@ void J9::Z::TreeEvaluator::inlineEncodeASCII(TR::Node *node, TR::CodeGenerator *
     cg->stopUsingRegister(firstSaturatedCharacterGR);
     cg->stopUsingRegister(firstSaturatedCharacterMinus1GR);
 }
+TR::Register *J9::Z::TreeEvaluator::inlineStringCodingHasNegatives(TR::Node *node, TR::CodeGenerator *cg)
+{
+    static bool disableVectorHasNegatives = feGetEnv("TR_disableVectorHasNegatives") != NULL;
+    if (disableVectorHasNegatives) {
+        return NULL;
+    }
+
+    TR_ASSERT_FATAL(!TR::Compiler->om.canGenerateArraylets(), 
+        "Discontiguous arrays (arraylets) are not supported for hasNegatives optimization");
+
+    // Extract arguments: byte array, offset, length
+    TR::Node *arrayNode = node->getChild(0);
+    TR::Node *offsetNode = node->getChild(1);
+    TR::Node *lengthNode = node->getChild(2);
+
+    TR::Register *arrayReg = cg->evaluate(arrayNode);
+    TR::Register *offsetReg = cg->evaluate(offsetNode);
+    TR::Register *lengthReg = cg->evaluate(lengthNode);
+
+    // Allocate registers
+    TR::Register *dataAddrReg = cg->allocateRegister(TR_GPR);
+    TR::Register *indexReg = cg->allocateRegister(TR_GPR);
+    TR::Register *resultReg = cg->allocateRegister(TR_GPR);
+    TR::Register *loopLimitReg = cg->allocateRegister(TR_GPR);
+    TR::Register *residueLengthReg = cg->allocateRegister(TR_GPR);
+    
+    // Vector registers
+    TR::Register *vInputReg = cg->allocateRegister(TR_VRF);
+    TR::Register *vRangeReg = cg->allocateRegister(TR_VRF);
+    TR::Register *vRangeControlReg = cg->allocateRegister(TR_VRF);
+    TR::Register *vResultReg = cg->allocateRegister(TR_VRF);
+
+    // Create labels
+    TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+    TR::LabelSymbol *endLabel = generateLabelSymbol(cg);
+    TR::LabelSymbol *vectorLoopLabel = generateLabelSymbol(cg);
+    TR::LabelSymbol *residualLabel = generateLabelSymbol(cg);
+    TR::LabelSymbol *foundNegativeLabel = generateLabelSymbol(cg);
+    TR::LabelSymbol *noNegativeLabel = generateLabelSymbol(cg);
+
+    startLabel->setStartInternalControlFlow();
+    endLabel->setEndInternalControlFlow();
+
+    generateS390LabelInstruction(cg, TR::InstOpCode::label, node, startLabel);
+
+    // Check for empty array (length == 0)
+    generateRIInstruction(cg, TR::InstOpCode::getCmpHalfWordImmOpCode(), node, lengthReg, 0);
+    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, noNegativeLabel);
+
+    // Calculate data address
+    int32_t offsetToDataElements = TR::Compiler->om.contiguousArrayHeaderSizeInBytes();
+#ifdef J9VM_GC_SPARSE_HEAP_ALLOCATION
+    if (TR::Compiler->om.isOffHeapAllocationEnabled()) {
+        generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, dataAddrReg,
+            generateS390MemoryReference(arrayReg, 
+                TR::Compiler->om.offsetOfContiguousDataAddrField(), cg));
+        offsetToDataElements = 0;
+    } else
+#endif
+    {
+        generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, dataAddrReg, arrayReg);
+        if (offsetToDataElements != 0) {
+            generateRILInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, 
+                dataAddrReg, offsetToDataElements);
+        }
+    }
+
+    // Add offset to data address: dataAddrReg = dataAddrReg + offsetReg
+    generateRRInstruction(cg, TR::InstOpCode::getAddRegOpCode(), node, dataAddrReg, offsetReg);
+
+    // Initialize index to 0
+    generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, indexReg, indexReg);
+
+    // Calculate loop limit: loopLimitReg = (length & ~15) = length aligned down to 16
+    generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, loopLimitReg, lengthReg);
+    generateRILInstruction(cg, TR::InstOpCode::NILF, node, loopLimitReg, 0xFFFFFFF0);
+
+    // Setup VSTRC range and control vectors for checking bytes in range [0x00, 0x7F]
+    // Range: 0x00-0x7F (all non-negative bytes)
+    // We want to detect bytes >= 0x80, so we check if any byte is NOT in [0x00, 0x7F]
+    generateVRIaInstruction(cg, TR::InstOpCode::VLEIH, node, vRangeReg, 0x007F, 0);
+    // Control: 0x01 means "in range" comparison
+    generateVRIaInstruction(cg, TR::InstOpCode::VLEIH, node, vRangeControlReg, 0x0100, 0);
+
+    // Check if we have at least 16 bytes to process
+    generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CR, node, indexReg, loopLimitReg,
+        TR::InstOpCode::COND_BNL, residualLabel, false, false);
+
+    // Vector loop: process 16 bytes at a time
+    generateS390LabelInstruction(cg, TR::InstOpCode::label, node, vectorLoopLabel);
+
+    // Load 16 bytes
+    generateVRXInstruction(cg, TR::InstOpCode::VL, node, vInputReg,
+        generateS390MemoryReference(dataAddrReg, indexReg, 0, cg));
+
+    // Check for negative bytes using VSTRC
+    // VSTRC will set CC=1 if any byte is NOT in the range [0x00, 0x7F]
+    // This means we found a negative byte (>= 0x80)
+    generateVRRdInstruction(cg, TR::InstOpCode::VSTRC, node, vResultReg, vInputReg, 
+        vRangeReg, vRangeControlReg, 0x1, 0);
+
+    // Branch if negative found (CC != 0 means found byte outside range)
+    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_CC1, node, foundNegativeLabel);
+
+    // Increment index by 16 and continue
+    generateRILInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, indexReg, 16);
+    generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CR, node, indexReg, loopLimitReg,
+        TR::InstOpCode::COND_BL, vectorLoopLabel, false, false);
+
+    // Handle residual bytes (< 16 remaining)
+    generateS390LabelInstruction(cg, TR::InstOpCode::label, node, residualLabel);
+
+    // Calculate residual length: residueLengthReg = length - index
+    generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, residueLengthReg, lengthReg);
+    generateRRInstruction(cg, TR::InstOpCode::getSubstractRegOpCode(), node, residueLengthReg, indexReg);
+
+    // If no residual bytes, we're done (no negatives found)
+    generateRIInstruction(cg, TR::InstOpCode::getCmpHalfWordImmOpCode(), node, residueLengthReg, 0);
+    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, noNegativeLabel);
+
+    // Load residual bytes using VLL (Vector Load with Length)
+    // VLL requires length-1 as the operand
+    generateRILInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, residueLengthReg, -1);
+    generateVRSbInstruction(cg, TR::InstOpCode::VLL, node, vInputReg, residueLengthReg,
+        generateS390MemoryReference(dataAddrReg, indexReg, 0, cg));
+
+    // Check residual bytes for negatives
+    generateVRRdInstruction(cg, TR::InstOpCode::VSTRC, node, vResultReg, vInputReg,
+        vRangeReg, vRangeControlReg, 0x1, 0);
+
+    // Branch if negative found
+    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_CC1, node, foundNegativeLabel);
+
+    // No negatives found - return false (0)
+    generateS390LabelInstruction(cg, TR::InstOpCode::label, node, noNegativeLabel);
+    generateRIInstruction(cg, TR::InstOpCode::getLoadHalfWordImmOpCode(), node, resultReg, 0);
+    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, endLabel);
+
+    // Negatives found - return true (1)
+    generateS390LabelInstruction(cg, TR::InstOpCode::label, node, foundNegativeLabel);
+    generateRIInstruction(cg, TR::InstOpCode::getLoadHalfWordImmOpCode(), node, resultReg, 1);
+
+    // Setup register dependencies
+    TR::RegisterDependencyConditions *dependencies =
+        new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 10, cg);
+    dependencies->addPostConditionIfNotAlreadyInserted(arrayReg, TR::RealRegister::AssignAny);
+    dependencies->addPostConditionIfNotAlreadyInserted(offsetReg, TR::RealRegister::AssignAny);
+    dependencies->addPostConditionIfNotAlreadyInserted(lengthReg, TR::RealRegister::AssignAny);
+    dependencies->addPostConditionIfNotAlreadyInserted(dataAddrReg, TR::RealRegister::AssignAny);
+    dependencies->addPostConditionIfNotAlreadyInserted(indexReg, TR::RealRegister::AssignAny);
+    dependencies->addPostConditionIfNotAlreadyInserted(resultReg, TR::RealRegister::AssignAny);
+    dependencies->addPostConditionIfNotAlreadyInserted(loopLimitReg, TR::RealRegister::AssignAny);
+    dependencies->addPostConditionIfNotAlreadyInserted(residueLengthReg, TR::RealRegister::AssignAny);
+    dependencies->addPostConditionIfNotAlreadyInserted(vInputReg, TR::RealRegister::AssignAny);
+    dependencies->addPostConditionIfNotAlreadyInserted(vRangeReg, TR::RealRegister::AssignAny);
+
+    generateS390LabelInstruction(cg, TR::InstOpCode::label, node, endLabel, dependencies);
+
+    // Clean up registers
+    cg->stopUsingRegister(dataAddrReg);
+    cg->stopUsingRegister(indexReg);
+    cg->stopUsingRegister(loopLimitReg);
+    cg->stopUsingRegister(residueLengthReg);
+    cg->stopUsingRegister(vInputReg);
+    cg->stopUsingRegister(vRangeReg);
+    cg->stopUsingRegister(vRangeControlReg);
+    cg->stopUsingRegister(vResultReg);
+
+    // Decrement reference counts for children
+    for (int32_t i = 0; i < node->getNumChildren(); i++) {
+        cg->decReferenceCount(node->getChild(i));
+    }
+
+    node->setRegister(resultReg);
+    return resultReg;
+}
+
 
 TR::Register *J9::Z::TreeEvaluator::inlineStringLatin1Inflate(TR::Node *node, TR::CodeGenerator *cg)
 {

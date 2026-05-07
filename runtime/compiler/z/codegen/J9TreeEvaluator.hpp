@@ -83,6 +83,21 @@ public:
     static TR::Register *inlineConcurrentLinkedQueueTMPoll(TR::Node *node, TR::CodeGenerator *cg);
     static TR::Register *toUpperIntrinsic(TR::Node *node, TR::CodeGenerator *cg, bool isCompressedString);
     static TR::Register *toLowerIntrinsic(TR::Node *node, TR::CodeGenerator *cg, bool isCompressedString);
+    
+    /**
+     * \brief
+     * Inline java/lang/StringCoding.hasNegatives using vector instructions
+     *
+     * \param node
+     *    The tree node
+     *
+     * \param cg
+     *    The code generator
+     *
+     * \return
+     *    A register containing the boolean result (1 if negatives found, 0 otherwise)
+     */
+    static TR::Register *inlineStringCodingHasNegatives(TR::Node *node, TR::CodeGenerator *cg);
 
     /**
      * \brief

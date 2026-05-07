@@ -104,6 +104,10 @@ void J9::Z::CodeGenerator::initialize()
         cg->setSupportsInlineStringLatin1Inflate();
     }
 
+    if (cg->getSupportsVectorRegisters() && !TR::Compiler->om.canGenerateArraylets()) {
+        cg->setSupportsInlineStringCodingHasNegatives();
+    }
+
     // For IBM Java 8 ConcurrentLinkedQueue.poll and offer has been accelerated
     // using constrained transactional execution instructions.
     // If CTX feature is supported on processor, and JIT has not disabled it
@@ -3794,6 +3798,14 @@ bool J9::Z::CodeGenerator::inlineDirectCall(TR::Node *node, TR::Register *&resul
                 return resultReg != NULL;
             }
             break;
+
+        case TR::java_lang_StringCoding_hasNegatives:
+            if (cg->getSupportsInlineStringCodingHasNegatives()) {
+                resultReg = TR::TreeEvaluator::inlineStringCodingHasNegatives(node, cg);
+                return resultReg != NULL;
+            }
+            break;
+
         case TR::com_ibm_jit_JITHelpers_transformedEncodeUTF16Big:
             return resultReg = comp->getOption(TR_DisableUTF16BEEncoder)
                 ? TR::TreeEvaluator::inlineUTF16BEEncodeSIMD(node, cg)
