@@ -14586,19 +14586,6 @@ bool J9::Power::CodeGenerator::inlineDirectCall(TR::Node *node, TR::Register *&r
                 }
                 break;
 
-            case TR::java_lang_StringCoding_hasNegatives:
-                if (cg->getSupportsInlineStringCodingHasNegatives()) {
-                    resultReg = inlineStringCodingHasNegativesOrCountPositives(node, cg, false);
-                    return true;
-                }
-                break;
-            case TR::java_lang_StringCoding_countPositives:
-                if (cg->getSupportsInlineStringCodingCountPositives()) {
-                    resultReg = inlineStringCodingHasNegativesOrCountPositives(node, cg, true);
-                    return true;
-                }
-                break;
-
             case TR::sun_misc_Unsafe_compareAndSwapInt_jlObjectJII_Z:
                 // In Java9 this can be either the jdk.internal JNI method or the sun.misc Java wrapper.
                 // In Java8 it will be sun.misc which will contain the JNI directly.

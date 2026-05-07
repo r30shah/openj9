@@ -7712,22 +7712,6 @@ bool J9::ARM64::CodeGenerator::inlineDirectCall(TR::Node *node, TR::Register *&r
                 break;
             }
 
-            case TR::java_lang_StringCoding_hasNegatives:
-                if (cg->getSupportsInlineStringCodingHasNegatives()) {
-                    resultReg = inlineHasNegativesOrCountPositives(node, true, cg);
-                    return true;
-                }
-                break;
-
-#if JAVA_SPEC_VERSION >= 19
-            case TR::java_lang_StringCoding_countPositives:
-                if (cg->getSupportsInlineStringCodingCountPositives()) {
-                    resultReg = inlineHasNegativesOrCountPositives(node, false, cg);
-                    return true;
-                }
-                break;
-#endif /* JAVA_SPEC_VERSION >= 19 */
-
             case TR::java_nio_Bits_keepAlive:
             case TR::java_lang_ref_Reference_reachabilityFence: {
                 // The only purpose of these functions is to prevent an otherwise

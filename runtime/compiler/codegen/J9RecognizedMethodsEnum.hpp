@@ -723,8 +723,7 @@ FirstJ9Method = LastOMRMethod + 1,
     com_ibm_jit_crypto_JITFullHardwareDigest_z_klmd, com_ibm_jit_crypto_JITFullHardwareDigest_z_kmac,
 
     java_lang_StringCoding_decode, java_lang_StringCoding_encode, java_lang_StringCoding_StringDecoder_decode,
-    java_lang_StringCoding_StringEncoder_encode, java_lang_StringCoding_hasNegatives,
-    java_lang_StringCoding_countPositives, java_lang_StringCoding_implEncodeISOArray,
+    java_lang_StringCoding_StringEncoder_encode, java_lang_StringCoding_implEncodeISOArray,
     java_lang_StringCoding_implEncodeAsciiArray, java_lang_StringCoding_encode8859_1,
     java_lang_StringCoding_encodeASCII, java_lang_StringCoding_encodeUTF8,
 

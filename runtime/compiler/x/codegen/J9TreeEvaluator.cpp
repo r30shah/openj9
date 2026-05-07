@@ -11443,7 +11443,7 @@ static TR::Register *inlineHasNegativesOrCountPositives(TR::Node *node, TR::Reco
     TR::Register *lengthReg = cg->evaluate(node->getChild(2));
 
     // Store a boolean indicating whether we are generating code for hasNegatives or countPositives
-    bool isHasNegatives = recognizedMethod == TR::java_lang_StringCoding_hasNegatives;
+    bool isHasNegatives = true; //recognizedMethod == TR::java_lang_StringCoding_hasNegatives;
 
     // The offset of the start of array data
     int32_t offsetToDataElements = TR::Compiler->om.contiguousArrayHeaderSizeInBytes();
@@ -13309,14 +13309,6 @@ TR::Register *J9::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::Co
             } else
                 break;
         }
-#if JAVA_SPEC_VERSION < 19
-        case TR::java_lang_StringCoding_hasNegatives:
-#endif /* JAVA_SPEC_VERSION < 19 */
-        case TR::java_lang_StringCoding_countPositives: {
-            if (cg->comp()->target().is64Bit() && !TR::Compiler->om.canGenerateArraylets()) {
-                return inlineHasNegativesOrCountPositives(node, symbol->getRecognizedMethod(), cg);
-            }
-        } break;
         case TR::java_nio_Bits_keepAlive:
         case TR::java_lang_ref_Reference_reachabilityFence: {
             TR_ASSERT(node->getNumChildren() == 1, "keepAlive is assumed to have just one argument");
