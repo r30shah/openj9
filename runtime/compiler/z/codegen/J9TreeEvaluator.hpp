@@ -1,4 +1,4 @@
-inlineStringCodingHasNegativesinlineStringLatin1Inflate/*******************************************************************************
+/*******************************************************************************
  * Copyright IBM Corp. and others 2000
  *
  * This program and the accompanying materials are made available under
@@ -83,7 +83,7 @@ public:
     static TR::Register *inlineConcurrentLinkedQueueTMPoll(TR::Node *node, TR::CodeGenerator *cg);
     static TR::Register *toUpperIntrinsic(TR::Node *node, TR::CodeGenerator *cg, bool isCompressedString);
     static TR::Register *toLowerIntrinsic(TR::Node *node, TR::CodeGenerator *cg, bool isCompressedString);
-    
+
     /**
      * \brief
      * Inline java/lang/StringCoding.hasNegatives using vector instructions
