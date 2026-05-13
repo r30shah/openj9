@@ -9175,8 +9175,6 @@ TR_MethodMetaData *TR::CompilationInfoPerThreadBase::compile(J9VMThread *vmThrea
             if (vm.isAOT_DEPRECATED_DO_NOT_USE() && compiler->getOption(TR_UseSymbolValidationManager))
                 compiler->getSymbolValidationManager()->populateWellKnownClasses();
 
-            rtn = compiler->compile();
-
             if (compiler->getOption(TR_TraceProfilingData)) {
                 TR_PersistentJittedBodyInfo *bodyInfo = compiler->getRecompilationInfo()->getJittedBodyInfo();
                 if (bodyInfo) {
@@ -9185,6 +9183,8 @@ TR_MethodMetaData *TR::CompilationInfoPerThreadBase::compile(J9VMThread *vmThrea
                         methodInfo->getRecentProfileInfo()->dumpInfo(compiler->log());
                 }
             }
+
+            rtn = compiler->compile();
 
             if (TR::Options::getVerboseOption(TR_VerboseCompilationDispatch) && !rtn) {
                 TR_VerboseLog::writeLineLocked(TR_Vlog_DISPATCH,
