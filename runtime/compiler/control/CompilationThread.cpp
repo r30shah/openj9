@@ -9177,6 +9177,15 @@ TR_MethodMetaData *TR::CompilationInfoPerThreadBase::compile(J9VMThread *vmThrea
 
             rtn = compiler->compile();
 
+            if (compiler->getOption(TR_TraceProfilingData)) {
+                TR_PersistentJittedBodyInfo *bodyInfo = compiler->getRecompilationInfo()->getJittedBodyInfo();
+                if (bodyInfo) {
+                    TR_PersistentMethodInfo *methodInfo = bodyInfo->getMethodInfo();
+                    if (methodInfo->getRecentProfileInfo() != NULL && compiler->log() != NULL)
+                        methodInfo->getRecentProfileInfo()->dumpInfo(compiler->log());
+                }
+            }
+
             if (TR::Options::getVerboseOption(TR_VerboseCompilationDispatch) && !rtn) {
                 TR_VerboseLog::writeLineLocked(TR_Vlog_DISPATCH,
                     "Successfully created compiled body [" POINTER_PRINTF_FORMAT "-" POINTER_PRINTF_FORMAT
