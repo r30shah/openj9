@@ -93,7 +93,7 @@ static bool hasJProfilingInfo(TR::Compilation *comp, TR::CFG *cfg)
         TR_ByteCodeInfo toCheck;
         toCheck.setByteCodeIndex(0);
         toCheck.setCallerIndex(comp->getCurrentInlinedSiteIndex());
-        int32_t entryFrequency = profileInfo->getBlockFrequencyInfo()->getFrequencyInfo(toCheck, comp, false, false);
+        int64_t entryFrequency = profileInfo->getBlockFrequencyInfo()->getFrequencyInfo(toCheck, comp, false, false);
         if (entryFrequency > -1) {
             return true;
         }

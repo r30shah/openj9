@@ -1425,7 +1425,7 @@ TR_BlockFrequencyInfo::~TR_BlockFrequencyInfo()
     }
 }
 
-int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR::Block *block, TR::Compilation *comp)
+int64_t TR_BlockFrequencyInfo::getFrequencyInfo(TR::Block *block, TR::Compilation *comp)
 {
     if (!block->getEntry())
         return -1;
@@ -1437,13 +1437,13 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR::Block *block, TR::Compilatio
         bci.setCallerIndex(comp->getCurrentInlinedSiteIndex());
         normalizeForCallers = false;
     }
-    int32_t frequency = getFrequencyInfo(bci, comp, normalizeForCallers, comp->getOption(TR_TraceBFGeneration));
-    logprintf(comp->getOption(TR_TraceBFGeneration), comp->log(), "@@ block_%d [%d,%d] has raw count %d\n",
+    int64_t frequency = getFrequencyInfo(bci, comp, normalizeForCallers, comp->getOption(TR_TraceBFGeneration));
+    logprintf(comp->getOption(TR_TraceBFGeneration), comp->log(), "@@ block_%d [%d,%d] has raw count %ld\n",
         block->getNumber(), bci.getCallerIndex(), bci.getByteCodeIndex(), frequency);
     return frequency;
 }
 
-int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compilation *comp, bool normalizeForCallers,
+int64_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compilation *comp, bool normalizeForCallers,
     bool trace)
 {
     OMR::Logger *log = comp->log();
@@ -1476,11 +1476,11 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
     // maxCount will be used to get the frequency of the outter level call.
     int64_t maxCount = (normalizeForCallers || !isMatchingBCI) ? getMaxRawCount() : getMaxRawCount(queriedCallerIndex);
 
-    int32_t frequency = isMatchingBCI
+    int64_t frequency = isMatchingBCI
         ? getRawCount(callerIndex < 0 ? comp->getMethodSymbol() : comp->getInlinedResolvedMethodSymbol(callerIndex),
               bciCheck, _callSiteInfo, maxCount, comp)
         : -1;
-    logprintf(trace, log, "raw frequency on outter level was %d for bci %d:%d\n", frequency, bci.getCallerIndex(),
+    logprintf(trace, log, "raw frequency on outter level was %ld for bci %d:%d\n", frequency, bci.getCallerIndex(),
         bci.getByteCodeIndex());
     if (frequency > -1 || _counterDerivationInfo == NULL)
         return frequency;
@@ -1524,7 +1524,7 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
                 = callerIndex > -1 ? comp->getInlinedResolvedMethod(callerIndex) : comp->getCurrentMethod();
             TR::ResolvedMethodSymbol *resolvedMethodSymbol
                 = callerIndex > -1 ? comp->getInlinedResolvedMethodSymbol(callerIndex) : comp->getMethodSymbol();
-            int32_t callerFrequency = getRawCount(resolvedMethodSymbol, bciToCheck, _callSiteInfo, maxCount, comp);
+            int64_t callerFrequency = getRawCount(resolvedMethodSymbol, bciToCheck, _callSiteInfo, maxCount, comp);
             double innerFrequencyScale = 1.0;
             // we have found a frame where we don't have profiling info
             if (callerFrequency < 0) {
@@ -1554,7 +1554,7 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
                             if (trace && effectiveCallerIndex > -1)
                                 log->printf("  checking bci %d:%d\n", callee.getCallerIndex(),
                                     callee.getByteCodeIndex());
-                            int32_t computedFrequency
+                            int64_t computedFrequency
                                 = bfi->getRawCount(resolvedMethodSymbol, callee, info->getCallSiteInfo(),
                                     normalizeForCallers ? bfi->getMaxRawCount()
                                                         : bfi->getMaxRawCount(callee.getCallerIndex()),
@@ -1562,7 +1562,7 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
                             if (normalizeForCallers) {
                                 callee.setCallerIndex(-1);
                                 callee.setByteCodeIndex(0);
-                                int32_t entry = bfi->getRawCount(resolvedMethodSymbol, callee, info->getCallSiteInfo(),
+                                int64_t entry = bfi->getRawCount(resolvedMethodSymbol, callee, info->getCallSiteInfo(),
                                     bfi->getMaxRawCount(), comp);
                                 if (entry == 0) {
                                     frequency = 0;
@@ -1572,9 +1572,9 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
                                 }
 
                                 if (computedFrequency > -1) {
-                                    logprintf(trace, log, " effective caller %s gave frequency %d\n",
+                                    logprintf(trace, log, " effective caller %s gave frequency %ld\n",
                                         resolvedMethodSymbol->signature(comp->trMemory()), computedFrequency);
-                                    frequency = (int32_t)((outterProfiledFrequency * computedFrequency)
+                                    frequency = (int6_t)((outterProfiledFrequency * computedFrequency)
                                         / innerFrequencyScale);
                                     break;
                                 }
@@ -1586,7 +1586,7 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
                             TR_ByteCodeInfo entry;
                             entry.setCallerIndex(-1);
                             entry.setByteCodeIndex(0);
-                            int32_t entryCount = bfi->getRawCount(resolvedMethodSymbol, entry, info->getCallSiteInfo(),
+                            int64_t entryCount = bfi->getRawCount(resolvedMethodSymbol, entry, info->getCallSiteInfo(),
                                 bfi->getMaxRawCount(), comp);
                             TR_ByteCodeInfo call = callStack.back().second;
                             call.setCallerIndex(-1);
@@ -1616,12 +1616,12 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
                         if (callStack.size() > 0) {
                             innerFrequencyScale = (innerFrequencyScale * computedFrequency) / entryFrequency;
                         } else {
-                            frequency = (int32_t)((outterProfiledFrequency * computedFrequency)
+                            frequency = (int64_t)((outterProfiledFrequency * computedFrequency)
                                 / (innerFrequencyScale * entryFrequency));
                             break;
                         }
                     } else if (callStack.size() == 0)
-                        frequency = computedFrequency;
+                        frequency = (int64_t)computedFrequency;
                 }
             } else {
                 lastProfiledBCI = bciToCheck;
@@ -1633,10 +1633,10 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
     return frequency;
 }
 
-int32_t TR_BlockFrequencyInfo::getRawCount(TR::ResolvedMethodSymbol *resolvedMethod, TR_ByteCodeInfo &bci,
+int64_t TR_BlockFrequencyInfo::getRawCount(TR::ResolvedMethodSymbol *resolvedMethod, TR_ByteCodeInfo &bci,
     TR_CallSiteInfo *callSiteInfo, int64_t maxCount, TR::Compilation *comp)
 {
-    int32_t frequency = getRawCount(bci, callSiteInfo, maxCount, comp);
+    int64_t frequency = getRawCount(bci, callSiteInfo, maxCount, comp);
     if (frequency > -1 || _counterDerivationInfo == NULL)
         return frequency;
 
@@ -1759,7 +1759,7 @@ TR::Node *TR_BlockFrequencyInfo::generateBlockRawCountCalculationSubTree(TR::Com
     return root;
 }
 
-int32_t TR_BlockFrequencyInfo::getRawCount(TR_ByteCodeInfo &bci, TR_CallSiteInfo *callSiteInfo, int64_t maxCount,
+int64_t TR_BlockFrequencyInfo::getRawCount(TR_ByteCodeInfo &bci, TR_CallSiteInfo *callSiteInfo, int64_t maxCount,
     TR::Compilation *comp)
 {
     // Try to find a block profiling slot that matches the requested block
@@ -1825,12 +1825,12 @@ int32_t TR_BlockFrequencyInfo::getRawCount(TR_ByteCodeInfo &bci, TR_CallSiteInfo
         return frequency / blocksMatched;
 }
 
-int32_t TR_BlockFrequencyInfo::getCallCount()
+int64_t TR_BlockFrequencyInfo::getCallCount()
 {
     if (_counterDerivationInfo == NULL || _entryBlockNumber < 0)
         return -1;
 
-    int32_t count = 0;
+    int64_t count = 0;
     TR_BitVector *toAdd = _counterDerivationInfo[_entryBlockNumber * 2];
     if (toAdd == NULL)
         return -1;
@@ -1857,9 +1857,9 @@ int32_t TR_BlockFrequencyInfo::getCallCount()
     return count;
 }
 
-int32_t TR_BlockFrequencyInfo::getMaxRawCount(int32_t callerIndex)
+int64_t TR_BlockFrequencyInfo::getMaxRawCount(int32_t callerIndex)
 {
-    int32_t maxCount = 0;
+    int64_t maxCount = 0;
     if (_counterDerivationInfo == NULL) {
         for (int32_t i = 0; i < _numBlocks; ++i) {
             if (_blocks[i].getCallerIndex() != callerIndex)
@@ -1873,7 +1873,7 @@ int32_t TR_BlockFrequencyInfo::getMaxRawCount(int32_t callerIndex)
             if (_blocks[i].getCallerIndex() != callerIndex)
                 continue;
 
-            int32_t count = 0;
+            int64_t count = 0;
             TR_BitVector *toAdd = _counterDerivationInfo[i * 2];
             if (toAdd == NULL) {
                 continue;
@@ -1902,9 +1902,9 @@ int32_t TR_BlockFrequencyInfo::getMaxRawCount(int32_t callerIndex)
     return maxCount;
 }
 
-int32_t TR_BlockFrequencyInfo::getMaxRawCount()
+int64_t TR_BlockFrequencyInfo::getMaxRawCount()
 {
-    int32_t maxCount = 0;
+    int64_t maxCount = 0;
     if (_counterDerivationInfo == NULL) {
         for (int32_t i = 0; i < _numBlocks; ++i) {
             if (_frequencies[i] > maxCount)
@@ -1912,7 +1912,7 @@ int32_t TR_BlockFrequencyInfo::getMaxRawCount()
         }
     } else {
         for (int32_t i = 0; i < _numBlocks; ++i) {
-            int32_t count = 0;
+            int64_t count = 0;
             TR_BitVector *toAdd = _counterDerivationInfo[i * 2];
             if (toAdd == NULL) {
                 continue;

@@ -730,9 +730,9 @@ public:
     TR::Node *generateBlockRawCountCalculationSubTree(TR::Compilation *comp, TR::Node *node, bool trace);
     void dumpInfo(OMR::Logger *log);
 
-    int32_t getCallCount();
-    int32_t getMaxRawCount(int32_t callerIndex);
-    int32_t getMaxRawCount();
+    int64_t getCallCount();
+    int64_t getMaxRawCount(int32_t callerIndex);
+    int64_t getMaxRawCount();
 
     /**
      * @brief Determines the size of the serialized data for this object
