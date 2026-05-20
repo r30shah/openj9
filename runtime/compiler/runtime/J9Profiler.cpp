@@ -1480,8 +1480,8 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
         ? getRawCount(callerIndex < 0 ? comp->getMethodSymbol() : comp->getInlinedResolvedMethodSymbol(callerIndex),
               bciCheck, _callSiteInfo, maxCount, comp)
         : -1;
-    logprintf(trace, log, "raw frequency on outter level was %d for bci %d:%d\n", frequency, bci.getCallerIndex(),
-        bci.getByteCodeIndex());
+    logprintf(trace, log, "raw frequency on outter level was %ld for bci %d:%d, maxCount = %ld\n", frequency, bci.getCallerIndex(),
+        bci.getByteCodeIndex(), maxCount);
     if (frequency > -1 || _counterDerivationInfo == NULL)
         return frequency;
 
