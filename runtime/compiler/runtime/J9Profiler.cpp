@@ -1785,21 +1785,38 @@ int32_t TR_BlockFrequencyInfo::getRawCount(TR_ByteCodeInfo &bci, TR_CallSiteInfo
                 if (toAdd == NULL) {
                     continue;
                 } else if (((uintptr_t)toAdd & 0x1) == 1) {
-                    rawCount = _frequencies[(uintptr_t)toAdd >> 1];
+                    int indexToAccess = (uintptr_t)toAdd >> 1;
+                    rawCount = _frequencies[indexToAccess];
+                    logprintf(trace, log, "     Slot %d - Single Counter in ADD - Slot%d - Freq = %d\n", i, indexToAccess, rawCount);
+                    //rawCount = _frequencies[(uintptr_t)toAdd >> 1];
                 } else {
                     TR_BitVectorIterator addBVI(*toAdd);
-                    while (addBVI.hasMoreElements())
-                        rawCount += _frequencies[addBVI.getNextElement()];
+                    while (addBVI.hasMoreElements()) {
+                        int indexToAccess = addBVI.getNextElement();
+                        int32_t freq = _frequencies[indexToAccess];
+                        rawCount += freq;
+                        logprintf(trace, log, "     Slot %d - Multiple Counters to Add - Slot%d - Freq = %d, rawCount=%d\n", i, indexToAccess, freq, rawCount);
+                        //rawCount += _frequencies[addBVI.getNextElement()];
+                    }
                 }
 
                 TR_BitVector *toSub = _counterDerivationInfo[i * 2 + 1];
                 if (toSub != NULL) {
                     if (((uintptr_t)toSub & 0x1) == 1) {
-                        rawCount -= _frequencies[(uintptr_t)toSub >> 1];
+                        int indexToAccess = (uintptr_t)toSub >> 1;
+                        int32_t freq = _frequencies[indexToAccess];
+                        rawCount -= freq;
+                        logprintf(trace, log, "     Slot %d - Single Counter in SUB - Slot%d - Freq = %d rawCount = %d\n", i,indexToAccess, freq, rawCount);
+                        //rawCount -= _frequencies[(uintptr_t)toSub >> 1];
                     } else {
                         TR_BitVectorIterator subBVI(*toSub);
-                        while (subBVI.hasMoreElements())
-                            rawCount -= _frequencies[subBVI.getNextElement()];
+                        while (subBVI.hasMoreElements()) {
+                            int indexToAccess = subBVI.getNextElement();
+                            int32_t freq = _frequencies[indexToAccess];
+                            rawCount -= freq;
+                            logprintf(trace, log, "     Slot %d - Multiple Counters to Subtract - Slot%d - Freq = %d, rawCount=%d\n", i, indexToAccess, freq, rawCount);
+                            //rawCount -= _frequencies[subBVI.getNextElement()];
+                        }
                     }
                 }
                 logprintf(trace, log, "   Slot %d has raw frequency %d\n", i, rawCount);
