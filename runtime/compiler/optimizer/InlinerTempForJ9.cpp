@@ -3226,6 +3226,13 @@ int32_t TR_Inliner::perform()
         inliner.performInlining(sym);
         manager()->incNumPassesCompleted();
         comp()->getFlowGraph()->resetFrequencies();
+        if (comp()->getOption(TR_TraceProfilingData)) {
+            TR_PersistentProfileInfo *info = TR_PersistentProfileInfo::get(comp());
+            if (info != NULL) {
+                TR_BlockFrequencyInfo *blockFrequencyInfo = info->getBlockFrequencyInfo();
+                blockFrequencyInfo->dumpInfo(comp()->log());
+            }
+        }
         comp()->getFlowGraph()->setFrequencies();
     }
 
