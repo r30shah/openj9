@@ -1834,9 +1834,6 @@ int32_t TR_BlockFrequencyInfo::getRawCount(TR_ByteCodeInfo &bci, TR_CallSiteInfo
         }
     }
 
-    if (bci.getCallerIndex() == -1 && bci.getByteCodeIndex() == 0 && frequency < 50)
-        return 100;
-
     if (blocksMatched == 0)
         return -1;
     else if (_counterDerivationInfo == NULL)
