@@ -1629,7 +1629,7 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
             }
         }
     }
-    if (frequency > 0)
+    if (frequency >= 0)
         return frequency;
     else
         return -1;
