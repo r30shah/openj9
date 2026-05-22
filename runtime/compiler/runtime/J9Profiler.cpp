@@ -1507,13 +1507,16 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
             = getRawCount(comp->getMethodSymbol(), bciToCheck, _callSiteInfo, maxCount, comp);
         if (outterProfiledFrequency == 0)
             return 0;
+        logprintf(trace, log, "Outer Profiled frequency [%d:%d] = %d\n", bciToCheck.getCallerIndex(), bciToCheck.getByteCodeIndex(), outterProfiledFrequency);
 
         // We do not have profiling information from this method's profiling data for the queried BCI.
         // If frequency being queried does not need the normalized frequency for the method being compiled,
         // Use the outterProfiledFrequency as maxCount to use when querying other method's profiling data
         // in the call chain.
-        if (!normalizeForCallers)
+        if (!normalizeForCallers) {
+            logprintf(trace, log, "Query - not normalized for caller, maxCount set to outerProfiledFreq %d\n", outterProfiledFrequency);
             maxCount = outterProfiledFrequency;
+        }
 
         while (!callStack.empty()) {
             auto extraCaller = callStack.back();
@@ -1525,6 +1528,7 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
             TR::ResolvedMethodSymbol *resolvedMethodSymbol
                 = callerIndex > -1 ? comp->getInlinedResolvedMethodSymbol(callerIndex) : comp->getMethodSymbol();
             int32_t callerFrequency = getRawCount(resolvedMethodSymbol, bciToCheck, _callSiteInfo, maxCount, comp);
+            logprintf(trace, log, "Querying the freq. for [%d:%d] in call stack callerFrequency = %d\n", bciToCheck.getCallerIndex(), bciToCheck.getByteCodeIndex(), callerFrequency);
             double innerFrequencyScale = 1.0;
             // we have found a frame where we don't have profiling info
             if (callerFrequency < 0) {
@@ -1546,6 +1550,7 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
                             computeFrequency = info->getCallSiteInfo()->computeEffectiveCallerIndex(comp, callStack,
                                 effectiveCallerIndex);
                             callStack.pop_back();
+                            logprintf(trace, log, "ComputeFrequency = %s, effectiveCallerIndex = %d\n", computeFrequency ? "true" : "false", effectiveCallerIndex);
                         }
 
                         if (computeFrequency) {
@@ -1554,21 +1559,24 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
                             if (trace && effectiveCallerIndex > -1)
                                 log->printf("  checking bci %d:%d\n", callee.getCallerIndex(),
                                     callee.getByteCodeIndex());
+                            int64_t maxF = normalizeForCallers ? bfi->getMaxRawCount() : bfi->getMaxRawCount(callee.getCallerIndex());
                             int32_t computedFrequency
                                 = bfi->getRawCount(resolvedMethodSymbol, callee, info->getCallSiteInfo(),
-                                    normalizeForCallers ? bfi->getMaxRawCount()
-                                                        : bfi->getMaxRawCount(callee.getCallerIndex()),
-                                    comp);
+                                    maxF, comp);
+                            logprintf(trace, log, "computedFrequency = %d, max Freq = %ld\n", computedFrequency, maxF);
                             if (normalizeForCallers) {
                                 callee.setCallerIndex(-1);
                                 callee.setByteCodeIndex(0);
                                 int32_t entry = bfi->getRawCount(resolvedMethodSymbol, callee, info->getCallSiteInfo(),
                                     bfi->getMaxRawCount(), comp);
+                                logprintf(trace, log, "Entry freq = %d\n", entry);
                                 if (entry == 0) {
                                     frequency = 0;
+                                    logprintf(trace, log, "entry is 0, frequency is 0 - breaking loop\n");
                                     break;
                                 } else if (entry > -1) {
                                     innerFrequencyScale *= entry;
+                                    logprintf(trace, log, "innerFrequencyScale = %lf\n", innerFrequencyScale);
                                 }
 
                                 if (computedFrequency > -1) {
@@ -1588,15 +1596,18 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
                             entry.setByteCodeIndex(0);
                             int32_t entryCount = bfi->getRawCount(resolvedMethodSymbol, entry, info->getCallSiteInfo(),
                                 bfi->getMaxRawCount(), comp);
+                            logprintf(trace, log, "No matching inlining in this call. Keep Computing entryCount = %d\n", entryCount);
                             TR_ByteCodeInfo call = callStack.back().second;
                             call.setCallerIndex(-1);
                             int32_t rawCount = bfi->getRawCount(resolvedMethodSymbol, call, info->getCallSiteInfo(),
                                 bfi->getMaxRawCount(), comp);
+                            logprintf(trace, log, "Raw count for the caller to keep continue = %d\n", rawCount);
                             if (rawCount == 0) {
                                 frequency = 0;
                                 break;
                             } else if (rawCount > -1) {
                                 innerFrequencyScale = (innerFrequencyScale * rawCount) / entryCount;
+                                logprintf(trace, log, "InnerFrequencyScale = %lf\n", innerFrequencyScale);
                                 continue;
                             }
                         }
@@ -1607,17 +1618,22 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
                 // we need to get two frequencies 1) the entry frequency and 2) the frequency of the block we are
                 // interested in
                 {
+                    logprintf(trace, log, "Checking IProfiler for the relevant freq.\n");
                     int32_t computedFrequency = resolvedMethodSymbol->getProfilerFrequency(bci.getByteCodeIndex());
                     int32_t entryFrequency = resolvedMethodSymbol->getProfilerFrequency(0);
-                    if (computedFrequency < 0 || entryFrequency < 0)
+                    if (computedFrequency < 0 || entryFrequency < 0) {
+                        logprintf(trace, log, "computed frequency and entry frequency is negative loop cont. freq = %d\n", frequency);
                         continue;
+                    }
 
                     if (normalizeForCallers) {
                         if (callStack.size() > 0) {
                             innerFrequencyScale = (innerFrequencyScale * computedFrequency) / entryFrequency;
+                            logprintf(trace, log, "IProfiler check - callStack not empty - innerFrequencyScale = %lf\n", innerFrequencyScale);
                         } else {
                             frequency = (int32_t)((outterProfiledFrequency * computedFrequency)
                                 / (innerFrequencyScale * entryFrequency));
+                            logprintf(trace, log, "IProfiler check callStack empty - frequency = %d\n", frequency);
                             break;
                         }
                     } else if (callStack.size() == 0)
@@ -1626,6 +1642,7 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
             } else {
                 lastProfiledBCI = bciToCheck;
                 outterProfiledFrequency = callerFrequency;
+                logprintf(trace, log, "In call stack [%d:%d] is profiled - New Outer Profiled Freq. = %d\n", lastProfiledBCI.getCallerIndex(), lastProfiledBCI.getByteCodeIndex(), outterProfiledFrequency);
             }
         }
     }
