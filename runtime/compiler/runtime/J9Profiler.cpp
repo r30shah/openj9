@@ -1629,8 +1629,10 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
             }
         }
     }
-
-    return frequency;
+    if (frequency > 0)
+        return frequency;
+    else
+        return -1;
 }
 
 int32_t TR_BlockFrequencyInfo::getRawCount(TR::ResolvedMethodSymbol *resolvedMethod, TR_ByteCodeInfo &bci,
