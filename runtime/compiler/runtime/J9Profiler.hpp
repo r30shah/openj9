@@ -808,7 +808,7 @@ private:
     TR_CallSiteInfo *_callSiteInfo;
     int32_t const _numBlocks;
     TR_ByteCodeInfo * const _blocks;
-    volatile int32_t * const _frequencies;
+    int32_t * const _frequencies;
 
     // counterDerivationInfo is used by JProfiling to store which counters to add and subtract to derive
     // the frequency of a basic block. A NULL entry represents no counters, a low tagged entry represents
