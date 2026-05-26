@@ -87,7 +87,7 @@ static bool hasJProfilingInfo(TR::Compilation *comp, TR::CFG *cfg)
 {
     static char *disableJProfilingForInner = feGetEnv("TR_disableJProfilingForInner");
     TR_PersistentProfileInfo *profileInfo = getProfilingInfoForCFG(comp, cfg);
-    if (comp->getOption(TR_TraceBFGeneration)) {
+    if (profileInfo != NULL && comp->getOption(TR_TraceBFGeneration)) {
         OMR::Logger *log = comp->log();
         log->printf("Checking if we have jProfiling info for this CFG - %s\n", cfg->getMethodSymbol()->getResolvedMethod()->signature(comp->trMemory()));
     }
