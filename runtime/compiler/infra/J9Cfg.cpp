@@ -162,7 +162,7 @@ bool J9::CFG::setFrequencies()
                 TR::CFGNode *nextNode = self()->getFirstNode();
                 if (comp()->getOption(TR_TraceBFGeneration)) {
                     OMR::Logger *log = comp()->log();
-                    log->printf("Setting Profiler Frequency from IProfiler for %s\n", self()->getMethodSymbol()->getResolvedMethod()->signature(comp()->trMemory());
+                    log->printf("Setting Profiler Frequency from IProfiler for %s\n", self()->getMethodSymbol()->getResolvedMethod()->signature(comp()->trMemory()));
                 }
 
                 for (; nextNode != NULL; nextNode = nextNode->getNext()) {
