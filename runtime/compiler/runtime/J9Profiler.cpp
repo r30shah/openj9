@@ -1618,9 +1618,10 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
                 // we need to get two frequencies 1) the entry frequency and 2) the frequency of the block we are
                 // interested in
                 {
-                    logprintf(trace, log, "Checking IProfiler for the relevant freq.\n");
+                    logprintf(trace, log, "Checking IProfiler for the relevant freq for method %s.\n", resolvedMethodSymbol->signature(comp->trMemory()));
                     int32_t computedFrequency = resolvedMethodSymbol->getProfilerFrequency(bci.getByteCodeIndex());
                     int32_t entryFrequency = resolvedMethodSymbol->getProfilerFrequency(0);
+                    logprintf(trace, log, "Data from iProfiler - computedFrequency = %d, entryFrequency = %d\n", computedFrequency, entryFrequency);
                     if (computedFrequency < 0 || entryFrequency < 0) {
                         logprintf(trace, log, "computed frequency and entry frequency is negative loop cont. freq = %d\n", frequency);
                         continue;
@@ -1631,6 +1632,7 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR_ByteCodeInfo &bci, TR::Compil
                             innerFrequencyScale = (innerFrequencyScale * computedFrequency) / entryFrequency;
                             logprintf(trace, log, "IProfiler check - callStack not empty - innerFrequencyScale = %lf\n", innerFrequencyScale);
                         } else {
+                            logprintf(trace, log, "outerProfFrequency = %ld, computedFrequency = %d, innerFreq = %lf, computedFreq. = %d\n", outterProfiledFrequency, computedFrequency, innerFrequencyScale, entryFrequency);
                             frequency = (int32_t)((outterProfiledFrequency * computedFrequency)
                                 / (innerFrequencyScale * entryFrequency));
                             logprintf(trace, log, "IProfiler check callStack empty - frequency = %d\n", frequency);
