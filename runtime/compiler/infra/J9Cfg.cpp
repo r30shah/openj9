@@ -87,6 +87,10 @@ static bool hasJProfilingInfo(TR::Compilation *comp, TR::CFG *cfg)
 {
     static char *disableJProfilingForInner = feGetEnv("TR_disableJProfilingForInner");
     TR_PersistentProfileInfo *profileInfo = getProfilingInfoForCFG(comp, cfg);
+    if (comp()->getOption(TR_TraceBFGeneration)) {
+        OMR::Logger *log = comp()->log();
+        log->printf("Checking if we have jProfiling info for this CFG - %s\n", cfg->getMethodSymbol()->getResolvedMethod()->signature(comp()->trMemory()));
+    }
     if (disableJProfilingForInner == NULL && profileInfo && profileInfo->getBlockFrequencyInfo()
         && profileInfo->getBlockFrequencyInfo()->isJProfilingData()
         && ((*(TR_BlockFrequencyInfo::getEnableJProfilingRecompilation())) == -1)) {
@@ -95,8 +99,16 @@ static bool hasJProfilingInfo(TR::Compilation *comp, TR::CFG *cfg)
         toCheck.setCallerIndex(comp->getCurrentInlinedSiteIndex());
         int32_t entryFrequency = profileInfo->getBlockFrequencyInfo()->getFrequencyInfo(toCheck, comp, false, false);
         if (entryFrequency > -1) {
+            if (comp()->getOption(TR_TraceBFGeneration)) {
+                OMR::Logger *log = comp()->log();
+                log->printf("\t\tWe have jProfiling data for this method\n");
+            }
             return true;
         }
+    }
+    if (comp()->getOption(TR_TraceBFGeneration)) {
+        OMR::Logger *log = comp()->log();
+        log->printf("\t\tWe do not have jProfiling data for this method\n");
     }
     return false;
 }
@@ -148,14 +160,25 @@ bool J9::CFG::setFrequencies()
             profiler->setBlockAndEdgeFrequencies(self(), comp());
             if (self()->getMethodSymbol()) {
                 TR::CFGNode *nextNode = self()->getFirstNode();
+                if (comp()->getOption(TR_TraceBFGeneration)) {
+                    OMR::Logger *log = comp()->log();
+                    log->printf("Setting Profiler Frequency from IProfiler for %s\n", self()->getMethodSymbol()->getResolvedMethod()->signature(comp()->trMemory());
+                }
+
                 for (; nextNode != NULL; nextNode = nextNode->getNext()) {
-                    if (nextNode->asBlock()->getEntry()
-                        && self()->getMethodSymbol()->getProfilerFrequency(
-                               nextNode->asBlock()->getEntry()->getNode()->getByteCodeIndex())
-                            < 0)
-                        self()->getMethodSymbol()->setProfilerFrequency(
+                    if (nextNode->asBlock()->getEntry()) {
+                        if (comp()->getOption(TR_TraceBFGeneration)) {
+                            OMR::Logger *log = comp()->log();
+                            log->printf("Bytecode Index = %d , freq. = %d, block freq = %d\n", nextNode->asBlock()->getEntry()->getNode()->getByteCodeIndex(), self()->getMethodSymbol()->getProfilerFrequency(nextNode->asBlock()->getEntry()->getNode()->getByteCodeIndex()), nextNode->asBlock()->getFrequency());
+                        }
+                        if (self()->getMethodSymbol()->getProfilerFrequency(
+                           nextNode->asBlock()->getEntry()->getNode()->getByteCodeIndex())
+                            < 0) {
+                            self()->getMethodSymbol()->setProfilerFrequency(
                             nextNode->asBlock()->getEntry()->getNode()->getByteCodeIndex(),
                             nextNode->asBlock()->getFrequency());
+                        }
+                    }
                 }
             }
         }
