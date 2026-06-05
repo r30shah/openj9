@@ -251,6 +251,7 @@ bool TR_PersistentCHTable::classGotExtended(TR_FrontEnd *fe, TR_PersistentMemory
             TR_RuntimeAssumptionTable::hashCode((uintptr_t)superClassId));
         for (OMR::RuntimeAssumption *cursor = *headPtr; cursor; cursor = cursor->getNext()) {
             if (cursor->matches((uintptr_t)superClassId)) {
+                printf("Patching as Class Got Extended\n");
                 cursor->compensate(fe, 0, 0);
                 removeAssumptionFromRAT(cursor);
             }
@@ -332,6 +333,7 @@ bool TR_PersistentCHTable::classGotInitialized(TR_FrontEnd *fe, TR_PersistentMem
 
         for (OMR::RuntimeAssumption *cursor = *headPtr; cursor; cursor = cursor->getNext()) {
             if (cursor->matches(sig, sigLen)) {
+                printf("Patching as class got initialized\n");
                 cursor->compensate(fej9, 0, 0);
                 removeAssumptionFromRAT(cursor);
             }
@@ -350,6 +352,7 @@ void TR_PersistentCHTable::methodGotOverridden(TR_FrontEnd *fe, TR_PersistentMem
         TR_RuntimeAssumptionTable::hashCode((uintptr_t)overriddenMethod));
     for (OMR::RuntimeAssumption *cursor = *headPtr; cursor; cursor = cursor->getNext()) {
         if (cursor->matches((uintptr_t)overriddenMethod)) {
+            printf("Patching as method got overridden\n");
             cursor->compensate(fe, 0, 0);
             removeAssumptionFromRAT(cursor);
         }
@@ -373,6 +376,7 @@ void TR_PersistentCHTable::classGotRedefined(TR_FrontEnd *fe, TR_OpaqueClassBloc
         TR_RuntimeAssumptionTable::hashCode((uintptr_t)oldClassId));
     for (OMR::RuntimeAssumption *cursor = *headPtr; cursor; cursor = cursor->getNext()) {
         if (cursor->matches((uintptr_t)oldClassId)) {
+            printf("Patching as class got redefined\n");
             cursor->compensate(fe, 0, 0);
             removeAssumptionFromRAT(cursor);
         }
