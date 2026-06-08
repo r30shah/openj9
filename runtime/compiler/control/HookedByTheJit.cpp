@@ -3152,6 +3152,7 @@ static bool updateCHTable(J9VMThread *vmThread, J9Class *cl)
             if (p) {
                 name = vm->getClassNameChars(superClazz, len);
                 TR_VerboseLog::writeLineLocked(TR_Vlog_HD, "\textending %.*s", len, name);
+                printf("\textending %.*s\n", len, name);
             }
             if (table) {
                 if (!table->classGotExtended(vm, compInfo->persistentMemory(), superClazz, clazz))
@@ -3165,6 +3166,7 @@ static bool updateCHTable(J9VMThread *vmThread, J9Class *cl)
                     if (p) {
                         name = vm->getClassNameChars(superClazz, len);
                         TR_VerboseLog::writeLineLocked(TR_Vlog_HD, "\textending interface %.*s", len, name);
+                        printf("\textending interface %.*s\n", len, name);
                     }
                     if (table) {
                         if (!table->classGotExtended(vm, compInfo->persistentMemory(), superClazz, clazz))
