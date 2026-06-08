@@ -3152,11 +3152,11 @@ static bool updateCHTable(J9VMThread *vmThread, J9Class *cl)
             if (p) {
                 name = vm->getClassNameChars(superClazz, len);
                 TR_VerboseLog::writeLineLocked(TR_Vlog_HD, "\textending %.*s", len, name);
-                printf("\textending %.*s\n", len, name);
             }
             if (table) {
-                if (!table->classGotExtended(vm, compInfo->persistentMemory(), superClazz, clazz))
-                    updateFailed = true;
+                updateFailed = !table->classGotExtended(vm, compInfo->persistentMemory(), superClazz, clazz);
+                if (!updateFailed)
+                    printf("\textending %.*s\n", len, name);
             }
             for (J9ITable *iTableEntry = (J9ITable *)cl->iTable; iTableEntry; iTableEntry = iTableEntry->next) {
                 superCl = iTableEntry->interfaceClass;
@@ -3166,11 +3166,11 @@ static bool updateCHTable(J9VMThread *vmThread, J9Class *cl)
                     if (p) {
                         name = vm->getClassNameChars(superClazz, len);
                         TR_VerboseLog::writeLineLocked(TR_Vlog_HD, "\textending interface %.*s", len, name);
-                        printf("\textending interface %.*s\n", len, name);
                     }
                     if (table) {
-                        if (!table->classGotExtended(vm, compInfo->persistentMemory(), superClazz, clazz))
-                            updateFailed = true;
+                        updateFailed = !table->classGotExtended(vm, compInfo->persistentMemory(), superClazz, clazz);
+                        if (!updateFailed)
+                            printf("\textending interface %.*s\n", len, name);
                     }
                 }
             }
