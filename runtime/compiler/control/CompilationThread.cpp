@@ -9237,8 +9237,8 @@ TR_MethodMetaData *TR::CompilationInfoPerThreadBase::compile(J9VMThread *vmThrea
                 TR_PersistentJittedBodyInfo *bodyInfo = compiler->getRecompilationInfo()->getJittedBodyInfo();
                 if (bodyInfo) {
                     TR_PersistentMethodInfo *methodInfo = bodyInfo->getMethodInfo();
-                    if (methodInfo->getRecentProfileInfo() != NULL && compiler->getOptions()->getLogFile() != NULL)
-                        methodInfo->getRecentProfileInfo()->dumpInfo(compiler->getOptions()->getLogFile(), compiler);
+                    if (methodInfo->getRecentProfileInfo() != NULL && compiler->log() != NULL)
+                        methodInfo->getRecentProfileInfo()->dumpInfo(compiler->log());
                 }
             }
 
