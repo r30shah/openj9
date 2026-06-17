@@ -812,6 +812,8 @@ TR_AbstractInfo *TR_ValueProfileInfoManager::getProfiledValueInfo(TR::Node *node
     TR_ValueInfoKind kind, uint32_t source)
 {
     TR_ValueProfileInfoManager *manager = TR_ValueProfileInfoManager::get(comp);
+    if (comp->getOption(TR_TraceProfilingData))
+        comp->log()->printf("PROF_DEBUG: manager = %p\n", manager);
     return manager ? manager->getValueInfo(node, comp, kind, source) : NULL;
 }
 
@@ -819,6 +821,8 @@ TR_AbstractInfo *TR_ValueProfileInfoManager::getProfiledValueInfo(TR_ByteCodeInf
     TR_ValueInfoKind kind, uint32_t source)
 {
     TR_ValueProfileInfoManager *manager = TR_ValueProfileInfoManager::get(comp);
+    if (comp->getOption(TR_TraceProfilingData))
+        comp->log()->printf("PROF_DEBUG: bci = %p\n", manager);
     return manager ? manager->getValueInfo(bci, comp, kind, source) : NULL;
 }
 
@@ -835,6 +839,8 @@ TR_AbstractInfo *TR_ValueProfileInfoManager::getValueInfo(TR_ByteCodeInfo &bcInf
     bool internal = _jitValueProfileInfo && (source == allProfileInfo || source == justJITProfileInfo);
     bool external = source == allProfileInfo || source == justInterpreterProfileInfo;
 
+    if (comp->getOption(TR_TraceProfilingData))
+        comp->log()->printf("PROF_DEBUG: internal = %s, external = %s\n", internal ? "true" : "false", external ? "true" : "false");
     if (internal) {
         if (!info || info->getTotalFrequency() == 0)
             info = _jitValueProfileInfo->getValueInfo(bcInfo, comp, kind, HashTableProfiler, true);
@@ -1168,13 +1174,20 @@ TR_ValueProfileInfo::~TR_ValueProfileInfo()
 TR_AbstractInfo *TR_ValueProfileInfo::getValueInfo(TR_ByteCodeInfo &bcInfo, TR::Compilation *comp,
     TR_ValueInfoKind kind, TR_ValueInfoSource source, bool fuzz, TR::Region *optRegion)
 {
+    if (comp->getOption(TR_TraceProfilingData))
+        comp->log()->printf("PROF_DEBUG: BCI [%d:%d] profiler source = %d\n", bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex(), source);
     TR_AbstractProfilerInfo *info = getProfilerInfo(bcInfo, comp, kind, source, fuzz);
 
-    if (!info)
+    if (!info) {
+        if (comp->getOption(TR_TraceProfilingData))
+            comp->log()->printf("PROF_DEBUG: BCI [%d:%d] AbstractProfilerInfo is NULL\n", bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex());
         return NULL;
+    }
 
     TR_ASSERT(kind == info->getKind() && source == info->getSource(), "Profiler with invalid kind or source returned");
     TR_AbstractInfo *valueInfo = info->getAbstractInfo(optRegion ? *optRegion : comp->trMemory()->currentStackRegion());
+    if (comp->getOption(TR_TraceProfilingData))
+        comp->log()->printf("PROF_DEBUG: BCI [%d:%d] AbstractInfo is %p\n", bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex(), valueInfo);
 
     return valueInfo;
 }
@@ -1200,11 +1213,16 @@ TR_AbstractProfilerInfo *TR_ValueProfileInfo::getProfilerInfo(TR_ByteCodeInfo &b
     // All other sources compare the current compilation call sites with the stashed one
     for (TR_AbstractProfilerInfo *valueInfo = _values[source]; valueInfo; valueInfo = valueInfo->getNext()) {
         if (valueInfo->getKind() == kind
-            && _callSiteInfo->hasSameBytecodeInfo(valueInfo->getByteCodeInfo(), bcInfo, comp))
+            && _callSiteInfo->hasSameBytecodeInfo(valueInfo->getByteCodeInfo(), bcInfo, comp)) {
+            if (comp->getOption(TR_TraceProfilingData))
+                comp->log()->printf("PROF_DEBUG: BCI [%d:%d] Found the valueInfo matching the BCI = %p\n", bcInfo.getCallerIndex(),bcInfo.getByteCodeIndex(), valueInfo);
             return valueInfo;
+            }
     }
 
     // If this TR_ValueProfileInfo is from a prior compile, attempt to fuzzy match the BCI
+    if (comp->getOption(TR_TraceProfilingData))
+        comp->log()->printf("PROF_DEBUG: BCI [%d:%d] Did not find the valueInfo matching the BCI, fuzzy match will be done\n", bcInfo.getCallerIndex(),bcInfo.getByteCodeIndex());
     if (fuzz) {
         TR_AbstractProfilerInfo *bestMatchedValueInfo = NULL;
         int32_t maxMatchedCount = 0;
@@ -1221,6 +1239,9 @@ TR_AbstractProfilerInfo *TR_ValueProfileInfo::getProfilerInfo(TR_ByteCodeInfo &b
         if (maxMatchedCount > 0)
             return bestMatchedValueInfo;
     }
+
+    if (comp->getOption(TR_TraceProfilingData))
+        comp->log()->printf("PROF_DEBUG: BCI [%d:%d] Fuzzy match failed\n", bcInfo.getCallerIndex(),bcInfo.getByteCodeIndex());
 
     return NULL;
 }
