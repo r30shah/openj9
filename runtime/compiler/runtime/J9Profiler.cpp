@@ -1212,6 +1212,9 @@ TR_AbstractProfilerInfo *TR_ValueProfileInfo::getProfilerInfo(TR_ByteCodeInfo &b
 
     // All other sources compare the current compilation call sites with the stashed one
     for (TR_AbstractProfilerInfo *valueInfo = _values[source]; valueInfo; valueInfo = valueInfo->getNext()) {
+        if (comp->getOption(TR_TraceProfilingData)) {
+            comp->log()->printf("PROF_DEBUG: valueInfo BCI = [%d:%d]\n", valueInfo->getByteCodeInfo().getCallerIndex(), valueInfo->getByteCodeInfo().getByteCodeIndex());
+        }
         if (valueInfo->getKind() == kind
             && _callSiteInfo->hasSameBytecodeInfo(valueInfo->getByteCodeInfo(), bcInfo, comp)) {
             if (comp->getOption(TR_TraceProfilingData))
