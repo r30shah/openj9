@@ -842,14 +842,23 @@ TR_AbstractInfo *TR_ValueProfileInfoManager::getValueInfo(TR_ByteCodeInfo &bcInf
     if (comp->getOption(TR_TraceProfilingData))
         comp->log()->printf("PROF_DEBUG: internal = %s, external = %s\n", internal ? "true" : "false", external ? "true" : "false");
     if (internal) {
-        if (!info || info->getTotalFrequency() == 0)
+        if (!info || info->getTotalFrequency() == 0) {
             info = _jitValueProfileInfo->getValueInfo(bcInfo, comp, kind, HashTableProfiler, true);
+            if (comp->getOption(TR_TraceProfilingData))
+                comp->log()->printf("PROF_DEBUG: hashtable info = %p\n", info);
+        }
 
-        if (!info || info->getTotalFrequency() == 0)
+        if (!info || info->getTotalFrequency() == 0) {
             info = _jitValueProfileInfo->getValueInfo(bcInfo, comp, kind, LinkedListProfiler, true);
+            if (comp->getOption(TR_TraceProfilingData))
+                comp->log()->printf("PROF_DEBUG: linkedlist info = %p\n", info);
+        }
 
-        if (!info || info->getTotalFrequency() == 0)
+        if (!info || info->getTotalFrequency() == 0) {
             info = _jitValueProfileInfo->getValueInfo(bcInfo, comp, kind, ArrayProfiler, true);
+            if (comp->getOption(TR_TraceProfilingData))
+                comp->log()->printf("PROF_DEBUG: ArrayProfiler info = %p\n", info);
+        }
     }
 
     if (external && (!info || info->getTotalFrequency() == 0)) {
