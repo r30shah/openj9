@@ -8323,12 +8323,14 @@ static bool graDepsConflictWithInstanceOfDeps(TR::Node *depNode, TR::Node *node,
     TR::Node *castClassNode = node->getSecondChild();
     TR::SymbolReference *castClassSymRef = castClassNode->getSymbolReference();
     TR::Compilation *comp = cg->comp();
+    OMR::Logger *log = comp->log();
 
     bool testCastClassIsSuper = TR::TreeEvaluator::instanceOfOrCheckCastNeedSuperTest(node, cg);
     bool isFinalClass = (castClassSymRef == NULL) ? false : castClassSymRef->isNonArrayFinal(comp);
     bool needsHelperCall = needHelperCall(node, testCastClassIsSuper, isFinalClass);
 
     if (maxInstanceOfPostDependencies() + depNode->getNumChildren() > cg->getMaximumNumberOfAssignableGPRs()) {
+        logprintf(comp->getOption(TR_TraceCG), log, "\t\tIfInstanceOf graDepsConflict - Max Number of Reg Deps will be reached\n");
         return true;
     }
     if (!needsHelperCall) {
@@ -8341,16 +8343,19 @@ static bool graDepsConflictWithInstanceOfDeps(TR::Node *depNode, TR::Node *node,
             && cg->comp()->target().is32Bit()) {
             int32_t regIndex = child->getHighGlobalRegisterNumber();
             if (killedByInstanceOfHelper(regIndex, node, cg)) {
+                logprintf(comp->getOption(TR_TraceCG), log, "\t\tkilledByInstanceOfHelper - Line 8346\n");
                 return true;
             }
 
             regIndex = child->getLowGlobalRegisterNumber();
             if (killedByInstanceOfHelper(regIndex, node, cg)) {
+                logprintf(comp->getOption(TR_TraceCG), log, "\t\tkilledByInstanceOfHelper - Line 8352\n");
                 return true;
             }
         } else {
             int32_t regIndex = child->getGlobalRegisterNumber();
             if (killedByInstanceOfHelper(regIndex, node, cg)) {
+                logprintf(comp->getOption(TR_TraceCG), log, "\t\tkilledByInstanceOfHelper - Line 8358\n");
                 return true;
             }
         }
@@ -9023,6 +9028,8 @@ TR::Register *J9::Z::TreeEvaluator::VMgenCoreInstanceofEvaluator(TR::Node *node,
  */
 TR::Register *J9::Z::TreeEvaluator::VMifInstanceOfEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
+    OMR::Logger *log = cg->comp()->log();
+    bool trace = cg->comp()->getOption(TR_TraceCG);
     TR::Node *graDepNode = NULL;
     TR::ILOpCodes opCode = node->getOpCodeValue();
     TR::Node *instanceOfNode = node->getFirstChild();
@@ -9039,6 +9046,7 @@ TR::Register *J9::Z::TreeEvaluator::VMifInstanceOfEvaluator(TR::Node *node, TR::
     }
 
     if (graDepNode && graDepsConflictWithInstanceOfDeps(graDepNode, instanceOfNode, cg)) {
+        logprintf(trace, log,"IfInstanceOf - graDepsConflictWithInstanceOfDeps\n");
         return (TR::Register *)1;
     }
 
