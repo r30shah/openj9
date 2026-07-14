@@ -8670,7 +8670,7 @@ static void genInstanceOfDynamicCacheAndHelperCall(TR::Node *node, TR::CodeGener
  */
 TR::Register *J9::Z::TreeEvaluator::VMgenCoreInstanceofEvaluator(TR::Node *node, TR::CodeGenerator *cg,
     TR::LabelSymbol *trueLabel, TR::LabelSymbol *falseLabel, bool initialResult, bool needResult,
-    TR::RegisterDependencyConditions *graDeps, bool ifInstanceOf)
+    TR::Node *graNode, bool ifInstanceOf)
 {
     TR::Compilation *comp = cg->comp();
     OMR::Logger *log = comp->log();
@@ -8682,6 +8682,19 @@ TR::Register *J9::Z::TreeEvaluator::VMgenCoreInstanceofEvaluator(TR::Node *node,
     InstanceOfOrCheckCastProfiledClasses *profiledClassesList = (InstanceOfOrCheckCastProfiledClasses *)alloca(
         maxProfiledClasses * sizeof(InstanceOfOrCheckCastProfiledClasses));
 
+    bool topClassWasCastClass = false;
+    float topClassProbability = 0.0;
+    InstanceOfOrCheckCastSequences sequences[InstanceOfOrCheckCastMaxSequences];
+    uint32_t numberOfProfiledClass;
+    uint32_t numSequencesRemaining
+        = calculateInstanceOfOrCheckCastSequences(node, sequences, &compileTimeGuessClass, cg, profiledClassesList,
+            &numberOfProfiledClass, maxProfiledClasses, &topClassProbability, &topClassWasCastClass);
+
+    if (graDepNode && 6 + depNode->getNumChildren() > cg->getMaximumNumberOfAssignableGPRs()) {
+        logprintf(comp->getOption(TR_TraceCG), log, "\t\tIfInstanceOf - Max Number of Reg Deps will be reached - Can not do IfInstanceOf\n");
+        return NULL;
+    }
+
     TR::Node *objectNode = node->getFirstChild();
     TR::Node *castClassNode = node->getSecondChild();
 
@@ -8692,13 +8705,6 @@ TR::Register *J9::Z::TreeEvaluator::VMgenCoreInstanceofEvaluator(TR::Node *node,
 
     TR_S390ScratchRegisterManager *srm = cg->generateScratchRegisterManager(2);
 
-    bool topClassWasCastClass = false;
-    float topClassProbability = 0.0;
-    InstanceOfOrCheckCastSequences sequences[InstanceOfOrCheckCastMaxSequences];
-    uint32_t numberOfProfiledClass;
-    uint32_t numSequencesRemaining
-        = calculateInstanceOfOrCheckCastSequences(node, sequences, &compileTimeGuessClass, cg, profiledClassesList,
-            &numberOfProfiledClass, maxProfiledClasses, &topClassProbability, &topClassWasCastClass);
     bool outLinedSuperClass = false;
     TR::Instruction *cursor = NULL;
     TR::Instruction *gcPoint = NULL;
@@ -8765,7 +8771,7 @@ TR::Register *J9::Z::TreeEvaluator::VMgenCoreInstanceofEvaluator(TR::Node *node,
     bool generateDynamicCache = false;
     bool cacheCastClass = false;
     InstanceOfOrCheckCastSequences *iter = &sequences[0];
-
+    TR::RegisterDependencyConditions *graDeps = NULL;
     TR::LabelSymbol *startICFLabel = NULL;
     while (numSequencesRemaining > 1 || (numSequencesRemaining == 1 && *iter != HelperCall)) {
         switch (*iter) {
@@ -8773,6 +8779,10 @@ TR::Register *J9::Z::TreeEvaluator::VMgenCoreInstanceofEvaluator(TR::Node *node,
                 TR_ASSERT(!castClassReg, "Cast class already evaluated");
                 logprintf(trace, log, "%s: Class Not Evaluated. Evaluating it\n", node->getOpCode().getName());
                 castClassReg = cg->gprClobberEvaluate(node->getSecondChild());
+                if (graDepNode != NULL) {
+                    cg->evaluate(graDepNode);
+                    graDeps = generateRegisterDependencyConditions(cg, graDepNode, 0);
+                }
                 break;
             case LoadObjectClass:
                 logprintf(trace, log, "%s: Loading Object Class\n", node->getOpCode().getName());
@@ -9038,18 +9048,12 @@ TR::Register *J9::Z::TreeEvaluator::VMifInstanceOfEvaluator(TR::Node *node, TR::
     TR::Node *valueNode = node->getSecondChild();
     int32_t value = valueNode->getInt();
     TR::LabelSymbol *branchLabel = node->getBranchDestination()->getNode()->getLabel();
-    TR::RegisterDependencyConditions *graDeps = NULL;
 
     TR::LabelSymbol *falseLabel = NULL;
     TR::LabelSymbol *trueLabel = NULL;
 
     if (node->getNumChildren() == 3) {
         graDepNode = node->getChild(2);
-    }
-
-    if (graDepNode && graDepsConflictWithInstanceOfDeps(graDepNode, instanceOfNode, cg)) {
-        logprintf(trace, log,"IfInstanceOf - graDepsConflictWithInstanceOfDeps\n");
-        return (TR::Register *)1;
     }
 
     bool needResult = (instanceOfNode->getReferenceCount() > 1);
@@ -9059,11 +9063,28 @@ TR::Register *J9::Z::TreeEvaluator::VMifInstanceOfEvaluator(TR::Node *node, TR::
     else
         falseLabel = branchLabel;
 
+    bool initialResult = trueLabel != NULL;
+
+    TR::Register *resultReg = VMgenCoreInstanceofEvaluator(instanceOfNode, cg, trueLabel, falseLabel, initialResult, needResult, graDepNode, true);
+
+    if (resultReg == NULL) {
+        return static_cast<TR::Register *>(1);
+    }
+
+    cg->decReferenceCount(instanceOfNode);
+    node->setRegister(NULL);
+    return NULL;
+    /*
+    if (graDepNode && graDepsConflictWithInstanceOfDeps(graDepNode, instanceOfNode, cg)) {
+        logprintf(trace, log,"IfInstanceOf - graDepsConflictWithInstanceOfDeps\n");
+        return (TR::Register *)1;
+    }
+
+
     if (graDepNode) {
         cg->evaluate(graDepNode);
         graDeps = generateRegisterDependencyConditions(cg, graDepNode, 0);
     }
-    bool initialResult = trueLabel != NULL;
 
     VMgenCoreInstanceofEvaluator(instanceOfNode, cg, trueLabel, falseLabel, initialResult, needResult, graDeps, true);
 
@@ -9071,6 +9092,7 @@ TR::Register *J9::Z::TreeEvaluator::VMifInstanceOfEvaluator(TR::Node *node, TR::
     node->setRegister(NULL);
 
     return NULL;
+    */
 }
 
 /**

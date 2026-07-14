@@ -544,7 +544,7 @@ public:
     static void genWrtbarForArrayCopy(TR::Node *node, TR::Register *srcObjReg, TR::Register *dstObjReg, bool srcNonNull,
         TR::CodeGenerator *cg);
     static TR::Register *VMgenCoreInstanceofEvaluator(TR::Node *node, TR::CodeGenerator *cg, TR::LabelSymbol *trueLabel,
-        TR::LabelSymbol *falseLabel, bool initialResult, bool needResult, TR::RegisterDependencyConditions *conditions,
+        TR::LabelSymbol *falseLabel, bool initialResult, bool needResult, TR::Node *graNode,
         bool ifInstanceOf = false);
     static TR::Register *VMmonentEvaluator(TR::Node *node, TR::CodeGenerator *cg);
     static TR::Register *VMmonexitEvaluator(TR::Node *node, TR::CodeGenerator *cg);
