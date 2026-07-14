@@ -8690,7 +8690,7 @@ TR::Register *J9::Z::TreeEvaluator::VMgenCoreInstanceofEvaluator(TR::Node *node,
         = calculateInstanceOfOrCheckCastSequences(node, sequences, &compileTimeGuessClass, cg, profiledClassesList,
             &numberOfProfiledClass, maxProfiledClasses, &topClassProbability, &topClassWasCastClass);
 
-    if (graDepNode && 6 + depNode->getNumChildren() > cg->getMaximumNumberOfAssignableGPRs()) {
+    if (graDepNode && 6 + graDepNode->getNumChildren() > cg->getMaximumNumberOfAssignableGPRs()) {
         logprintf(comp->getOption(TR_TraceCG), log, "\t\tIfInstanceOf - Max Number of Reg Deps will be reached - Can not do IfInstanceOf\n");
         return NULL;
     }
