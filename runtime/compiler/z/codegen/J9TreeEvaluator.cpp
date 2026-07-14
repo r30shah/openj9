@@ -3600,6 +3600,8 @@ bool killedByInstanceOfHelper(int32_t regIndex, TR::Node *node, TR::CodeGenerato
 
     TR::Compilation *comp = cg->comp();
     int realReg = cg->getGlobalRegister(regIndex);
+    OMR::Logger *log = comp->log();
+    logprintf(comp->getOption(TR_TraceCG), log, "\t\tkilledByInstanceOfHelper - realReg = %d\n", realReg);
 
 #if defined(TR_TARGET_64BIT)
     bool needsHelperCall = false;
@@ -8355,7 +8357,7 @@ static bool graDepsConflictWithInstanceOfDeps(TR::Node *depNode, TR::Node *node,
         } else {
             int32_t regIndex = child->getGlobalRegisterNumber();
             if (killedByInstanceOfHelper(regIndex, node, cg)) {
-                logprintf(comp->getOption(TR_TraceCG), log, "\t\tkilledByInstanceOfHelper - Line 8358\n");
+                logprintf(comp->getOption(TR_TraceCG), log, "\t\tkilledByInstanceOfHelper - Line 8358 regIndex = %d\n",regIndex);
                 return true;
             }
         }
