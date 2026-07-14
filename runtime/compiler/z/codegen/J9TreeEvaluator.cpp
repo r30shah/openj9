@@ -9068,7 +9068,7 @@ TR::Register *J9::Z::TreeEvaluator::VMifInstanceOfEvaluator(TR::Node *node, TR::
     TR::Register *resultReg = VMgenCoreInstanceofEvaluator(instanceOfNode, cg, trueLabel, falseLabel, initialResult, needResult, graDepNode, true);
 
     if (resultReg == NULL) {
-        return static_cast<TR::Register *>(1);
+        return (TR::Register *>)1;
     }
 
     cg->decReferenceCount(instanceOfNode);
