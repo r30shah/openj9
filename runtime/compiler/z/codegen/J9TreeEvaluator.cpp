@@ -8692,7 +8692,7 @@ TR::Register *J9::Z::TreeEvaluator::VMgenCoreInstanceofEvaluator(TR::Node *node,
 
     if (graNode && 6 + graNode->getNumChildren() > cg->getMaximumNumberOfAssignableGPRs()) {
         logprintf(comp->getOption(TR_TraceCG), log, "\t\tIfInstanceOf - Max Number of Reg Deps will be reached - Can not do IfInstanceOf\n");
-        return NULL;
+        return (TR::Register*)1;
     }
 
     TR::Node *objectNode = node->getFirstChild();
@@ -9067,7 +9067,7 @@ TR::Register *J9::Z::TreeEvaluator::VMifInstanceOfEvaluator(TR::Node *node, TR::
 
     TR::Register *resultReg = VMgenCoreInstanceofEvaluator(instanceOfNode, cg, trueLabel, falseLabel, initialResult, needResult, graDepNode, true);
 
-    if (resultReg == NULL) {
+    if (resultReg != NULL && resultReg != instanceOfNode->getRegister()) {
         return (TR::Register *)1;
     }
 
