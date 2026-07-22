@@ -230,7 +230,7 @@ void TR_JProfilingValue::cleanUpAndAddProfilingCandidates(TR::list<TR::TreeTop *
         else if (node->getOpCodeValue() == TR::BBStart && !node->getBlock()->isExtensionOfPreviousBlock()) {
             alreadyProfiledValues->empty();
         } else {
-            performOnNode(node, cursor, alreadyProfiledValues, &checklist valueProfilingPlaceHolderCalls);
+            performOnNode(node, cursor, alreadyProfiledValues, &checklist, valueProfilingPlaceHolderCalls);
         }
         cursor = nextTT;
     }
@@ -544,7 +544,7 @@ bool TR_JProfilingValue::addProfilingTrees(TR::Compilation *comp, TR::TreeTop *i
     int32_t childRegDepIndexForProfilingValue = -1;
 
     // Check if the block splitter found the global register to store the value to be profiled.
-    if (origBlockGlRegDeps != NULL) {
+    if (origBlockExitGlRegDeps != NULL) {
         for (auto childIndex = 0; childIndex < origBlockExitGlRegDeps->getNumChildren(); ++childIndex) {
             TR::Node *child = origBlockExitGlRegDeps->getChild(childIndex);
 
@@ -567,7 +567,7 @@ bool TR_JProfilingValue::addProfilingTrees(TR::Compilation *comp, TR::TreeTop *i
     // Block splitter creates a new temp slot and inserts the store nodes
     // (RegStore / direct store) after the insertion point
     if (childRegDepIndexForProfilingValue == -1) {
-        for (TR::TreeTopIterator iter(insertionPoint->getNextTreeTop(), comp); iter != originalBlock->getExit()) {
+        for (TR::TreeTopIterator iter(insertionPoint->getNextTreeTop(), comp); iter != originalBlock->getExit(); ++iter) {
             TR::Node *currentNode = iter.currentNode();
             if (currentNode->getOpCode().isStoreDirect() && currentNode->getFirstChild() == value) {
                 storeProfileValueSymRef = currentNode->getSymbolReference();
@@ -698,7 +698,7 @@ bool TR_JProfilingValue::addProfilingTrees(TR::Compilation *comp, TR::TreeTop *i
         logprintf(trace, log, "\t\tAdding NullTest in block_%d\n", iter->getNumber());
         iter = iter->split(nullTestTT->getNextTreeTop(), cfg);
         iter->setIsExtensionOfPreviousBlock();
-        actualValueToTest = TR::Node::createWithSymRef(node, TR::aloadi, 1, profilingValue,
+        actualValueToTest = TR::Node::createWithSymRef(bciNode, TR::aloadi, 1, profilingValue,
             comp->getSymRefTab()->findOrCreateVftSymbolRef());
     }
     logprintf(trace, log, "Actual Value Node used in the profiling trees = n%dn\n",
@@ -729,7 +729,7 @@ bool TR_JProfilingValue::addProfilingTrees(TR::Compilation *comp, TR::TreeTop *i
     TR::Node *checkNode = TR::Node::createif(TR::ificmpeq,
         TR::Node::create(bciNode, TR::ior, 2, conditionNode, checkIfTableIsLockedNode), TR::Node::iconst(0));
     if (glRegDepsToCopyInProfilingCodeBranches != NULL) {
-        TR::Node *glRegDepsToAttach = copyGlRegDeps(cop, glRegDepsToCopyInProfilingCodeBranches);
+        TR::Node *glRegDepsToAttach = copyGlRegDeps(comp, glRegDepsToCopyInProfilingCodeBranches);
         checkNode->addChildren(&glRegDepsToAttach, 1);
     }
     TR::TreeTop *checkNodeTreeTop = TR::TreeTop::create(comp, incIndexTreeTop, checkNode);
