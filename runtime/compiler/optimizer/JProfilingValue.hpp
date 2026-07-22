@@ -68,7 +68,7 @@ public:
      * times.
      */
     void performOnNode(TR::Node *node, TR::TreeTop *cursor, TR_BitVector *alreadyProfiledValues,
-        TR::NodeChecklist *checklist, TR::list<TR::TrerTop *, TR::Regsion &> &valueProfilingPlaceHolderCalls);
+        TR::NodeChecklist *checklist, TR::list<TR::TreeTop *, TR::Region &> &valueProfilingPlaceHolderCalls);
 
     static bool addProfilingTrees(TR::Compilation *comp, TR::TreeTop *insertionPoint, TR::Node *value,
         TR_AbstractHashTableProfilerInfo *table, TR::Node *bciNode = NULL, bool addNullCheck = false,
