@@ -8694,7 +8694,7 @@ TR::Register *J9::Z::TreeEvaluator::VMgenCoreInstanceofEvaluator(TR::Node *node,
         // This evaluator at max allocates 4 register and 2 scratch register with the exception in scenario
         // When generating dynamic cache in which case, for no compressedrefs 64-bit target, it needs to
         // allocate a pair of register.
-        int32_t maxNumberOfUsedRegs = srm->getCapacity()+(comp->target().is64Bit() && !comp->useCompressedPointers()) ? 3 : 0 + 4;
+        int32_t maxNumberOfUsedRegs = srm->getCapacity()+ ((comp->target().is64Bit() && !comp->useCompressedPointers()) ? 3 : 0 ) + 4;
         logprintf(trace, log, "IfInstanceOf Node : MaxNumber = %d, graChild Numbers = %d, srm cap = %d, extra = %d\n", maxNumberOfUsedRegs, graDepNode->getNumChildren(), srm->getCapacity(), (comp->target().is64Bit() && !comp->useCompressedPointers()) ? 3 : 0);
         if (graDepNode->getNumChildren() + maxNumberOfUsedRegs > cg->getMaximumNumbersOfAssignableGPRs()) {
             ifInstanceOfSucces = false;
