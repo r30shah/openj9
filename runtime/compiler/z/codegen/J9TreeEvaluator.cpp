@@ -8672,6 +8672,7 @@ TR::Register *J9::Z::TreeEvaluator::VMgenCoreInstanceofEvaluator(TR::Node *node,
     TR_OpaqueClassBlock *compileTimeGuessClass;
     int32_t maxProfiledClasses = comp->getOptions()->getCheckcastMaxProfiledClassTests();
     logprintf(trace, log, "%s:Maximum Profiled Classes = %d\n", node->getOpCode().getName(), maxProfiledClasses);
+    logprintf(trace, log, "IfInstanceOf set = %s, graDepNode = n%dn\n", ifInstanceOfSucces ? "true" : "false", graDepNode != NULL ? graDepNode->getGlobalIndex() : -1);
     InstanceOfOrCheckCastProfiledClasses *profiledClassesList = (InstanceOfOrCheckCastProfiledClasses *)alloca(
         maxProfiledClasses * sizeof(InstanceOfOrCheckCastProfiledClasses));
 
