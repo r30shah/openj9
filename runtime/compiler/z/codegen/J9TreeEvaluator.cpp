@@ -8696,6 +8696,7 @@ TR::Register *J9::Z::TreeEvaluator::VMgenCoreInstanceofEvaluator(TR::Node *node,
         int32_t maxNumberOfUsedRegs = srm->getCapacity()
             + (comp->target().is64Bit() && !comp->useCompressedPointers()) ? 3 : 0
             + 4;
+        logprints(trace, log, "IfInstanceOf Node : MaxNumber = %d, graChild Numbers = %d\n", maxNumberOfUsedRegs, graDepNode->getNumChildren());
         if (graDepNode->getNumChildren() + maxNumberOfUsedRegs > cg->getMaximumNumbersOfAssignableGPRs()) {
             ifInstanceOfSucces = false;
             return NULL;
