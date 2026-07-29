@@ -2845,3 +2845,70 @@ void TR_JProfBlockFrequencyCounterSites::compensate(TR_FrontEnd *vm, bool disabl
         }
     }
 }
+
+TR_JProfValueSites *TR_JProfValueSites::make(TR_FrontEnd *fe, TR_PersistentMemory *pm, uintptr_t key,
+    TR::PatchSites *sites, OMR::RuntimeAssumption **sentinel)
+{
+    TR_JProfValueSites *res = NULL;
+    void *mem = TR_RuntimeAssumptionTable::allocateRAPersistentMemory(sizeof(TR_JProfValueSites));
+    if (mem) {
+        res = ::new (mem) TR_JProfValueSites(pm, key, sites);
+        res->addToRAT(pm, RuntimeAssumptionOnPatchJProfValueBranch, fe, sentinel);
+    } else {
+        TR::Compilation *comp = TR::comp();
+        if (comp)
+            comp->failCompilation<TR::CompilationException>("Out of persistent memory while creating assumption");
+    }
+    return res;
+}
+
+void TR_JProfValueSites::compensate(TR_FrontEnd *vm, bool disableDataCollection, void *newKey)
+{
+    if (disableDataCollection) {
+        for (size_t i = 0; i < _patchSites->getSize(); i++) {
+            uint8_t *cursor = _patchSites->getLocation(i);
+#if defined(TR_TARGET_S390)
+            *(cursor + 1) &= 0x0F;
+#elif defined(TR_TARGET_X86)
+            if (*cursor == 0xeb) {
+                // Short-Jump
+                *(cursor + 1) = 0x00;
+            } else {
+                // Near-Jump
+                *(uint16_t *)cursor = 0xfeeb;
+                patchingFence16(cursor);
+                cursor[2] = 0x00;
+                cursor[3] = 0x00;
+                cursor[4] = 0x00;
+                patchingFence16(cursor);
+                *(uint16_t *)cursor = 0x00e9;
+            }
+#endif
+        }
+    } else {
+        for (size_t i = 0; i < _patchSites->getSize(); i++) {
+            uint8_t *cursor = _patchSites->getLocation(i);
+#if defined(TR_TARGET_S390)
+            *(cursor + 1) |= 0xF0;
+#elif defined(TR_TARGET_X86)
+            uint8_t *destination = _patchSites->getDestination(i);
+            intptr_t displacement = destination - cursor;
+            if (*cursor == 0xeb) {
+                // Short-Jump
+                *(cursor + 1) = (int8_t)(displacement - 2);
+            } else {
+                displacement -= 5;
+                *(uint16_t *)cursor = 0xfeeb;
+                patchingFence16(cursor);
+
+                // We have 4-byte displacement
+                cursor[2] = (uint8_t)(displacement >> 8);
+                cursor[3] = (uint8_t)(displacement >> 16);
+                cursor[4] = (uint8_t)(displacement >> 24);
+                patchingFence16(cursor);
+                *(uint16_t *)cursor = 0xe9 + (uint16_t)((displacement & 0xff) << 8);
+            }
+#endif
+        }
+    }
+}
