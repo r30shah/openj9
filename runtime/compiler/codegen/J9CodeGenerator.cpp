@@ -4429,6 +4429,34 @@ void J9::CodeGenerator::jitAdd32BitPicToPatchOnClassRedefinition(void *classPoin
     }
 }
 
+void J9::CodeGenerator::initJProfCounterBumpInstrList()
+{
+    TR::Compilation *comp = self()->comp();
+    _jProfilingCounterBumpInstructionList = new (comp->trHeapMemory())
+        TR::list<TR::Instruction *>(getTypedAllocator<TR::Instruction *>(comp->allocator()));
+}
+
+void J9::CodeGenerator::addInstrToJProfCounterBumpInstrList(TR::Instruction *instr)
+{
+    TR_ASSERT_FATAL(_jProfilingCounterBumpInstructionList != NULL,
+        "Adding JProfiling Block counter increment instruction to list without initializing list\n");
+    _jProfilingCounterBumpInstructionList->push_front(instr);
+}
+
+void J9::CodeGenerator::initJProfValueBranchInstrList()
+{
+    TR::Compilation *comp = self()->comp();
+    _jProfilingValueProfilingBranchInstructions = new (comp->trHeapMemory())
+        TR::list<TR::Instruction *>(getTypedAllocator<TR::Instruction *>(comp->allocator()));
+}
+
+void J9::CodeGenerator::addInstrToJProfValueBranchInstrList(TR::Instruction *instr)
+{
+    TR_ASSERT_FATAL(_jProfilingValueProfilingBranchInstructions != NULL,
+        "Adding JProfiling Value Branch instruction to list without initializing list\n");
+    _jProfilingValueProfilingBranchInstructions->push_front(instr);
+}
+
 void J9::CodeGenerator::createHWPRecords()
 {
     if (self()->comp()->getPersistentInfo()->isRuntimeInstrumentationEnabled()
