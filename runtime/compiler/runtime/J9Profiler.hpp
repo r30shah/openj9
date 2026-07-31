@@ -521,9 +521,13 @@ public:
 
     void dumpInfo(OMR::Logger *log);
 
+    void addJProfValueSites(TR_JProfValueSites *patchSites) { _jProfValueProfSites = patchSites; }
+    TR_JProfValueSites *getJProfValueSites() { return _jProfValueProfSites; }
+
 private:
     TR_AbstractProfilerInfo *_values[LastProfiler];
     TR_CallSiteInfo *_callSiteInfo;
+    TR_JProfValueSites *_jProfValueProfSites;
 };
 
 TR_ValueProfileInfo *TR_ValueProfileInfo::get(TR_PersistentProfileInfo *profileInfo)
