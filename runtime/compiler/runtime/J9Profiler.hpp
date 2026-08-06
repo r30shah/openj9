@@ -749,8 +749,15 @@ public:
     TR::Node *generateBlockRawCountCalculationSubTree(TR::Compilation *comp, TR::Node *node, bool trace);
     void dumpInfo(OMR::Logger *log);
 
-    void setJProfBlockFrequencyCounterSites(TR_JProfBlockFrequencyCounterSites *patchSites) { _jProfilingBlockFrequencyCounterPatchSites = patchSites; }
-    TR_JProfBlockFrequencyCounterSites *getJProfBlockFrequencyCounterSites() { return _jProfilingBlockFrequencyCounterPatchSites; }
+    void setJProfBlockFrequencyCounterSites(TR_JProfBlockFrequencyCounterSites *patchSites)
+    {
+        _jProfilingBlockFrequencyCounterPatchSites = patchSites;
+    }
+
+    TR_JProfBlockFrequencyCounterSites *getJProfBlockFrequencyCounterSites()
+    {
+        return _jProfilingBlockFrequencyCounterPatchSites;
+    }
 
     int32_t getCallCount();
     int32_t getMaxRawCount(int32_t callerIndex);
