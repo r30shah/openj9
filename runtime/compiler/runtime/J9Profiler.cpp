@@ -2273,6 +2273,9 @@ void TR_PersistentProfileInfo::decRefCount(TR_PersistentProfileInfo *info)
 {
     VM_AtomicSupport::subtract(reinterpret_cast<volatile uintptr_t *>(&(info->_refCount)), 1);
     TR_ASSERT_FATAL(info->_refCount >= 0, "Decrement resulted in negative reference count");
+    if (TR::Options::isAnyVerboseOptionSet(TR_VerboseProfiling)) {
+        TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "Decrementing ref count for info 0x%p, newRefCount = %d",info, info->_refCount);
+    }
     if (!TR::Options::getCmdLineOptions()->getOption(TR_DisableJProfilerThread)) {
         if (info->_refCount == 0 && TR::Options::isAnyVerboseOptionSet(TR_VerboseProfiling, TR_VerboseReclamation))
             TR_VerboseLog::writeLineLocked(TR_Vlog_RECLAMATION, "PersistentProfileInfo 0x%p queued for reclamation.",
@@ -2490,8 +2493,11 @@ TR_PersistentProfileInfo *TR_AccessedProfileInfo::compare(TR_PersistentMethodInf
             TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "For MethodInfo 0x%p, updating best from 0x%p to 0x%p",
                 methodInfo, best, recent);
         methodInfo->setBestProfileInfo(recent);
-        if (best)
+        if (best) {
+            if (TR::Options::getVerboseOption(TR_VerboseProfiling))
+                TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "Calling decRefCount on 0x%p", best);
             TR_PersistentProfileInfo::decRefCount(best);
+        }
         return recent;
     } else {
         if (recent)
