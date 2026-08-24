@@ -2260,6 +2260,9 @@ void TR_PersistentProfileInfo::incRefCount(TR_PersistentProfileInfo *info)
 {
     TR_ASSERT_FATAL(info->_refCount > 0, "Increment called on profile info with no references");
     VM_AtomicSupport::add(reinterpret_cast<volatile uintptr_t *>(&(info->_refCount)), 1);
+    if (TR::Options::isAnyVerboseOptionSet(TR_VerboseProfiling)) {
+        TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "Increasing refCount of info 0x%p, count = %d", info, info->_refCount);
+    }
     TR_ASSERT_FATAL(info->_refCount >= 0, "Increment resulted in negative reference count");
 }
 
