@@ -2496,10 +2496,6 @@ TR_PersistentProfileInfo *TR_AccessedProfileInfo::compare(TR_PersistentMethodInf
             TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "For MethodInfo 0x%p, updating best from 0x%p to 0x%p",
                 methodInfo, best, recent);
         methodInfo->setBestProfileInfo(recent);
-        // getRecentProfileInfo increment the reference count
-        // So as the setBestProfileInfo.
-        // Decrement the reference count again here.
-        TR_PersistentProfileInfo::decRefCount(recent);
         if (best) {
             if (TR::Options::getVerboseOption(TR_VerboseProfiling))
                 TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "Calling decRefCount on 0x%p", best);
