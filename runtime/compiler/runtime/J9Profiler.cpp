@@ -2898,8 +2898,8 @@ uint32_t TR_JProfilerPatchingTask::patchAllMethods(TR_J9VMBase *vm)
 bool TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase *vm, TR_PersistentProfileInfo *info)
 {
     if (info->isActive()) {
-        if (info->getValueProfileInfo() != NULL && info->getValueProfileInfo()->getJProfValueProfSites() != NULL) {
-            info->getValueProfileInfo()->getJProfValueProfSites()->compensate(vm, true, 0);
+        if (info->getValueProfileInfo() != NULL && info->getValueProfileInfo()->getJProfValueSites() != NULL) {
+            info->getValueProfileInfo()->getJProfValueSites()->compensate(vm, true, 0);
         }
         info->getBlockFrequencyInfo()->getJProfBlockFrequencyCounterSites()->compensate(vm, true, 0);
         return true;
