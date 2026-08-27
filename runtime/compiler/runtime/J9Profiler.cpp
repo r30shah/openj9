@@ -3341,6 +3341,15 @@ void TR_JProfilerThreadsDispatcher::stopThreads(J9JavaVM *javaVM)
     _workerThreadMonitor->enter();
     for (auto threadID = 0; threadID < _maxJProfilerThreadCount; ++threadID) {
         stateTable[threadID] = Stop;
+        if (isMainThread(threadID)) {
+            // If it is main thread - interrupt it. All other worker threads
+            // wait to notify on worker thread monitor, so once they will be
+            // notified, clean-up work will happen for them, For Main thread, as
+            // it is put to sleep for certain time before checking if it needs
+            // to do work or go back to sleep again, if we are shutting down VM
+            // - that thread needs to be interrupted so that VM can shutdown.
+            j9thread_interrupt(getJProfilerOSThreadFromIndex(threadID));
+        }
     }
 
     // Main Thread will be stopped as it will continue to inspect the list of the methods with active profiling. So
