@@ -63,7 +63,7 @@ void J9::CodeGenPhase::performBinaryEncodingPhase(TR::CodeGenerator *cg, TR::Cod
         uintptr_t key = reinterpret_cast<uintptr_t>(comp->getRecompilationInfo()->getJittedBodyInfo());
         TR_BlockFrequencyInfo *info = TR_BlockFrequencyInfo::getCurrent(comp);
         if (info != NULL) {
-            TR::list<TR::Instruction *> instrList = cg->getJProfilingCounterBumpInstructionList();
+            TR::list<TR::Instruction *> *instrList = cg->getJProfilingCounterBumpInstructionList();
             if (!instrList->empty()) {
                 TR::JProfBFPatchSites *sites = new (comp->trPersistentMemory())
                     TR::JProfBFPatchSites(comp->trPersistentMemory(), instrList->size());
@@ -80,7 +80,7 @@ void J9::CodeGenPhase::performBinaryEncodingPhase(TR::CodeGenerator *cg, TR::Cod
         }
         TR_ValueProfileInfo *valueInfo = TR_ValueProfileInfo::getCurrent(comp);
         if (valueInfo != NULL) {
-            TR::list<TR::Instruction *> instrList = cg->getJProfValueBranchInstrList();
+            TR::list<TR::Instruction *> *instrList = cg->getJProfValueBranchInstrList();
             if (instrList != NULL && !instrList->empty()) {
                 TR::PatchSites *sites
                     = new (comp->trPersistentMemory()) TR::PatchSites(comp->trPersistentMemory(), instrList->size());
