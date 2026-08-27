@@ -3184,7 +3184,7 @@ void TR_JProfilerThreadsDispatcher::analysisThreadEntryPoint(J9JavaVM *javaVM, u
 
     J9VMThread *jProfilerMainThread = getJProfilerVMThread(threadID);
     while (stateTable[threadID] == Run) {
-        j9thread_sleep_interruptable(_analysisThreadSleepTime);
+        j9thread_sleep_interruptable(_analysisThreadSleepTime, 0);
         _workerThreadMonitor->enter();
         if (_inShutdown || stateTable[threadID] == Stop) {
             _workerThreadMonitor->exit();
