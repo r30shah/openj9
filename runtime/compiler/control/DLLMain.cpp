@@ -664,6 +664,31 @@ _abort:
                 }
 #endif
 
+                TR_JProfilerThreadsDispatcher *dispatcher
+                    = ((TR_JitPrivateConfig *)(vm->jitConfig->privateConfig))->jProfilerThreadDispatcher;
+                if (dispatcher != NULL) {
+                    for (auto threadID = 0; threadID < dispatcher->getTotalJProfilerThreads(); ++threadID) {
+                        J9VMThread *jProfilerThread = dispatcher->getJProfilerVMThread(threadID);
+                        if (jProfilerThread != NULL) {
+                            char threadName[32];
+                            if (dispatcher->isMainThread(threadID)) {
+                                strcpy(threadName, "JProfilerMainThread");
+                            } else {
+                                sprintf(threadName, "JProfilerWorkerThread-%d", threadID);
+                            }
+                            vm->internalVMFunctions->initializeAttachedThread(curThread, threadName,
+                                vm->systemThreadGroupRef,
+                                ((jProfilerThread->privateFlags & J9_PRIVATE_FLAGS_DAEMON_THREAD) != 0),
+                                jProfilerThread);
+                            if (curThread->currentException != NULL || curThread->threadObject == NULL) {
+                                if (!loadInfo->fatalErrorStr || strlen(loadInfo->fatalErrorStr) == 0)
+                                    return J9VMDLLMAIN_FAILED;
+                            }
+                            TRIGGER_J9HOOK_VM_THREAD_STARTED(vm->hookInterface, curThread, jProfilerThread);
+                        }
+                    }
+                }
+
                 TR_JProfilerThread *jProfiler = ((TR_JitPrivateConfig *)(vm->jitConfig->privateConfig))->jProfiler;
                 if (jProfiler) {
                     J9VMThread *jProfilerThread = jProfiler->getJProfilerThread();

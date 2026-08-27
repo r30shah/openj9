@@ -1558,6 +1558,12 @@ extern "C" jint onLoadInternal(J9JavaVM *javaVM, J9JITConfig *jitConfig, char *x
         ((TR_JitPrivateConfig *)(jitConfig->privateConfig))->iProfiler = NULL;
     }
 
+    // Initialize the JProfilerThreadDispatcher
+    if (TR::Options::getCmdLineOptions()->getOption(TR_EnablePatchableJProfiling)) {
+        ((TR_JitPrivateConfig *)(jitConfig->privateConfig))->jProfilerThreadsDispatcher
+            = TR_JProfilerThreadsDispatcher::allocate();
+    }
+
     if (!TR::Options::getCmdLineOptions()->getOption(TR_DisableJProfilerThread)) {
         ((TR_JitPrivateConfig *)(jitConfig->privateConfig))->jProfiler = TR_JProfilerThread::allocate();
         if (!(((TR_JitPrivateConfig *)(jitConfig->privateConfig))->jProfiler)) {

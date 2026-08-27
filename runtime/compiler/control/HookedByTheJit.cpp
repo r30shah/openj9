@@ -4207,6 +4207,11 @@ void JitShutdown(J9JITConfig *jitConfig)
     if (jProfiler != NULL)
         jProfiler->stop(javaVM);
 
+    TR_JProfilerThreadsDispatcher *dispatcher
+        = ((TR_JitPrivateConfig *)(jitConfig->privateConfig))->jProfilerThreadDispatcher;
+    if (dispatcher != NULL)
+        dispatcher->stopThreads(javaVM);
+
     if (options && options->getOption(TR_DumpFinalMethodNamesAndCounts)) {
         try {
             TR::RawAllocator rawAllocator(jitConfig->javaVM);
@@ -7507,6 +7512,19 @@ int32_t setUpHooks(J9JavaVM *javaVM, J9JITConfig *jitConfig, TR_FrontEnd *vm)
             if (!TR::Options::getCmdLineOptions()->getOption(TR_DisableHWProfilerThread)) {
                 TR_HWProfiler *hwProfiler = ((TR_JitPrivateConfig *)(jitConfig->privateConfig))->hwProfiler;
                 hwProfiler->startHWProfilerThread(javaVM);
+            }
+        }
+
+        if (TR::Options::getCmdLineOptions()->getOption(TR_EnablePatchableJProfiling)) {
+            TR_JProfilerThreadsDispatcher *dispatcher
+                = ((TR_JitPrivateConfig *)(jitConfig->privateConfig))->jProfilerThreadsDispatcher;
+            if (dispatcher != NULL) {
+                // Min. number of threads to create is enabled is 1.
+                // If user has passed numOfJProfilerThreads to configure this value, we will still check number of CPUs
+                // bound to this JVM and cap the number of threads to that value.
+                uint32_t numOnlineCPUs = j9sysinfo_get_number_CPUs_by_type(J9PORT_CPU_BOUND);
+                dispatcher->initializeDispatcher(std::min(numOnlineCPUs, TR::Options::_numOfJProfilerThreads));
+                dispatcher->startThreads(javaVM);
             }
         }
 
