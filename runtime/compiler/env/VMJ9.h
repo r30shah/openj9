@@ -56,6 +56,7 @@ class CompilationInfoPerThread;
 class TR_IProfiler;
 class TR_HWProfiler;
 class TR_JProfilerThread;
+class TR_JProfilerThreadsDispatcher;
 class TR_Debug;
 class TR_OptimizationPlan;
 class TR_ExternalValueProfileInfo;
@@ -135,6 +136,7 @@ typedef struct TR_JitPrivateConfig {
     TR_IProfiler *iProfiler;
     TR_HWProfiler *hwProfiler;
     TR_JProfilerThread *jProfiler;
+    TR_JProfilerThreadsDispatcher *jProfilerThreadsDispatcher;
 #if defined(J9VM_OPT_JITSERVER)
     TR_Listener *listener;
     JITServerStatisticsThread *statisticsThreadObject;
