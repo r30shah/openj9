@@ -9438,7 +9438,25 @@ TR_MethodMetaData *TR::CompilationInfoPerThreadBase::compile(J9VMThread *vmThrea
         if (compiler->getRecompilationInfo()) {
             TR_PersistentJittedBodyInfo *bodyInfo = compiler->getRecompilationInfo()->getJittedBodyInfo();
             if (bodyInfo && bodyInfo->getProfileInfo()) {
-                bodyInfo->getProfileInfo()->setActive();
+                TR_PersistentProfileInfo *info = bodyInfo->getProfileInfo();
+                info->setActive();
+                TR_BlockFrequencyInfo *bfi = info->getBlockFrequencyInfo();
+                if (bfi != NULL) {
+                    bfi->setStartPCOfBodyCollectingProfilingData(reinterpret_cast<void *>(metaData->startPC));
+                }
+                if (compiler->getOptimizationPlan()->insertPatchableJProfiling()
+                    && info->getBlockFrequencyInfo() != NULL) {
+                    // Regular profiling compilations (hot/very-hot) are very short lived and contains lot more
+                    // profiling code. Inspecting them through JProfiler Analysis Thread may not be benefitial as
+                    // recompilation of those methods are triggerred through the JIT compiled code itself when it has
+                    // been executed long enough.
+                    bfi->setTimestampDataCollectionStarted(_compInfo->getCpuUtil()->getVmTotalCpuTime());
+                    TR_JProfilerThreadsDispatcher *dispatcher
+                        = ((TR_JitPrivateConfig *)(vm._jitConfig->privateConfig))->jProfilerThreadsDispatcher;
+                    if (dispatcher != NULL) {
+                        dispatcher->getJProfilerAnalysisTask()->addProfilingInfoToListOfActiveProfilingInfo(info);
+                    }
+                }
             }
         }
 
