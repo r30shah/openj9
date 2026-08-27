@@ -30,7 +30,7 @@
 #include "compile/Method.hpp"
 #include "compile/TRResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
-#include "control/CompilationController.hpp
+#include "control/CompilationController.hpp"
 #include "control/CompilationStrategy.hpp"
 #include "control/Options.hpp"
 #include "control/OptionsUtil.hpp"
