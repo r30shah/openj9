@@ -136,7 +136,7 @@ typedef struct TR_JitPrivateConfig {
     TR_IProfiler *iProfiler;
     TR_HWProfiler *hwProfiler;
     TR_JProfilerThread *jProfiler;
-    TR_JProfilerThreadsDispatcher *jProfilerThreadDispatcher;
+    TR_JProfilerThreadsDispatcher *jProfilerThreadsDispatcher;
 #if defined(J9VM_OPT_JITSERVER)
     TR_Listener *listener;
     JITServerStatisticsThread *statisticsThreadObject;
