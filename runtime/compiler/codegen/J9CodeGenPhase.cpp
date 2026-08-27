@@ -66,7 +66,7 @@ void J9::CodeGenPhase::performBinaryEncodingPhase(TR::CodeGenerator *cg, TR::Cod
             TR::list<TR::Instruction *> *instrList = cg->getJProfilingCounterBumpInstructionList();
             if (!instrList->empty()) {
                 TR::JProfBFPatchSites *sites = new (comp->trPersistentMemory())
-                    TR::JProfBFPatchSites(comp->trPersistentMemory(), instrList->size());
+                    TR::JProfBFPatchSites(comp->trPersistentMemory(), instrList->size(), cg->getMaxLengthOfIncMemoryInstruction());
                 for (auto iter = instrList->begin(); itre != instrList->end(); ++iter) {
                     uint8_t *location = (*iter)->getBinaryEncoding();
                     uint8_t instrLength = (*iter)->getBinaryLength();
