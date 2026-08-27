@@ -56,6 +56,7 @@ class CompilationInfoPerThread;
 class TR_IProfiler;
 class TR_HWProfiler;
 class TR_JProfilerThread;
+class TR_JProfilerThreadsDispatcher;
 class TR_Debug;
 class TR_OptimizationPlan;
 class TR_ExternalValueProfileInfo;
