@@ -3332,11 +3332,11 @@ void TR_JProfilerThreadsDispatcher::startThreads(J9JavaVM *javaVM)
 void TR_JProfilerThreadsDispatcher::stopThreads(J9JavaVM *javaVM)
 {
     _inShutdown = true;
-    // printf("Dispatcher Shutdown threads Enter\n");
+    printf("Dispatcher Shutdown threads Enter\n");
     _dispatcherMonitor->enter();
     _dispatcherMonitor->notifyAll();
     _dispatcherMonitor->exit();
-    // printf("Dispatcher Shutdown threads - Notified all waiting on dispatcherMonitor\n");
+    printf("Dispatcher Shutdown threads - Notified all waiting on dispatcherMonitor\n");
     //  Now Use the Worker Thread Monitor to set up the thread state to Stop
     _workerThreadMonitor->enter();
     for (auto threadID = 0; threadID < _maxJProfilerThreadCount; ++threadID) {
@@ -3348,10 +3348,10 @@ void TR_JProfilerThreadsDispatcher::stopThreads(J9JavaVM *javaVM)
     // waiting for the work, so we need to wake up the threads.
     _workerThreadMonitor->notifyAll();
     _workerThreadMonitor->exit();
-    // printf("Dispatcher Shutdown threads - All thread State changed to Stop\n");
+    printf("Dispatcher Shutdown threads - All thread State changed to Stop\n");
     _dispatcherMonitor->enter();
     while (0 != _maxJProfilerThreadCount) {
-        // printf("Dispatcher Shutdown threads _maxJProfilerThreadCount = %d\n", _maxJProfilerThreadCount);
+        printf("Dispatcher Shutdown threads _maxJProfilerThreadCount = %d\n", _maxJProfilerThreadCount);
         _dispatcherMonitor->wait();
     }
     _dispatcherMonitor->exit();
