@@ -1347,7 +1347,7 @@ protected:
  */
 class TR_JProfilerThreadsDispatcher {
 public:
-    TR_PERSISTENT_ALLOC(TR_Memory::TR_JProfiler);
+    TR_PERSISTENT_ALLOC(TR_Memory::JProfiler);
 
     enum State {
         Initial,
