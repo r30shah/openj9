@@ -4208,7 +4208,7 @@ void JitShutdown(J9JITConfig *jitConfig)
         jProfiler->stop(javaVM);
 
     TR_JProfilerThreadsDispatcher *dispatcher
-        = ((TR_JitPrivateConfig *)(jitConfig->privateConfig))->jProfilerThreadDispatcher;
+        = ((TR_JitPrivateConfig *)(jitConfig->privateConfig))->jProfilerThreadsDispatcher;
     if (dispatcher != NULL)
         dispatcher->stopThreads(javaVM);
 

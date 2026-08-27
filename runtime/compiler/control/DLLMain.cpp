@@ -665,7 +665,7 @@ _abort:
 #endif
 
                 TR_JProfilerThreadsDispatcher *dispatcher
-                    = ((TR_JitPrivateConfig *)(vm->jitConfig->privateConfig))->jProfilerThreadDispatcher;
+                    = ((TR_JitPrivateConfig *)(vm->jitConfig->privateConfig))->jProfilerThreadsDispatcher;
                 if (dispatcher != NULL) {
                     for (auto threadID = 0; threadID < dispatcher->getTotalJProfilerThreads(); ++threadID) {
                         J9VMThread *jProfilerThread = dispatcher->getJProfilerVMThread(threadID);
