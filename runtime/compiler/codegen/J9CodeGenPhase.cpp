@@ -67,7 +67,7 @@ void J9::CodeGenPhase::performBinaryEncodingPhase(TR::CodeGenerator *cg, TR::Cod
             if (!instrList->empty()) {
                 TR::JProfBFPatchSites *sites = new (comp->trPersistentMemory())
                     TR::JProfBFPatchSites(comp->trPersistentMemory(), instrList->size(), cg->getMaxLengthOfIncMemoryInstruction());
-                for (auto iter = instrList->begin(); itre != instrList->end(); ++iter) {
+                for (auto iter = instrList->begin(); iter != instrList->end(); ++iter) {
                     uint8_t *location = (*iter)->getBinaryEncoding();
                     uint8_t instrLength = (*iter)->getBinaryLength();
                     // Need to pass the length of the instruction here.
