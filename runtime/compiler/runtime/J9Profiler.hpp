@@ -190,6 +190,8 @@ public:
 
     bool isActive() { return _active; }
 
+    TR_PersistentProfileInfo *getNext() { return _next; }
+    void setNext(TR_PersistentProfileInfo *info) { _next = info; }
     TR_CatchBlockProfileInfo *getCatchBlockProfileInfo() { return _catchBlockProfileInfo; }
 
     TR_CatchBlockProfileInfo *findOrCreateCatchBlockProfileInfo(TR::Compilation *comp);
