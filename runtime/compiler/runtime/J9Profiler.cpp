@@ -3034,7 +3034,7 @@ void TR_JProfilerAnalysisTask::performAnalysis(J9JITConfig *jitConfig, J9VMThrea
                     nextPrev = prev;
                     static bool patchRecompCandidate = feGetEnv("TR_PatchRecompCandidateFirst") != NULL;
                     if (patchRecompCandidate) {
-                        TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase::get(jitConfig, NULL), current, false);
+                        TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase::get(jitConfig, NULL), current);
                     }
                     bool rc = recompileMethod(jitConfig, current, vmThread, warm);
                     _methodsRecompiledToWarm++;
@@ -3111,7 +3111,7 @@ bool TR_JProfilerAnalysisTask::inspectListOfMethodsToBePatchedAndPreparePatching
         TR_PersistentProfileInfo *info = _listOfProfileInfoToBePatched.pop();
         uint32_t numberOfMethodInfoPoppedFromList = 0;
         while (info != NULL) {
-            TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase::get(jitConfig, NULL), info, true);
+            TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase::get(jitConfig, NULL), info);
             /*
             patchingTaskList[numberOfMethodInfoPoppedFromList %
             numberOfThreadsToUse]->addProfilingInfoToListOfMethodsToPatch(info); numberOfMethodInfoPoppedFromList++;
