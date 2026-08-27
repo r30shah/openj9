@@ -33,6 +33,7 @@
 
 #include "codegen/CodeGenPhase.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/Instruction.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/Method.hpp"
 #include "il/Block.hpp"
