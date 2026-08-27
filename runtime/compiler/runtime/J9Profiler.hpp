@@ -750,6 +750,8 @@ public:
 
     void setIsQueuedForRecompilation() { _isQueuedForRecompilation = -1; }
 
+    bool isQueuedForRecompilation() { return (_isQueuedForRecompilation == -1); }
+
     int32_t *getIsQueuedForRecompilation() { return &_isQueuedForRecompilation; }
 
     TR::Node *generateBlockRawCountCalculationSubTree(TR::Compilation *comp, int32_t blockNumber, TR::Node *node);
