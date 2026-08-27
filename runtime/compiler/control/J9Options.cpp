@@ -268,6 +268,7 @@ int32_t J9::Options::_hwprofilerNumOutstandingBuffers = 256; // 1MB / 4KB buffer
 uint32_t J9::Options::_patchableJProfilingRecompilationFreq = 2000;
 uint32_t J9::Options::_patchableJProfilingPatchingAgeCutOff = 50000000;
 uint32_t J9::Options::_numOfMethodsToTriggerPatching = 10000;
+uint32_t J9::Options::_numOfJProfilerThreads = 1;
 
 // These numbers are cast into floats divided by 10000
 uint32_t J9::Options::_hwprofilerWarmOptLevelThreshold = 1; // 0.0001
@@ -1227,6 +1228,8 @@ TR::OptionTable OMR::Options::_feOptions[] = {
     { "numInterpCompReqToExitIdleMode=", "M<nnn>\tNumber of first time comp. req. that takes the JIT out of idle mode",
      TR::Options::setStaticNumeric, (intptr_t)&TR::Options::_numFirstTimeCompilationsToExitIdleMode, 0, "F%d",
      NOT_IN_SUBSET },
+    { "numOfJProfilerThreads=", "O<nnn<\tNumber of JProfiler Thread to create", TR::Options::setStaticNumeric,
+     (intptr_t)&TR::Options::_numOfJProfilerThreads, 0, "F%d", NOT_IN_SUBSET },
     { "numOfMethodsToTriggerPatching=", "O<nnn<\tNumber of methods in the patching list to trigger patching phase",
      TR::Options::setStaticNumeric, (intptr_t)&TR::Options::_numOfMethodsToTriggerPatching, 0, "F%d",
      NOT_IN_SUBSET },

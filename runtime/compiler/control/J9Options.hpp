@@ -536,6 +536,7 @@ public:
     static uint32_t _patchableJProfilingRecompilationFreq;
     static uint32_t _patchableJProfilingPatchingAgeCutOff;
     static uint32_t _numOfMethodsToTriggerPatching;
+    static uint32_t _numOfJProfilerThreads;
 
     static bool _aggressiveLockReservation;
 
