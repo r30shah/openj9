@@ -1203,7 +1203,7 @@ protected:
  */
 class TR_JProfilerAnalysisTask {
 public:
-    TR_PERSISTENT_ALLOC(TR_Memory::TR_JProfiler);
+    TR_PERSISTENT_ALLOC(TR_Memory::JProfiler);
 
     TR_JProfilerAnalysisTask()
         : _methodsAddedToPatchList(0)
