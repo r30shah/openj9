@@ -734,6 +734,10 @@ public:
 
     uint64_t getTimestampDataCollectionStarted() { return _timeStampWhenDataCollectionStarted; }
 
+    void setStartPCOfBodyCollectingProfilingData(void *startPC) { _startPCOfBodyCollectingProfilingData = startPC; }
+
+    void *getStartPCOfBodyCollectingProfilingData() { return _startPCOfBodyCollectingProfilingData; }
+
     void setEntryBlockNumber(int32_t number) { _entryBlockNumber = number; }
 
     bool isJProfilingData() { return _counterDerivationInfo != NULL; }
