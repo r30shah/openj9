@@ -241,7 +241,7 @@ protected:
      *              destination pairs.
      */
     TR_JProfValueSites(TR_PersistentMemory *pm, uintptr_t key, TR::PatchSites *sites)
-        : OMR::LocationRedirectRuntimeAssumption(pm, key)._patchSites(sites)
+        : OMR::LocationRedirectRuntimeAssumption(pm, key), _patchSites(sites)
     {}
 
 public:
