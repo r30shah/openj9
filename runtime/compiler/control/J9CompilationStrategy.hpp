@@ -66,6 +66,7 @@ public:
         HWPRecompilationTrigger,
         CompilationBeforeCheckpoint,
         ForcedRecompilationPostRestore,
+        JProfilerRecompilationTrigger,
         NumEvents // must be the last one
     };
 
@@ -88,6 +89,7 @@ public:
     TR_OptimizationPlan *processInterpreterSample(TR_MethodEvent *event);
     TR_OptimizationPlan *processJittedSample(TR_MethodEvent *event);
     TR_OptimizationPlan *processHWPSample(TR_MethodEvent *event);
+    TR_OptimizationPlan *processJProfilerSample(TR_MethodEvent *event);
     TR_Hotness getInitialOptLevel(J9Method *j9method);
     bool adjustOptimizationPlan(TR_MethodToBeCompiled *entry, int32_t optLevelAdjustment);
     void beforeCodeGen(TR_OptimizationPlan *plan, TR::Recompilation *recomp);
