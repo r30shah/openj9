@@ -1138,7 +1138,7 @@ protected:
  */
 class TR_JProfilerPatchingTask {
 public:
-    TR_PERSISTENT_ALLOC(TR_Memory::TR_JProfiler);
+    TR_PERSISTENT_ALLOC(TR_Memory::JProfiler);
 
     TR_JProfilerPatchingTask() {}
 
