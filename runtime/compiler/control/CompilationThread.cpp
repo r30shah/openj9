@@ -9450,7 +9450,7 @@ TR_MethodMetaData *TR::CompilationInfoPerThreadBase::compile(J9VMThread *vmThrea
                     // profiling code. Inspecting them through JProfiler Analysis Thread may not be benefitial as
                     // recompilation of those methods are triggerred through the JIT compiled code itself when it has
                     // been executed long enough.
-                    bfi->setTimestampDataCollectionStarted(_compInfo->getCpuUtil()->getVmTotalCpuTime());
+                    bfi->setTimestampDataCollectionStarted(_compInfo.getCpuUtil()->getVmTotalCpuTime());
                     TR_JProfilerThreadsDispatcher *dispatcher
                         = ((TR_JitPrivateConfig *)(vm._jitConfig->privateConfig))->jProfilerThreadsDispatcher;
                     if (dispatcher != NULL) {
