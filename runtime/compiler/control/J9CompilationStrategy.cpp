@@ -185,6 +185,9 @@ TR_OptimizationPlan *J9::CompilationStrategy::processEvent(TR_MethodEvent *event
         case TR_MethodEvent::HWPRecompilationTrigger: {
             plan = self()->processHWPSample(event);
         } break;
+        case TR_MethodEvent::JProfilerRecompilationTrigger: {
+            plan = self()->processJProfilerSample(event);
+        }
         case TR_MethodEvent::CompilationBeforeCheckpoint: {
             J9Method *method = event->_j9method;
             bool jninative = J9_ARE_ANY_BITS_SET(J9_ROM_METHOD_FROM_RAM_METHOD(method)->modifiers, J9AccNative);
@@ -1189,6 +1192,28 @@ TR_OptimizationPlan *J9::CompilationStrategy::processJittedSample(TR_MethodEvent
 
     ProcessJittedSample pjs(jitConfig, vmThread, compInfo, fe, cmdLineOptions, j9method, event);
     return pjs.process();
+}
+
+TR_OptimizationPlan *J9::CompilationStrategy::processJProfilerSample(TR_MethodEvent *event)
+{
+    TR_Hotness optLevel = event->_nextOptLevel;
+    J9JITConfig *jitConfig = event->_vmThread->javaVM->jitConfig;
+    TR_J9VMBase *fe = TR_J9VMBase::get(jitConfig, event->_vmThread);
+    fe->acquireCompilationLock();
+    bool isAlreadyBeingCompiled = TR::Recompilation::isAlreadyBeingCompiled(reinterpret_cast<TR_OpaqueMethodBlock *>(event->_j9method), event->_oldStartPC, fe);
+    fe->releaseCompilationLock();
+    if (isAlreadyBeingCompiled)
+        return NULL;
+    TR_PersistentJittedBodyInfo *bodyInfo = TR::Recompilation::getJittedBodyInfoFromPC(event->_oldStartPC);
+    if (bodyInfo == NULL)
+        return NULL;
+
+    TR_PersistentMethodInfo *methodInfo = bodyInfo->getMethodInfo();
+    TR_OptimizationPlan *plan = TR_OptimizationPlan::alloc(optLevel, false, true);
+    if (plan) {
+        methodInfo->setReasonForRecompilation(TR_PersistentMethodInfo::RecompDueToJProfiling);
+    }
+    return plan;
 }
 
 TR_OptimizationPlan *J9::CompilationStrategy::processHWPSample(TR_MethodEvent *event)
