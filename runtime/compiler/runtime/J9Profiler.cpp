@@ -3225,7 +3225,7 @@ void TR_JProfilerThreadsDispatcher::analysisThreadEntryPoint(J9JavaVM *javaVM, u
                     patchingTaskList[threadID]->getSize());
             }
             uint32_t numberOfMethodsPatched
-                = patchingTaskList[threadID]->patchMethods(TR_J9VMBase::get(javaVM->jitConfig, NULL), threadID);
+                = patchingTaskList[threadID]->patchAllMethods(TR_J9VMBase::get(javaVM->jitConfig, NULL));
             if (TR::Options::getVerboseOption(TR_VerboseProfiling))
                 TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "JProfiler Analysis Thread Patched %d methods",
                     numberOfMethodsPatched);
@@ -3267,7 +3267,7 @@ void TR_JProfilerThreadsDispatcher::workerThreadEntryPoint(J9JavaVM *javaVM, uin
                     patchingTaskList[threadID]->getSize());
             }
             uint32_t numberOfPatchedMethods
-                = patchingTaskList[threadID]->patchMethods(TR_J9VMBase::get(javaVM->jitConfig, NULL), threadID);
+                = patchingTaskList[threadID]->patchAllMethods(TR_J9VMBase::get(javaVM->jitConfig, NULL));
             if (TR::Options::getVerboseOption(TR_VerboseProfiling))
                 TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "JProfiler WorkerThread -%d Patched %d methods",
                     threadID, numberOfPatchedMethods);
