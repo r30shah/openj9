@@ -1200,7 +1200,8 @@ TR_OptimizationPlan *J9::CompilationStrategy::processJProfilerSample(TR_MethodEv
     J9JITConfig *jitConfig = event->_vmThread->javaVM->jitConfig;
     TR_J9VMBase *fe = TR_J9VMBase::get(jitConfig, event->_vmThread);
     fe->acquireCompilationLock();
-    bool isAlreadyBeingCompiled = TR::Recompilation::isAlreadyBeingCompiled(reinterpret_cast<TR_OpaqueMethodBlock *>(event->_j9method), event->_oldStartPC, fe);
+    bool isAlreadyBeingCompiled = TR::Recompilation::isAlreadyBeingCompiled(
+        reinterpret_cast<TR_OpaqueMethodBlock *>(event->_j9method), event->_oldStartPC, fe);
     fe->releaseCompilationLock();
     if (isAlreadyBeingCompiled)
         return NULL;
