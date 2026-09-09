@@ -157,12 +157,12 @@ TR::ILOpCodes loadConst(TR::DataType dt)
 int32_t TR_JProfilingValue::perform()
 {
     OMR::Logger *log = comp()->log();
-
+    static bool disablePatchJProfValue = feGetEnv("TR_DisablePatchableJProfilingValue") != NULL;
     if (comp()->getProfilingMode() == JProfiling) {
         logprints(trace(), log, "JProfiling has been enabled for profiling compilations, run JProfilingValue\n");
     } else if (comp()->getOption(TR_EnableJProfiling)) {
         logprints(trace(), log, "JProfiling has been enabled, run JProfilingValue\n");
-    } else if (comp()->getOptimizationPlan()->insertPatchableJProfiling()) {
+    } else if (comp()->getOptimizationPlan()->insertPatchableJProfiling() && comp()->getRecompilationInfo() && !disablePatchJProfValue) {
         logprints(trace(), log, "Patchable JProfiling has been enabled, run JProfilingValue\n");
     } else {
         logprints(trace(), log, "JProfiling has been disabled, skip JProfilingValue\n");
