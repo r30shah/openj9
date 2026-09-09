@@ -665,6 +665,9 @@ bool TR_JProfilingValue::addProfilingTrees(TR::Compilation *comp, TR::TreeTop *i
         }
 
         TR_PersistentProfileInfo *profileInfo = comp->getRecompilationInfo()->findOrCreateProfileInfo();
+        TR::Node *goToNode = TR::Node::create(bciNode, TR::Goto, 0, profilingCodeBlock->getEntry());
+        goToNode->setIsBranchToValueProfilingCall(true);
+        /*
         TR_BlockFrequencyInfo *bfi = TR_BlockFrequencyInfo::get(profileInfo);
         if (bfi != NULL) {
             TR::Node *loadIsJProfilingEnabled = TR::Node::createWithSymRef(bciNode, TR::iload, 0,
@@ -673,6 +676,7 @@ bool TR_JProfilingValue::addProfilingTrees(TR::Compilation *comp, TR::TreeTop *i
             profilingCodeGuardNode = TR::Node::createif(TR::ificmpeq, loadIsJProfilingEnabled,
                 TR::Node::iconst(bciNode, -1), profilingCodeBlock->getEntry());
         }
+        */
     }
 
     // Insert the profiling code guard node
