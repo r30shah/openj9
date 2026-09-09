@@ -8475,10 +8475,8 @@ TR_MethodMetaData *TR::CompilationInfoPerThreadBase::wrappedCompile(J9PortLibrar
                             }
                         }
                     }
-                    if (options->getOption(TR_EnablePatchableJProfiling)
-                        && options->allowRecompilation()
-                        && !options->getOption(TR_NoRecompile)
-                        && p->_optimizationPlan->getOptLevel() <= cold
+                    if (options->getOption(TR_EnablePatchableJProfiling) && options->allowRecompilation()
+                        && !options->getOption(TR_NoRecompile) && p->_optimizationPlan->getOptLevel() <= cold
                         && !p->_optimizationPlan->inducedByPatchableJProfiling()) {
                         p->_optimizationPlan->setInsertPatchableJProfiling(true);
                     }
