@@ -3053,7 +3053,7 @@ void TR_JProfilerAnalysisTask::performAnalysis(J9JITConfig *jitConfig, J9VMThrea
                             J9UTF8_LENGTH(signature), (char *)J9UTF8_DATA(signature), rc ? "Success" : "Failure");
                     }
                 } else {
-                    uint64_t ageOfMethod = TR::Compiler->vm.getUSecClock() - bfi->getTimestampDataCollectionStarted();
+                    uint64_t ageOfMethod = TR::CompilationInfo::get(jitConfig)->getCpuUtil()->getVmTotalCpuTime() - bfi->getTimestampDataCollectionStarted();
                     if (TR::Options::getVerboseOption(TR_VerboseProfiling)) {
                         J9UTF8 *className;
                         J9UTF8 *name;
