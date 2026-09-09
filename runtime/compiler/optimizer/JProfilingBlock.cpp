@@ -36,6 +36,7 @@
 #include "control/Recompilation.hpp"
 #include "control/RecompilationInfo.hpp"
 #include "optimizer/TransformUtil.hpp"
+#include "codegen/CodeGenerator.hpp"
 
 // Global thresholds for the number of method enters required to trip
 // method recompilation - these are adjusted in the JIT hook control logic
