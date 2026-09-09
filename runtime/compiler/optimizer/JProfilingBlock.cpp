@@ -36,6 +36,7 @@
 #include "control/Recompilation.hpp"
 #include "control/RecompilationInfo.hpp"
 #include "optimizer/TransformUtil.hpp"
+#include "codegen/CodeGenerator.hpp"
 
 // Global thresholds for the number of method enters required to trip
 // method recompilation - these are adjusted in the JIT hook control logic
@@ -753,7 +754,10 @@ TR_BlockFrequencyInfo *TR_JProfilingBlock::initRecompDataStructures()
         comp()->getRecompilationInfo()->removeProfiler(bfp);
 
     TR_PersistentProfileInfo *profileInfo = comp()->getRecompilationInfo()->findOrCreateProfileInfo();
-    return profileInfo->findOrCreateBlockFrequencyInfo(comp());
+    TR_BlockFrequencyInfo *info = profileInfo->findOrCreateBlockFrequencyInfo(comp());
+    if (info != NULL && comp()->getOptimizationPlan()->insertPatchableJProfiling())
+        comp()->cg()->initJProfCounterBumpInstrList();
+    return info;
 }
 
 /**
@@ -809,30 +813,31 @@ void TR_JProfilingBlock::addRecompilationTests(TR_BlockFrequencyInfo *blockFrequ
     OMR::Logger *log = comp()->log();
     // add invocation check to the top of the method
     int32_t *thresholdLocation = NULL;
-    if (comp()->getMethodSymbol()->mayHaveNestedLoops())
-        thresholdLocation = &nestedLoopRecompileThreshold;
+    int32_t recompilationThreshold = 0;
+    bool isProfilingCompilation = comp()->isProfilingCompilation();
+    if (isProfilingCompilation)
+        recompilationThreshold = comp()->getOptions()->getJProfilingMethodRecompThreshold();
+    else if (comp()->getMethodSymbol()->mayHaveNestedLoops())
+        recompilationThreshold = TR::Options::_patchableJProfilingRecompCutOffNestedLoop;
     else if (comp()->getMethodSymbol()->mayHaveLoops())
-        thresholdLocation = &loopRecompileThreshold;
+        recompilationThreshold = TR::Options::_patchableJProfilingRecompCutOffLoop;
     else
-        thresholdLocation = &recompileThreshold;
+        recompilationThreshold = TR::Options::_patchableJProfilingRecompCutOffMethod;
 
     int32_t startBlockNumber = comp()->getStartBlock()->getNumber();
     blockFrequencyInfo->setEntryBlockNumber(startBlockNumber);
     TR::Node *node = comp()->getMethodSymbol()->getFirstTreeTop()->getNode();
     TR::Node *root = blockFrequencyInfo->generateBlockRawCountCalculationSubTree(comp(), startBlockNumber, node);
-    bool isProfilingCompilation = comp()->isProfilingCompilation();
     if (root != NULL) {
         TR::Block *originalFirstBlock = comp()->getStartBlock();
 
         TR::Block *guardBlock1 = TR::Block::createEmptyBlock(node, comp(), originalFirstBlock->getFrequency());
-        {
+        if (isProfilingCompilation) {
             // If this is profiling compilation we do not need to check if jProfiling is enabled or not at runtime,
             // In this case we only check if we have queued for recompilation before comparing against method invocation
             // count.
-            int32_t *loadAddress = isProfilingCompilation ? blockFrequencyInfo->getIsQueuedForRecompilation()
-                                                          : blockFrequencyInfo->getEnableJProfilingRecompilation();
-            TR::SymbolReference *symRef
-                = comp()->getSymRefTab()->createKnownStaticDataSymbolRef(loadAddress, TR::Int32);
+            TR::SymbolReference *symRef = comp()->getSymRefTab()->createKnownStaticDataSymbolRef(
+                blockFrequencyInfo->getIsQueuedForRecompilation(), TR::Int32);
             symRef->getSymbol()->setIsRecompQueuedFlag();
             symRef->getSymbol()->setNotDataAddress();
             TR::Node *enableLoad = TR::Node::createWithSymRef(node, TR::iload, 0, symRef);
@@ -844,13 +849,9 @@ void TR_JProfilingBlock::addRecompilationTests(TR_BlockFrequencyInfo *blockFrequ
         }
 
         static int32_t jProfilingCompileThreshold = comp()->getOptions()->getJProfilingMethodRecompThreshold();
-        logprintf(trace(), log, "Profiling Compile Threshold for method = %d\n",
-            isProfilingCompilation ? jProfilingCompileThreshold : *thresholdLocation);
+        logprintf(trace(), log, "Profiling Compile Threshold for method = %d\n", recompilationThreshold);
         TR::Block *guardBlock2 = TR::Block::createEmptyBlock(node, comp(), originalFirstBlock->getFrequency());
-        TR::Node *recompThreshold = isProfilingCompilation
-            ? TR::Node::iconst(node, jProfilingCompileThreshold)
-            : TR::Node::createWithSymRef(node, TR::iload, 0,
-                  comp()->getSymRefTab()->createKnownStaticDataSymbolRef(thresholdLocation, TR::Int32));
+        TR::Node *recompThreshold = TR::Node::iconst(node, recompilationThreshold);
         TR::Node *cmpFlagNode = TR::Node::createif(TR::ificmplt, root, recompThreshold, originalFirstBlock->getEntry());
         TR::TreeTop *cmpFlag = TR::TreeTop::create(comp(), cmpFlagNode);
         cmpFlagNode->setIsProfilingCode();
@@ -910,6 +911,8 @@ int32_t TR_JProfilingBlock::perform()
         logprints(trace(), log, "JProfiling has been enabled, run JProfiling\n");
     } else if (comp()->getProfilingMode() == JProfiling) {
         logprints(trace(), log, "JProfiling has been enabled for profiling compilations, run JProfilingBlock\n");
+    } else if (comp()->getOptimizationPlan()->insertPatchableJProfiling() && comp()->getRecompilationInfo() != NULL) {
+        logprints(trace(), log, "Patchable JProfiling has been enabled - run JProfiling\n");
     } else {
         logprints(trace(), log, "JProfiling has not been enabled, skip JProfilingBlock\n");
         comp()->setSkippedJProfilingBlock();
