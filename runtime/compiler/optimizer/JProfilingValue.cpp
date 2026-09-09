@@ -162,6 +162,8 @@ int32_t TR_JProfilingValue::perform()
         logprints(trace(), log, "JProfiling has been enabled for profiling compilations, run JProfilingValue\n");
     } else if (comp()->getOption(TR_EnableJProfiling)) {
         logprints(trace(), log, "JProfiling has been enabled, run JProfilingValue\n");
+    } else if (comp()->getOptimizationPlan()->insertPatchableJProfiling()) {
+        logprints(trace(), log, "Patchable JProfiling has been enabled, run JProfilingValue\n");
     } else {
         logprints(trace(), log, "JProfiling has been disabled, skip JProfilingValue\n");
         return 0;
@@ -172,7 +174,12 @@ int32_t TR_JProfilingValue::perform()
     cleanUpAndAddProfilingCandidates(valueProfilingPlaceHolderCalls);
     if (trace())
         comp()->dumpMethodTrees(log, "After Cleaning up Trees");
-    lowerCalls(valueProfilingPlaceHolderCalls);
+
+    if (!valueProfilingPlaceHolderCalls.empty()) {
+        if (comp()->getOptimizationPlan()->insertPatchableJProfiling())
+            comp()->cg()->initJProfValueBranchInstrList();
+        lowerCalls(valueProfilingPlaceHolderCalls);
+    }
 
     if (comp()->isProfilingCompilation()) {
         TR::Recompilation *recomp = comp()->getRecompilationInfo();
