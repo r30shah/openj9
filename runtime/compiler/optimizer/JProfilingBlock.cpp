@@ -753,7 +753,10 @@ TR_BlockFrequencyInfo *TR_JProfilingBlock::initRecompDataStructures()
         comp()->getRecompilationInfo()->removeProfiler(bfp);
 
     TR_PersistentProfileInfo *profileInfo = comp()->getRecompilationInfo()->findOrCreateProfileInfo();
-    return profileInfo->findOrCreateBlockFrequencyInfo(comp());
+    TR_BlockFrequencyInfo *info = profileInfo->findOrCreateBlockFrequencyInfo(comp());
+    if (info != NULL && comp()->getOptimizationPlan()->insertPatchableJProfiling())
+        comp()->cg()->initJProfCounterBumpInstrList();
+    return info;
 }
 
 /**
