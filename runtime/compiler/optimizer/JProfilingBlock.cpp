@@ -914,7 +914,7 @@ int32_t TR_JProfilingBlock::perform()
         logprints(trace(), log, "JProfiling has been enabled, run JProfiling\n");
     } else if (comp()->getProfilingMode() == JProfiling) {
         logprints(trace(), log, "JProfiling has been enabled for profiling compilations, run JProfilingBlock\n");
-    } else if (comp()->getOptimizationPlan()->insertPatchableJProfiling()) {
+    } else if (comp()->getOptimizationPlan()->insertPatchableJProfiling() && comp()->getRecompilationInfo() != NULL) {
         logprints(trace(), log, "Patchable JProfiling has been enabled - run JProfiling\n");
     } else {
         logprints(trace(), log, "JProfiling has not been enabled, skip JProfilingBlock\n");
