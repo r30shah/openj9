@@ -157,11 +157,14 @@ TR::ILOpCodes loadConst(TR::DataType dt)
 int32_t TR_JProfilingValue::perform()
 {
     OMR::Logger *log = comp()->log();
-
+    static bool disablePatchJProfValue = feGetEnv("TR_DisablePatchableJProfilingValue") != NULL;
     if (comp()->getProfilingMode() == JProfiling) {
         logprints(trace(), log, "JProfiling has been enabled for profiling compilations, run JProfilingValue\n");
     } else if (comp()->getOption(TR_EnableJProfiling)) {
         logprints(trace(), log, "JProfiling has been enabled, run JProfilingValue\n");
+    } else if (comp()->getOptimizationPlan()->insertPatchableJProfiling() && comp()->getRecompilationInfo()
+        && !disablePatchJProfValue) {
+        logprints(trace(), log, "Patchable JProfiling has been enabled, run JProfilingValue\n");
     } else {
         logprints(trace(), log, "JProfiling has been disabled, skip JProfilingValue\n");
         return 0;
@@ -172,7 +175,12 @@ int32_t TR_JProfilingValue::perform()
     cleanUpAndAddProfilingCandidates(valueProfilingPlaceHolderCalls);
     if (trace())
         comp()->dumpMethodTrees(log, "After Cleaning up Trees");
-    lowerCalls(valueProfilingPlaceHolderCalls);
+
+    if (!valueProfilingPlaceHolderCalls.empty()) {
+        if (comp()->getOptimizationPlan()->insertPatchableJProfiling())
+            comp()->cg()->initJProfValueBranchInstrList();
+        lowerCalls(valueProfilingPlaceHolderCalls);
+    }
 
     if (comp()->isProfilingCompilation()) {
         TR::Recompilation *recomp = comp()->getRecompilationInfo();
@@ -659,6 +667,9 @@ bool TR_JProfilingValue::addProfilingTrees(TR::Compilation *comp, TR::TreeTop *i
         }
 
         TR_PersistentProfileInfo *profileInfo = comp->getRecompilationInfo()->findOrCreateProfileInfo();
+        profilingCodeGuardNode = TR::Node::create(bciNode, TR::Goto, 0, profilingCodeBlock->getEntry());
+        profilingCodeGuardNode->setIsBranchToValueProfilingCall(true);
+        /*
         TR_BlockFrequencyInfo *bfi = TR_BlockFrequencyInfo::get(profileInfo);
         if (bfi != NULL) {
             TR::Node *loadIsJProfilingEnabled = TR::Node::createWithSymRef(bciNode, TR::iload, 0,
@@ -667,6 +678,7 @@ bool TR_JProfilingValue::addProfilingTrees(TR::Compilation *comp, TR::TreeTop *i
             profilingCodeGuardNode = TR::Node::createif(TR::ificmpeq, loadIsJProfilingEnabled,
                 TR::Node::iconst(bciNode, -1), profilingCodeBlock->getEntry());
         }
+        */
     }
 
     // Insert the profiling code guard node
