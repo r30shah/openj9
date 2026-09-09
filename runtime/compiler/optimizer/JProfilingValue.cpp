@@ -665,7 +665,7 @@ bool TR_JProfilingValue::addProfilingTrees(TR::Compilation *comp, TR::TreeTop *i
         }
 
         TR_PersistentProfileInfo *profileInfo = comp->getRecompilationInfo()->findOrCreateProfileInfo();
-        TR::Node *profilingCodeGuardNode = TR::Node::create(bciNode, TR::Goto, 0, profilingCodeBlock->getEntry());
+        profilingCodeGuardNode = TR::Node::create(bciNode, TR::Goto, 0, profilingCodeBlock->getEntry());
         profilingCodeGuardNode->setIsBranchToValueProfilingCall(true);
         /*
         TR_BlockFrequencyInfo *bfi = TR_BlockFrequencyInfo::get(profileInfo);
