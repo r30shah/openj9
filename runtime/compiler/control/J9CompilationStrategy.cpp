@@ -187,7 +187,7 @@ TR_OptimizationPlan *J9::CompilationStrategy::processEvent(TR_MethodEvent *event
         } break;
         case TR_MethodEvent::JProfilerRecompilationTrigger: {
             plan = self()->processJProfilerSample(event);
-        }
+        } break;
         case TR_MethodEvent::CompilationBeforeCheckpoint: {
             J9Method *method = event->_j9method;
             bool jninative = J9_ARE_ANY_BITS_SET(J9_ROM_METHOD_FROM_RAM_METHOD(method)->modifiers, J9AccNative);
