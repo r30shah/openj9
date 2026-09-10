@@ -2709,6 +2709,12 @@ bool J9::Options::fePreProcess(void *base)
     self()->setOption(TR_ReservingLocks);
 #endif
 
+#if defined(TR_HOST_X86) || defined(TR_HOST_S390)
+    self()->setOption(TR_EnablePatchableJProfiling);
+    _initialOptLevel = cold;
+    self()->setOption(TR_DisableGuardedCountingRecompilations);
+#endif
+
     self()->preProcessHwProfiler(vm);
 
 #if defined(TR_HOST_S390)
