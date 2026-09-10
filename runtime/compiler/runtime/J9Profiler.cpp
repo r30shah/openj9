@@ -3048,9 +3048,9 @@ void TR_JProfilerAnalysisTask::performAnalysis(J9JITConfig *jitConfig, J9VMThrea
                                                ->getMethodInfo();
                         getClassNameSignatureFromMethod(method, className, name, signature);
                         TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING,
-                            "Called recompile Method for %.*s.%.*s%.*s with %s", J9UTF8_LENGTH(className),
+                            "Called recompile Method for %.*s.%.*s%.*s with %s, maxFreq = %d", J9UTF8_LENGTH(className),
                             (char *)J9UTF8_DATA(className), J9UTF8_LENGTH(name), (char *)J9UTF8_DATA(name),
-                            J9UTF8_LENGTH(signature), (char *)J9UTF8_DATA(signature), rc ? "Success" : "Failure");
+                            J9UTF8_LENGTH(signature), (char *)J9UTF8_DATA(signature), rc ? "Success" : "Failure", maxFreq);
                     }
                 } else {
                     uint64_t ageOfMethod = TR::CompilationInfo::get(jitConfig)->getCpuUtil()->getVmTotalCpuTime() - bfi->getTimestampDataCollectionStarted();
@@ -3063,10 +3063,10 @@ void TR_JProfilerAnalysisTask::performAnalysis(J9JITConfig *jitConfig, J9VMThrea
                                                ->getMethodInfo()
                                                ->getMethodInfo();
                         getClassNameSignatureFromMethod(method, className, name, signature);
-                        TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "Age of method %.*s.%.*s%.*s : %lu",
+                        TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "Age of method %.*s.%.*s%.*s : %lu, maxFreq = %d",
                             J9UTF8_LENGTH(className), (char *)J9UTF8_DATA(className), J9UTF8_LENGTH(name),
                             (char *)J9UTF8_DATA(name), J9UTF8_LENGTH(signature), (char *)J9UTF8_DATA(signature),
-                            ageOfMethod);
+                            ageOfMethod, maxFreq);
                     }
                     if (ageOfMethod > _ageCutOffForPatching) {
                         removeProfilingInfoFromListOfActiveProfilingInfo(prev, current);
