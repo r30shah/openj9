@@ -266,7 +266,7 @@ TR_YesNoMaybe J9::Options::_perfToolEnabled = TR_no;
 int32_t J9::Options::_hwprofilerNumOutstandingBuffers = 256; // 1MB / 4KB buffers
 
 uint32_t J9::Options::_patchableJProfilingRecompilationFreq = 2000;
-uint32_t J9::Options::_patchableJProfilingPatchingAgeCutOff = 50000000;
+uint32_t J9::Options::_patchableJProfilingPatchingAgeCutOff = 50000;
 uint32_t J9::Options::_numOfMethodsToTriggerPatching = 10000;
 uint32_t J9::Options::_numOfJProfilerThreads = 1;
 
