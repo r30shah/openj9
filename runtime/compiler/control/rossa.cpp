@@ -312,10 +312,24 @@ extern "C" IDATA j9jit_testarossa_err(struct J9JITConfig *jitConfig, J9VMThread 
             // If PersistentJittedBody contains the profile Info and has BlockFrequencyInfo, it will set the
             // isQueuedForRecompilation field which can be used by the jitted code at runtime to skip the profiling
             // code if it has made request to recompile this method.
-            if (jbi->getProfileInfo() != NULL && jbi->getProfileInfo()->getBlockFrequencyInfo() != NULL)
+            bool eventSet = false;
+            if (jbi->getProfileInfo() != NULL && jbi->getProfileInfo()->getBlockFrequencyInfo() != NULL) {
                 jbi->getProfileInfo()->getBlockFrequencyInfo()->setIsQueuedForRecompilation();
-
-            event._eventType = TR_MethodEvent::OtherRecompilationTrigger;
+                // This is confusing to begin with - Currently a flag in JITTed bodyinfo is IsProfilingBody is set when we switch
+                // to profiling compilations for high opt level methods. In the world of Patchable JProfiling, that flag is not
+                // set which is used here to distinguish between two cases. The flag should be rename to something else that is more
+                // representative of the isProfilingCompilations.
+                if (!jbi->getIsProfilingBody()) {
+                    event._eventType = TR_MethodEvent::JProfilerRecompilationTrigger;
+                    event._nextOptLevel = warm;
+                    eventSet = true;
+                } else {
+                    return 0;
+                }
+            }
+            if (!eventSet) {
+                event._eventType = TR_MethodEvent::OtherRecompilationTrigger;
+            }
         }
     } else {
         event._eventType = TR_MethodEvent::InterpreterCounterTripped;
