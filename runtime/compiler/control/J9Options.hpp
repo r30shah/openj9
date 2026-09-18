@@ -537,6 +537,9 @@ public:
     static int32_t _jProfilingEnablementSampleThreshold;
     static uint32_t _patchableJProfilingRecompilationFreq;
     static uint32_t _patchableJProfilingPatchingAgeCutOff;
+    static uint32_t _patchableJProfilingRecompCutOffMethod;
+    static uint32_t _patchableJProfilingRecompCutOffLoop;
+    static uint32_t _patchableJProfilingRecompCutOffNestedLoop;
     static uint32_t _numOfMethodsToTriggerPatching;
     static uint32_t _numOfJProfilerThreads;
 

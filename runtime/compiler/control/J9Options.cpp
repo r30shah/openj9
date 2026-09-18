@@ -266,6 +266,9 @@ TR_YesNoMaybe J9::Options::_perfToolEnabled = TR_no;
 int32_t J9::Options::_hwprofilerNumOutstandingBuffers = 256; // 1MB / 4KB buffers
 
 uint32_t J9::Options::_patchableJProfilingRecompilationFreq = 2000;
+uint32_t J9::Options::_patchableJProfilingRecompCutOffMethod = 1000;
+uint32_t J9::Options::_patchableJProfilingRecompCutOffLoop = 100;
+uint32_t J9::Options::_patchableJProfilingRecompCutOffNestedLoop = 10;
 uint32_t J9::Options::_patchableJProfilingPatchingAgeCutOff = 50000;
 uint32_t J9::Options::_numOfMethodsToTriggerPatching = 10000;
 uint32_t J9::Options::_numOfJProfilerThreads = 1;
@@ -1243,6 +1246,15 @@ TR::OptionTable OMR::Options::_feOptions[] = {
 #endif  /* defined(J9VM_OPT_JITSERVER) */
     { "patchableJProfilingPatchingAgeCutOff=",
      "O<nnn<\tCutoff age in milliseconds for method to be patched to disable JProfiling", TR::Options::setStaticNumeric, (intptr_t)&TR::Options::_patchableJProfilingPatchingAgeCutOff, 0, "F%d",
+     NOT_IN_SUBSET },
+    { "patchableJProfilingRecompCutOffLoop=",
+     "O<nnn>\tNumber of invocations for method with loop to trigger recompilation in patchable JProfiling", TR::Options::setStaticNumeric, (intptr_t)&TR::Options::_patchableJProfilingRecompCutOffLoop, 0, "F%d",
+     NOT_IN_SUBSET },
+    { "patchableJProfilingRecompCutOffMethod=",
+     "O<nnn>\tNumber of invocations for method without loop to trigger recompilation in patchable JProfiling", TR::Options::setStaticNumeric, (intptr_t)&TR::Options::_patchableJProfilingRecompCutOffMethod, 0, "F%d",
+     NOT_IN_SUBSET },
+    { "patchableJProfilingRecompCutOffNestedLoop=",
+     "O<nnn>\tNumber of invocations for method without loop to trigger recompilation in patchable JProfiling", TR::Options::setStaticNumeric, (intptr_t)&TR::Options::_patchableJProfilingRecompCutOffNestedLoop, 0, "F%d",
      NOT_IN_SUBSET },
     { "patchableJProfilingRecompilationFreq=", "O<nnn<\tFrequency to queue up method for recompilation",
      TR::Options::setStaticNumeric, (intptr_t)&TR::Options::_patchableJProfilingRecompilationFreq, 0, "F%d",
