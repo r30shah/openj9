@@ -1222,7 +1222,7 @@ public:
         _ageCutOffForPatching = TR::Options::_patchableJProfilingPatchingAgeCutOff;
         _numOfMethodsToTriggerPatching = TR::Options::_numOfMethodsToTriggerPatching;
         _listUpdateMonitor = TR::Monitor::create("JIT-JProfilerAnalysisTaskListMonitor");
-        _analysisCutOff = 256;
+        _analysisCutOff = 1024;
     }
 
     /**
