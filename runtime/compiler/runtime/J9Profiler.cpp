@@ -3093,7 +3093,7 @@ void TR_JProfilerAnalysisTask::performAnalysis(J9JITConfig *jitConfig, J9VMThrea
                     }
                 }
             }
-        } else if (!info->isActive()) {
+        } else if (!current->isActive()) {
             // If the method has been redefined / class is unloaded, profiling info would be marked inactive.
             // Do not patch or even recompile method using JProfiling, let the new method reach proper invocation count
             // to get compiled, for now remove the information from Active Profiling Info List.
