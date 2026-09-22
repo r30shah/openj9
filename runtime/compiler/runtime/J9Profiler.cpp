@@ -3117,6 +3117,9 @@ void TR_JProfilerAnalysisTask::performAnalysis(J9JITConfig *jitConfig, J9VMThrea
 bool TR_JProfilerAnalysisTask::inspectListOfMethodsToBePatchedAndPreparePatchingTask(
     TR_JProfilerPatchingTask **patchingTaskList, uint32_t numberOfThreadsToUse, J9JITConfig *jitConfig)
 {
+    static bool disablePatching = feGetEnv("TR_DisableJProfPatching") != NULL;
+    if (disablePatching)
+        return false;
     if (TR::Options::getVerboseOption(TR_VerboseProfiling)) {
         TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING,
             "Inspecting the list of methods to Patch, elapsed Time = %lu, patchCandidateSize = %d",
