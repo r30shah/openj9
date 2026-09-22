@@ -2866,7 +2866,7 @@ TR_JProfValueSites *TR_JProfValueSites::make(TR_FrontEnd *fe, TR_PersistentMemor
 
 void TR_JProfValueSites::compensate(TR_FrontEnd *vm, bool disableDataCollection, void *newKey)
 {
-    pintf("Starting patching - Size = %d\n", _patchSites->getSize());
+    printf("Starting patching - Size = %d\n", _patchSites->getSize());
     if (disableDataCollection) {
         for (size_t i; i < _patchSites->getSize(); i++) {
             uint8_t *cursor = _patchSites->getLocation(i);
@@ -2882,7 +2882,7 @@ void TR_JProfValueSites::compensate(TR_FrontEnd *vm, bool disableDataCollection,
 #endif
         }
     }
-    pintf("Finished patching\n");
+    printf("Finished patching\n");
 }
 
 uint32_t TR_JProfilerPatchingTask::patchAllMethods(TR_J9VMBase *vm)
