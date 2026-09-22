@@ -2904,7 +2904,7 @@ bool TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase *vm, TR_PersistentProfile
             J9UTF8 *className;
             J9UTF8 *name;
             J9UTF8 *signature;
-            J9Method *method = (J9Method *)TR::Recompilation::getJittedBodyInfoFromPC(current->getBlockFrequencyInfo()->getStartPCOfBodyCollectingProfilingData())->getMethodInfo()->getMethodInfo();
+            J9Method *method = (J9Method *)TR::Recompilation::getJittedBodyInfoFromPC(info->getBlockFrequencyInfo()->getStartPCOfBodyCollectingProfilingData())->getMethodInfo()->getMethodInfo();
             getClassNameSignatureFromMethod(method, className, name, signature);
             TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "Patching %.*s.%.*s%.*s",
                 J9UTF8_LENGTH(className), (char *)J9UTF8_DATA(className), J9UTF8_LENGTH(name),
