@@ -3022,10 +3022,11 @@ void TR_JProfilerAnalysisTask::performAnalysis(J9JITConfig *jitConfig, J9VMThrea
     uint32_t processedNodes = 0;
     TR_PersistentProfileInfo *prev = NULL;
     TR_PersistentProfileInfo *current = _activeProfilingList.getFirst();
+    static bool disableJProfilerThreadRecompAndPatching = feGetEnv("TR_DisableJProfRecompAndPatching") != NULL;
     while (current != NULL && processedNodes < _analysisCutOff) {
         TR_PersistentProfileInfo *next = current->getNext();
         TR_PersistentProfileInfo *nextPrev = current;
-        if (current->isActive()) {
+        if (!disableJProfilerThreadRecompAndPatching && current->isActive()) {
             if (!current->getBlockFrequencyInfo()->isQueuedForRecompilation()) {
                 TR_BlockFrequencyInfo *bfi = current->getBlockFrequencyInfo();
                 int32_t maxFreq = bfi->getMaxRawCount();
@@ -3092,7 +3093,7 @@ void TR_JProfilerAnalysisTask::performAnalysis(J9JITConfig *jitConfig, J9VMThrea
                     }
                 }
             }
-        } else {
+        } else if (!info->isActive()) {
             // If the method has been redefined / class is unloaded, profiling info would be marked inactive.
             // Do not patch or even recompile method using JProfiling, let the new method reach proper invocation count
             // to get compiled, for now remove the information from Active Profiling Info List.
