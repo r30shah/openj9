@@ -2900,6 +2900,16 @@ uint32_t TR_JProfilerPatchingTask::patchAllMethods(TR_J9VMBase *vm)
 bool TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase *vm, TR_PersistentProfileInfo *info)
 {
     if (info->isActive()) {
+        if (TR::Options::getVerboseOption(TR_VerboseProfiling)) {
+            J9UTF8 *className;
+            J9UTF8 *name;
+            J9UTF8 *signature;
+            J9Method *method = (J9Method *)TR::Recompilation::getJittedBodyInfoFromPC(current->getBlockFrequencyInfo()->getStartPCOfBodyCollectingProfilingData())->getMethodInfo()->getMethodInfo();
+            getClassNameSignatureFromMethod(method, className, name, signature);
+            TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "Patching %.*s.%.*s%.*s",
+                J9UTF8_LENGTH(className), (char *)J9UTF8_DATA(className), J9UTF8_LENGTH(name),
+                (char *)J9UTF8_DATA(name), J9UTF8_LENGTH(signature), (char *)J9UTF8_DATA(signature));
+        }
         if (info->getValueProfileInfo() != NULL && info->getValueProfileInfo()->getJProfValueSites() != NULL) {
             info->getValueProfileInfo()->getJProfValueSites()->compensate(vm, true, 0);
         }
