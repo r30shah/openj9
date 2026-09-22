@@ -2913,6 +2913,7 @@ bool TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase *vm, TR_PersistentProfile
                 (char *)J9UTF8_DATA(name), J9UTF8_LENGTH(signature), (char *)J9UTF8_DATA(signature));
         }
         if (info->getValueProfileInfo() != NULL && info->getValueProfileInfo()->getJProfValueSites() != NULL) {
+            TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "Value Prof Patching");
             info->getValueProfileInfo()->getJProfValueSites()->compensate(vm, true, 0);
         }
         info->getBlockFrequencyInfo()->getJProfBlockFrequencyCounterSites()->compensate(vm, true, 0);
