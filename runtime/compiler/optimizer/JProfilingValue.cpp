@@ -162,7 +162,7 @@ int32_t TR_JProfilingValue::perform()
         logprints(trace(), log, "JProfiling has been enabled for profiling compilations, run JProfilingValue\n");
     } else if (comp()->getOption(TR_EnableJProfiling)) {
         logprints(trace(), log, "JProfiling has been enabled, run JProfilingValue\n");
-    } else if (comp()->getOptimizationPlan()->insertPatchableJProfiling() && comp()->getRecompilationInfo() && !disablePatchJProfValue) {
+    } else if (comp()->getOptimizationPlan()->insertPatchableJProfiling() && comp()->getRecompilationInfo() && comp()->getOption(TR_EnableExpeiment)) {
         logprints(trace(), log, "Patchable JProfiling has been enabled, run JProfilingValue\n");
     } else {
         logprints(trace(), log, "JProfiling has been disabled, skip JProfilingValue\n");

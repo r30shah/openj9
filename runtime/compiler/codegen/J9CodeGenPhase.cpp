@@ -83,8 +83,10 @@ void J9::CodeGenPhase::performBinaryEncodingPhase(TR::CodeGenerator *cg, TR::Cod
         if (valueInfo != NULL) {
             TR::list<TR::Instruction *> *instrList = cg->getJProfValueBranchInstrList();
             if (instrList != NULL && !instrList->empty()) {
+                OMR::Logger *log = cg->comp()->log();
                 TR::PatchSites *sites
                     = new (comp->trPersistentMemory()) TR::PatchSites(comp->trPersistentMemory(), instrList->size());
+                logprintf(cg->comp()->getOption(TR_TraceAll), log, "site = %p, instruction count  = %d\n", sites, instrList->size());
                 for (auto iter = instrList->begin(); iter != instrList->end(); ++iter) {
                     uint8_t *location = (*iter)->getBinaryEncoding();
                     sites->add(location, 0);
