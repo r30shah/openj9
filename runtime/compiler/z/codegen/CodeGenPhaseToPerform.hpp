@@ -40,5 +40,5 @@ ReserveCodeCachePhase, FixUpProfiledInterfaceGuardTest,
     InstructionSelectionPhase, CreateStackAtlasPhase,
 
     PeepholePhase, RegisterAssigningPhase, MapStackPhase, PeepholePhase, ExpandInstructionsPhase, BinaryEncodingPhase,
-    EmitSnippetsPhase, ProcessRelocationsPhase
+    EmitSnippetsPhase, ProcessRelocationsPhase, PatchableJProfCodeGenPhase
 

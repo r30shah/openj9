@@ -47,7 +47,6 @@ protected:
 
 public:
     void reportPhase(PhaseValue phase);
-    static void performBinaryEncodingPhase(TR::CodeGenerator *cg, TR::CodeGenPhase *);
     static void performFixUpProfiledInterfaceGuardTestPhase(TR::CodeGenerator *cg, TR::CodeGenPhase *);
     static void performRecompDueToPhaseChangeCode(TR::CodeGenerator *cg, TR::CodeGenPhase *);
     static void performAllocateLinkageRegistersPhase(TR::CodeGenerator *cg, TR::CodeGenPhase *);
@@ -56,6 +55,7 @@ public:
     static void performInsertEpilogueYieldPointsPhase(TR::CodeGenerator *cg, TR::CodeGenPhase *);
     static void performCompressedReferenceRematerializationPhase(TR::CodeGenerator *cg, TR::CodeGenPhase *);
     static void performIdentifyUnneededByteConvsPhase(TR::CodeGenerator *cg, TR::CodeGenPhase *);
+    static void performPatchableJProfCodeGenPhase(TR::CodeGenerator *cg, TR::CodeGenPhase *);
 
     // override base class implementation because new phases are being added
     static int getNumPhases();
