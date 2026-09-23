@@ -56,9 +56,8 @@ void J9::CodeGenPhase::reportPhase(PhaseValue phase)
 
 int J9::CodeGenPhase::getNumPhases() { return static_cast<int>(TR::CodeGenPhase::LastJ9Phase); }
 
-void J9::CodeGenPhase::performBinaryEncodingPhase(TR::CodeGenerator *cg, TR::CodeGenPhase *phase)
+void J9::CodeGenPhase::performPatchableJProfCodeGenPhase(TR::CodeGenerator *cg, TR::CodeGenPhase *phase)
 {
-    OMR::CodeGenPhase::performBinaryEncodingPhase(cg, phase);
     TR::Compilation *comp = cg->comp();
     if (comp->getOptimizationPlan()->insertPatchableJProfiling() && comp->getRecompilationInfo() != NULL) {
         uintptr_t key = reinterpret_cast<uintptr_t>(comp->getRecompilationInfo()->getJittedBodyInfo());
@@ -87,7 +86,8 @@ void J9::CodeGenPhase::performBinaryEncodingPhase(TR::CodeGenerator *cg, TR::Cod
                     = new (comp->trPersistentMemory()) TR::PatchSites(comp->trPersistentMemory(), instrList->size());
                 for (auto iter = instrList->begin(); iter != instrList->end(); ++iter) {
                     uint8_t *location = (*iter)->getBinaryEncoding();
-                    sites->add(location, 0);
+                    uint8_t *destination = (*iter)->getLabelSymbol()->getCodeLocation();
+                    sites->add(location, destination);
                 }
                 TR_JProfValueSites *valueProfSites = TR_JProfValueSites::make(comp->fe(), comp->trPersistentMemory(),
                     key, sites, comp->getMetadataAssumptionList());
@@ -173,6 +173,8 @@ const char *J9::CodeGenPhase::getName(TR::CodeGenPhase::PhaseValue phase)
             return "FixUpProfiledInterfaceGuardTest";
         case RecompDueToPhaseChangeCode:
             return "RecompDueToPhaseChangeCode";
+        case PatchableJProfCodeGenPhase:
+            return "PatchableJProfCodeGenPhase";
         default:
             return OMR::CodeGenPhaseConnector::getName(phase);
     }

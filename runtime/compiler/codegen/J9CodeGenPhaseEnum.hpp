@@ -30,4 +30,4 @@
 // The entries in this file must be kept in sync with codegen/J9CodeGenPhaseFunctionTable.hpp
 FixUpProfiledInterfaceGuardTest, RecompDueToPhaseChangeCode, AllocateLinkageRegisters, PopulateOSRBufferPhase,
     MoveUpArrayLengthStoresPhase, InsertEpilogueYieldPointsPhase, CompressedReferenceRematerializationPhase,
-    IdentifyUnneededByteConvsPhase, LastJ9Phase = IdentifyUnneededByteConvsPhase,
+    IdentifyUnneededByteConvsPhase, PatchableJProfCodeGenPhase, LastJ9Phase = PatchableJProfCodeGenPhase,
