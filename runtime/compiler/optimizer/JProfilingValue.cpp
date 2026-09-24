@@ -642,6 +642,7 @@ bool TR_JProfilingValue::addProfilingTrees(TR::Compilation *comp, TR::TreeTop *i
             glRegDepsToCopyInProfilingCodeBranches = mainlineReturnEntryGlRegDeps->duplicateTree();
             profilingCodeBlock->getEntry()->getNode()->addChildren(&glRegDepsToCopyInProfilingCodeBranches, 1);
             TR::Node *glRegDepsToAttach = copyGlRegDeps(comp, glRegDepsToCopyInProfilingCodeBranches);
+            profilingCodeBlock->getExit()->getNode()->addChildren(&glRegDepsToAttach, 1);
             profilingValue = childRegDepIndexForProfilingValue != -1
                 ? glRegDepsToCopyInProfilingCodeBranches->getChild(childRegDepIndexForProfilingValue)
                 : NULL;
