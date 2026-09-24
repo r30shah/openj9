@@ -2804,13 +2804,6 @@ bool J9::Options::fePreProcess(void *base)
     self()->setOption(TR_DisableSVMDuringStartup);
 #endif
 
-#if (defined(TR_HOST_X86) || defined(TR_HOST_S390))
-    _initialOptLevel = cold;
-    self()->setOption(TR_EnablePatchableJProfiling);
-    self()->setOption(TR_DisableGuardedCountingRecompilations);
-    self()->setOption(TR_DisableProfiling);
-#endif
-
     // Forcing inlining of unrecognized intrinsics needs more performance investigation
     self()->setOption(TR_DisableInliningUnrecognizedIntrinsics);
 
