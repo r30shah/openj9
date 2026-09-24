@@ -303,6 +303,10 @@ IDATA J9VMDllMain(J9JavaVM *vm, IDATA stage, void *reserved)
             if (disableAOT)
                 isAOT = false;
 
+#if (defined(TR_HOST_S390) || defined(TR_HOST_X86))
+            isAOT = false;
+#endif
+
 /* If debuginfoserver has been loaded and no FSD support, unload this library and aot */
 #ifdef J9VM_JIT_FULL_SPEED_DEBUG
             fullSpeedDebugSet = TRUE;
