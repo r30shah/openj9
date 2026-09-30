@@ -611,7 +611,7 @@ TR_PersistentProfileInfo *TR_PersistentMethodInfo::getForSharedInfo(TR_Persisten
     // Assumes no updates to the ptr whilst locked
     VM_AtomicSupport::set((uintptr_t *)ptr, unlocked);
 
-    return *ptr;
+    return (TR_PersistentProfileInfo *)unlocked;
 }
 
 /**
