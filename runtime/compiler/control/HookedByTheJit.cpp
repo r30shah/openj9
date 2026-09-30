@@ -5313,7 +5313,20 @@ static void jitStateLogic(J9JITConfig *jitConfig, TR::CompilationInfo *compInfo,
                 compInfo->_intervalStats._numRecompilationsInInterval, compInfo->getMethodQueueSize(),
                 persistentInfo->isClassLoadingPhase() ? "ON" : "OFF", avgJvmCpuUtil);
         }
-
+        if (TR::Options::getCmdLineOptions()->getOption(TR_EnablePatchableJProfiling)) {
+            TR_JProfilerThreadsDispatcher *dispatcher = ((TR_JitPrivateConfig *)(jitConfig->privateConfig))->jProfilerThreadsDispatcher;
+            if (dispatcher != NULL) {
+                if (newState == STEADY_STATE || newState == DEEPSTEADY_STATE) {
+                    dispatcher->setAnalysisThreadSleepTime(20000);
+                    dispatcher->setAnalysisCutOff(128);
+                    dispatcher->setAnalysisTaskListSizeToTriggerPatching(1);
+                } else {
+                    dispatcher->setAnalysisThreadSleepTime(30000);
+                    dispatcher->setAnalysisCutOff(1024);
+                    dispatcher->setAnalysisTaskListSizeToTriggerPatching(10000);
+                }
+            }
+        }
         // Turn on/off profiling in the jit
         if (!TR::Options::getCmdLineOptions()->getOption(TR_DisableSamplingJProfiling)) {
             int32_t newProfilingValue = -1;
