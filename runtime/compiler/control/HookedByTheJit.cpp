@@ -5317,7 +5317,7 @@ static void jitStateLogic(J9JITConfig *jitConfig, TR::CompilationInfo *compInfo,
             TR_JProfilerThreadsDispatcher *dispatcher = ((TR_JitPrivateConfig *)(jitConfig->privateConfig))->jProfilerThreadsDispatcher;
             if (dispatcher != NULL) {
                 if (newState == STEADY_STATE || newState == DEEPSTEADY_STATE) {
-                    dispatcher->setAnalysisThreadSleepTime(60000);
+                    dispatcher->setAnalysisThreadSleepTime(180000);
                     dispatcher->setAnalysisCutOff(20000);
                     dispatcher->setAnalysisTaskListSizeToTriggerPatching(1);
                 } else {
