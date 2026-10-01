@@ -323,6 +323,10 @@ extern "C" IDATA j9jit_testarossa_err(struct J9JITConfig *jitConfig, J9VMThread 
                     event._eventType = TR_MethodEvent::JProfilerRecompilationTrigger;
                     event._nextOptLevel = warm;
                     eventSet = true;
+                    static bool patchRecompCandidate = feGetEnv("TR_PatchRecompCandidateFirst") != NULL;
+                    if (patchRecompCandidate) {
+                        TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase::get(jitConfig, NULL), jbi->getProfileInfo());
+                    }
                 } else {
                     return 0;
                 }
