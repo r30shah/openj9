@@ -3097,10 +3097,10 @@ void TR_JProfilerAnalysisTask::performAnalysis(J9JITConfig *jitConfig, J9VMThrea
                                                ->getMethodInfo()
                                                ->getMethodInfo();
                         getClassNameSignatureFromMethod(method, className, name, signature);
-                        TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "Age of method %.*s.%.*s%.*s : %lu",
+                        TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "Age of method %.*s.%.*s%.*s : %lu, patchListSize = %d",
                             J9UTF8_LENGTH(className), (char *)J9UTF8_DATA(className), J9UTF8_LENGTH(name),
                             (char *)J9UTF8_DATA(name), J9UTF8_LENGTH(signature), (char *)J9UTF8_DATA(signature),
-                            ageOfMethod);
+                            ageOfMethod, _listOfProfileInfoToBePatched.getSize());
                     }
                     if (ageOfMethod > _ageCutOffForPatching) {
                         removeProfilingInfoFromListOfActiveProfilingInfo(prev, current);
