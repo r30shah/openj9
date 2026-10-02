@@ -120,8 +120,10 @@ bool J9::CFG::setFrequencies(TR_ResolvedMethod *method)
          self()->normalizeFrequencies(nodesToBeNormalized);
          if (comp()->getOption(TR_TraceBFGeneration))
             {
+            OMR::Logger *log = comp()->log();
+            log->printf("EXP: CFG of %s after setting frequencies using JITProfiling\n", self()->getMethodSymbol()->signature(comp()->trMemory()));
             traceMsg(comp(), "EXP: CFG of %s after setting frequencies using JITProfiling\n", self()->getMethodSymbol()->signature(comp()->trMemory()));
-            comp()->dumpFlowGraph(self());
+            comp()->dumpFlowGraph(log, self());
             }
          return true;
          }
