@@ -1418,7 +1418,10 @@ bool TR_J9EstimateCodeSize::realEstimateCodeSize(TR_CallTarget *calltarget, TR_C
     } else if (callGraphEnabled) {
         cfg._calledFrequency = 10000;
     }
-
+    if (comp()->getOption(TR_TraceBFGeneration)) {
+        OMR::Logger *log = comp()->log();
+        log->printf("RAHIL Trace - cfg propagateColdInfo - %s\n", callGraphEnabled ? "true" : "false");
+    }
     cfg.propagateColdInfo(callGraphEnabled); // propagate coldness but also generate frequency information
     // for blocks if call graph profiling is enabled
 
