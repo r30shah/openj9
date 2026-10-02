@@ -113,6 +113,10 @@ bool J9::CFG::setFrequencies()
     // Do not use JIT profiler info for estimate code size.
     bool externFreq = !comp()->getOption(TR_EnableScorchInterpBlockFrequencyProfiling);
     bool hasJPI = hasJProfilingInfo(comp(), self());
+    if (comp()->getOption(TR_TraceBFGeneration)) {
+        OMR::Logger *log = comp()->log();
+        log->printf("RAHIL: J9CFG Setting frequency - comp()->hasBlockFrequencyInfo = %s, hasJPI = %s\n", comp()->hasBlockFrequencyInfo() ? "true" : "false", hasJPI ? "true" : "false");
+    }
     if (externFreq && comp()->hasBlockFrequencyInfo()
         && ((!hasJPI && (this == comp()->getFlowGraph()))
             || (hasJPI && ((*(TR_BlockFrequencyInfo::getEnableJProfilingRecompilation())) == -1)))) {
