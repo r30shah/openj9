@@ -892,7 +892,7 @@ TR_AbstractInfo *TR_ValueProfileInfoManager::getValueInfo(TR_ByteCodeInfo &bcInf
     TR_ValueInfoKind kind, uint32_t source)
 {
     if (comp->getOption(TR_EnablePatchableJProfiling)) {
-        return getValueInfoJProf(bci, comp, kind, source);
+        return getValueInfoJProf(bcInfo, comp, kind, source);
     }
     TR_AbstractInfo *info = NULL;
     bool internal = _jitValueProfileInfo && (source == allProfileInfo || source == justJITProfileInfo);
