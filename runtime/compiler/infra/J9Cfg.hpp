@@ -85,7 +85,7 @@ public:
     bool setFrequencies(TR_ResolvedMethod *method = NULL);
 
     void setBlockAndEdgeFrequenciesBasedOnStructure();
-    TR_BitVector *setBlockAndEdgeFrequenciesBasedOnJITProfiler();
+    TR_BitVector *setBlockAndEdgeFrequenciesBasedOnJITProfiler(TR_PersistentProfileInfo *info);
     void setBlockFrequenciesBasedOnInterpreterProfiler();
     void computeInitialBlockFrequencyBasedOnExternalProfiler(TR::Compilation *comp);
     void propagateFrequencyInfoFromExternalProfiler(TR_ExternalProfiler *profiler);

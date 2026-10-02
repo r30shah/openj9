@@ -141,7 +141,7 @@ bool J9::CFG::setFrequencies(TR_ResolvedMethod *method)
             || (hasJPI && ((*(TR_BlockFrequencyInfo::getEnableJProfilingRecompilation())) == -1)))) {
         if (!self()->consumePseudoRandomFrequencies()) {
             _externalProfiler = comp()->fej9()->hasIProfilerBlockFrequencyInfo(*comp());
-            TR_BitVector *nodesToBeNormalized = self()->setBlockAndEdgeFrequenciesBasedOnJITProfiler();
+            TR_BitVector *nodesToBeNormalized = self()->setBlockAndEdgeFrequenciesBasedOnJITProfiler(getProfilingInfoForCFG(comp(), self());
             self()->normalizeFrequencies(nodesToBeNormalized);
             if (comp()->getOption(TR_TraceBFGeneration)) {
                 OMR::Logger *log = comp()->log();
@@ -212,11 +212,11 @@ static bool isVirtualGuard(TR::Node *ifNode)
     return (ifNode->isTheVirtualGuardForAGuardedInlinedCall() || ifNode->isProfiledGuard());
 }
 
-TR_BitVector *J9::CFG::setBlockAndEdgeFrequenciesBasedOnJITProfiler()
+TR_BitVector *J9::CFG::setBlockAndEdgeFrequenciesBasedOnJITProfiler(TR_PersistentProfileInfo *profileInfo)
 {
     OMR::Logger *log = comp()->log();
     bool trace = comp()->getOption(TR_TraceBFGeneration);
-    TR_PersistentProfileInfo *profileInfo = getProfilingInfoForCFG(comp(), self());
+    //TR_PersistentProfileInfo *profileInfo = getProfilingInfoForCFG(comp(), self());
 
     if (!profileInfo)
         return NULL;
