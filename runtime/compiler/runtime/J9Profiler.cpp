@@ -852,7 +852,6 @@ TR_AbstractInfo *TR_ValueProfileInfoManager::getValueInfoJProf(TR_ByteCodeInfo &
                 bciCheck = callSite->_byteCodeInfo;
             }
             // Now start looking into the other method's valueProfilingInfo
-            TR_ByteCodeInfo bciCheck;
             while (!callStackInfo.empty()) {
                 auto extraCaller = callStackInfo.back();
                 bciCheck = extraCaller.second;
