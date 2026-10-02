@@ -832,9 +832,69 @@ TR_AbstractInfo *TR_ValueProfileInfoManager::getValueInfo(TR::Node *node, TR::Co
     return getValueInfo(node->getByteCodeInfo(), comp, kind, source);
 }
 
+TR_AbstractInfo *TR_ValueProfileInfoManager::getValueInfoJProf(TR_ByteCodeInfo &bcInfo, TR::Compilation *comp,
+    TR_ValueInfoKind kind, uint32_t source)
+{
+    TR_AbstractInfo *info = NULL;
+    if (source == allProfileInfo || source == justJITProfileInfo) {
+        // We did profile some values in this method's profiled compilation - Check if that contains the bcInfo we are interested in.
+        if (_jitValueProfileInfo != NULL) {
+            info = _jitValueProfileInfo->getValueInfo(bcInfo, comp, kind, HashTableProfiler, true);
+        }
+        // Ok so either we do not have the ValueProfilingInfo or the value we are interested value profiled. Let's take a look at the value profiling information of the other methods in the call chain.
+        if (info == NULL && bcInfo.getCallerIndex() > -1) {
+            // Preparing a call stack in reverse order.
+            TR_ByteCodeInfo bciCheck = bcInfo;
+            TR::list<std::pair<TR_OpaqueMethodBlock *, TR_ByteCodeInfo> > callStackInfo(comp->allocator());
+            while (bciCheck.getCallerIndex() > -1) {
+                TR_InlinedCallSite *callSite = &comp->getInlinedCallSite(bciCheck.getCallerIndex());
+                callStackInfo.push_back(std::make_pair(comp->fe()->getInlinedCallSiteMethod(callSite), bciCheck));
+                bciCheck = callSite->_byteCodeInfo;
+            }
+            // Now start looking into the other method's valueProfilingInfo
+            TR_ByteCodeInfo bciCheck;
+            while (!callStackInfo.empty()) {
+                auto extraCaller = callStackInfo.back();
+                bciCheck = extraCaller.second;
+                callStackInfo.pop_back();
+                int32_t callerIndex = bciCheck.getCallerIndex();
+                TR_ResolvedMethod *resolvedMethod = comp->getInlinedResolvedMethod(callerIndex);
+                TR_PersistentProfileInfo *ppinfo = TR_PersistentProfileInfo::get(comp, resolvedMethod);
+                if (ppinfo && ppinfo->getBlockFrequencyInfo()) {
+                    int32_t effectiveCallerIndex = -1;
+                    bool queryInfo = callStackInfo.empty();
+                    if (!queryInfo) {
+                        callStackInfo.push_back(extraCaller);
+                        queryInfo = ppinfo->getCallSiteInfo()->computeEffectiveCallerIndex(comp, callStackInfo, effectiveCallerIndex);
+                        callStackInfo.pop_back();
+                    }
+                    if (queryInfo) {
+                        TR_ValueProfileInfo *jitValueProfileInfo = ppinfo->getValueProfileInfo();
+                        TR_ByteCodeInfo callee(bcInfo);
+                        callee.setCallerIndex(effectiveCallerIndex);
+                        if (jitValueProfileInfo != NULL) {
+                            info = jitValueProfileInfo->getValueInfo(callee, comp, kind, HashTableProfiler, true);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (info == NULL && (source == allProfileInfo || source == justInterpreterProfileInfo)) {
+        TR_ExternalValueProfileInfo *iVPInfo = comp->fej9()->getValueProfileInfoFromIProfiler(bcInfo, comp);
+        if (iVPInfo)
+            info = iVPInfo->getValueInfo(bcInfo, comp);
+    }
+    return info;
+}
+
 TR_AbstractInfo *TR_ValueProfileInfoManager::getValueInfo(TR_ByteCodeInfo &bcInfo, TR::Compilation *comp,
     TR_ValueInfoKind kind, uint32_t source)
 {
+    if (comp->getOption(TR_EnablePatchableJProfiling)) {
+        return getValueInfoJProf(bci, comp, kind, source);
+    }
     TR_AbstractInfo *info = NULL;
     bool internal = _jitValueProfileInfo && (source == allProfileInfo || source == justJITProfileInfo);
     bool external = source == allProfileInfo || source == justInterpreterProfileInfo;

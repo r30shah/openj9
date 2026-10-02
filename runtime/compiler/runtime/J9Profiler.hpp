@@ -596,6 +596,8 @@ public:
      */
     TR_AbstractInfo *getValueInfo(TR_ByteCodeInfo &bcInfo, TR::Compilation *comp, TR_ValueInfoKind type,
         uint32_t source = allProfileInfo);
+    TR_AbstractInfo *getValueInfoJProf(TR_ByteCodeInfo &bcInfo, TR::Compilation *comp, TR_ValueInfoKind type,
+        uint32_t source = allProfileInfo);
 
     static TR_AbstractInfo *getProfiledValueInfo(TR_ByteCodeInfo &bcInfo, TR::Compilation *comp, TR_ValueInfoKind type,
         uint32_t source = allProfileInfo);
