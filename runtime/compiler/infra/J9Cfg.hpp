@@ -45,6 +45,7 @@ typedef J9::CFG CFGConnector;
 #include "infra/List.hpp"
 #include "infra/TRCfgEdge.hpp"
 #include "infra/TRCfgNode.hpp"
+#include "runtime/J9Profiler.hpp"
 
 class TR_BitVector;
 class TR_BlockCloner;
