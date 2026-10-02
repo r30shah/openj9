@@ -82,7 +82,7 @@ public:
      *
      * Returns true if profiling information was available and used.
      */
-    bool setFrequencies();
+    bool setFrequencies(TR_ResolvedMethod *method = NULL);
 
     void setBlockAndEdgeFrequenciesBasedOnStructure();
     TR_BitVector *setBlockAndEdgeFrequenciesBasedOnJITProfiler();

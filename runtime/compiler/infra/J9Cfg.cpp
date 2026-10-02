@@ -101,7 +101,7 @@ static bool hasJProfilingInfo(TR::Compilation *comp, TR::CFG *cfg)
     return false;
 }
 
-bool J9::CFG::setFrequencies()
+bool J9::CFG::setFrequencies(TR_ResolvedMethod *method)
 {
     if (this == comp()->getFlowGraph()) {
         resetFrequencies();
@@ -109,6 +109,23 @@ bool J9::CFG::setFrequencies()
     _max_edge_freq = MAX_PROF_EDGE_FREQ;
 
     TR_ExternalProfiler *profiler;
+    if (method != NULL && comp()->getOption(TR_EnablePatchableJProfiling))
+      {
+      TR_PersistentProfileInfo *info = TR_PersistentProfileInfo::get(comp(), method);
+      if (info != NULL
+            && info->getBlockFrequencyInfo() != NULL
+            && info->getBlockFrequencyInfo()->isJProfilingData())
+         {
+         TR_BitVector *nodesToBeNormalized = self()->setBlockAndEdgeFrequenciesBasedOnJITProfiler(info);
+         self()->normalizeFrequencies(nodesToBeNormalized);
+         if (comp()->getOption(TR_TraceBFGeneration))
+            {
+            traceMsg(comp(), "EXP: CFG of %s after setting frequencies using JITProfiling\n", self()->getMethodSymbol()->signature(comp()->trMemory()));
+            comp()->dumpFlowGraph(self());
+            }
+         return true;
+         }
+      }
 
     // Do not use JIT profiler info for estimate code size.
     bool externFreq = !comp()->getOption(TR_EnableScorchInterpBlockFrequencyProfiling);
