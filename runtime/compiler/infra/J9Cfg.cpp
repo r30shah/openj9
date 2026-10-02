@@ -122,7 +122,6 @@ bool J9::CFG::setFrequencies(TR_ResolvedMethod *method)
             {
             OMR::Logger *log = comp()->log();
             log->printf("EXP: CFG of %s after setting frequencies using JITProfiling\n", self()->getMethodSymbol()->signature(comp()->trMemory()));
-            traceMsg(comp(), "EXP: CFG of %s after setting frequencies using JITProfiling\n", self()->getMethodSymbol()->signature(comp()->trMemory()));
             comp()->dumpFlowGraph(log, self());
             }
          return true;
@@ -141,7 +140,7 @@ bool J9::CFG::setFrequencies(TR_ResolvedMethod *method)
             || (hasJPI && ((*(TR_BlockFrequencyInfo::getEnableJProfilingRecompilation())) == -1)))) {
         if (!self()->consumePseudoRandomFrequencies()) {
             _externalProfiler = comp()->fej9()->hasIProfilerBlockFrequencyInfo(*comp());
-            TR_BitVector *nodesToBeNormalized = self()->setBlockAndEdgeFrequenciesBasedOnJITProfiler(getProfilingInfoForCFG(comp(), self());
+            TR_BitVector *nodesToBeNormalized = self()->setBlockAndEdgeFrequenciesBasedOnJITProfiler(getProfilingInfoForCFG(comp(), self()));
             self()->normalizeFrequencies(nodesToBeNormalized);
             if (comp()->getOption(TR_TraceBFGeneration)) {
                 OMR::Logger *log = comp()->log();
