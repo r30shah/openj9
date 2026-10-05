@@ -1060,8 +1060,8 @@ static uint32_t getInstanceOfOrCheckCastTopProfiledClass(TR::CodeGenerator *cg, 
         return 0;
     }
 
-    TR_AddressInfo *valueInfo = static_cast<TR_AddressInfo *>(valueProfileInfo->getValueInfo(bcInfo, comp, AddressInfo,
-        TR_ValueProfileInfoManager::justInterpreterProfileInfo));
+    TR_AddressInfo *valueInfo = static_cast<TR_AddressInfo *>(valueProfileInfo->getValueInfo(bcInfo, comp, AddressInfo));
+//        TR_ValueProfileInfoManager::justInterpreterProfileInfo));
     if (!valueInfo || valueInfo->getNumProfiledValues() == 0) {
         return 0;
     }
