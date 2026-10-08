@@ -1496,10 +1496,12 @@ int32_t TR_BlockFrequencyInfo::getFrequencyInfo(TR::Block *block, TR::Compilatio
     TR::Node *startNode = block->getEntry()->getNode();
     TR_ByteCodeInfo bci = startNode->getByteCodeInfo();
     bool normalizeForCallers = true;
-    logprintf(comp->getOption(TR_TraceBFGeneration), comp->log(), "@@RAHIL [%d,%d]\n",
-        bci.getCallerIndex(), bci.getByteCodeIndex());
+//    logprintf(comp->getOption(TR_TraceBFGeneration), comp->log(), "@@RAHIL [%d,%d]\n",
+//        bci.getCallerIndex(), bci.getByteCodeIndex());
     if (bci.getCallerIndex() == -10) {
-        bci.setCallerIndex(comp->getCurrentInlinedSiteIndex());
+//        bci.setCallerIndex(comp->getCurrentInlinedSiteIndex());
+//        bci.setCallerIndex(comp->getCurrentInlinedSiteIndex());
+        bci.setCallerIndex(-1);
         normalizeForCallers = false;
     }
     int32_t frequency = getFrequencyInfo(bci, comp, normalizeForCallers, comp->getOption(TR_TraceBFGeneration));
