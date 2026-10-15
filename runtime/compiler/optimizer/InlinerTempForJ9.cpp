@@ -4205,10 +4205,14 @@ void TR_MultipleCallTargetInliner::weighCallSite(TR_CallStack *callStack, TR_Cal
                             static const int32_t callGraphSizeBasedThreshold = atoi(cmt);
                             veryLargeCompiledMethodThreshold = callGraphSizeBasedThreshold;
                         }
-
                         bool largeCompiledCallee = !comp()->getOption(TR_InlineVeryLargeCompiledMethods)
                             && isLargeCompiledMethod(calltarget->_calleeMethod, size, frequency2, exemptionFreqCutoff,
                                 veryLargeCompiledMethodThreshold, veryLargeCompiledMethodFaninThreshold);
+                        if (comp()->trace(OMR::inlining)) {
+                            heuristicTrace(tracer(),
+                                "RAHIL - Trace - Called isLargeCompiledMethod - size = %d, frequency2 = %d, exemptionFreqCutoff = %d, veryLargeCompiledMethodThreshold = %d, veryLargeCompiledMethodFaninThreshold = %d, largeCompiledCallee = %s\n",
+                                size, frequency2, exemptionFreqCutoff, veryLargeCompiledMethodThreshold, veryLargeCompiledMethodFaninThreshold, largeCompiledCallee? "true" : "false");
+                        }
                         if (largeCompiledCallee) {
                             size = size * TR::Options::_inlinerVeryLargeCompiledMethodAdjustFactor;
                         } else if (frequency2 > borderFrequency) {
