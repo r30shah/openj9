@@ -4229,7 +4229,7 @@ void TR_MultipleCallTargetInliner::weighCallSite(TR_CallStack *callStack, TR_Cal
                             }
                             if (comp()->trace(OMR::inlining))
                                 heuristicTrace(tracer(),
-                                    "WeighCallSite: Adjusted call-graph size for call node %p, from %d to %d\n",
+                                    "RAHIL 5 : WeighCallSite: Adjusted call-graph size for call node %p, from %d to %d\n",
                                     callsite->_callNode, origSize, size);
                         } else if ((frequency2 > 0) && (frequency2 < veryColdBorderFrequency)) // luke-warm block
                         {
@@ -4238,7 +4238,7 @@ void TR_MultipleCallTargetInliner::weighCallSite(TR_CallStack *callStack, TR_Cal
                             size = (int)((float)size / (factor * factor)); // make the size look bigger to inline less
                             if (comp()->trace(OMR::inlining))
                                 heuristicTrace(tracer(),
-                                    "WeighCallSite: Adjusted call-graph size for call node %p, from %d to %d\n",
+                                    "RAHIL 4 : WeighCallSite: Adjusted call-graph size for call node %p, from %d to %d\n",
                                     callsite->_callNode, origSize, size);
                         } else if ((frequency2 >= 0) && (frequency2 < coldBorderFrequency)) // very cold block
                         {
@@ -4251,18 +4251,18 @@ void TR_MultipleCallTargetInliner::weighCallSite(TR_CallStack *callStack, TR_Cal
 
                             if (comp()->trace(OMR::inlining))
                                 heuristicTrace(tracer(),
-                                    "WeighCallSite: Adjusted call-graph size for call node %p, from %d to %d\n",
+                                    "Rahil1 : WeighCallSite: Adjusted call-graph size for call node %p, from %d to %d\n",
                                     callsite->_callNode, origSize, size);
                         } else {
                             if (comp()->trace(OMR::inlining))
                                 heuristicTrace(tracer(),
-                                    "WeighCallSite: Not adjusted call-graph size for call node %p, size %d\n",
+                                    "Rahil2 : WeighCallSite: Not adjusted call-graph size for call node %p, size %d\n",
                                     callsite->_callNode, origSize);
                         }
                     } else {
                         if (comp()->trace(OMR::inlining))
                             heuristicTrace(tracer(),
-                                "WeighCallSite: Not adjusted call-graph size for call node %p, size %d\n",
+                                "Rahil3 : WeighCallSite: Not adjusted call-graph size for call node %p, size %d\n",
                                 callsite->_callNode, origSize);
                     }
                 }
