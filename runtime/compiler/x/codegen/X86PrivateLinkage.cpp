@@ -1169,7 +1169,7 @@ void TR::X86CallSite::computeProfiledTargets()
     if (getMethodSymbol()->isVirtual() && !callNode->getSymbolReference()->isUnresolved()
         && (callNode->getSymbolReference() != comp()->getSymRefTab()->findObjectNewInstanceImplSymbol())
         && callNode->getOpCode().isIndirect()) {
-        if (!comp()->getOption(TR_DisableInterpreterProfiling) && TR_ValueProfileInfoManager::get(comp())) {
+        if (TR_ValueProfileInfoManager::get(comp())) {
             TR::Node *callNode = getCallNode();
             TR_AddressInfo *valueInfo = static_cast<TR_AddressInfo *>(
                 TR_ValueProfileInfoManager::getProfiledValueInfo(callNode, comp(), AddressInfo));
