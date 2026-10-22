@@ -3288,8 +3288,9 @@ void TR_JProfilerThreadsDispatcher::analysisThreadEntryPoint(J9JavaVM *javaVM, u
             break;
         }
         _workerThreadMonitor->exit();
-
-        task->performAnalysis(javaVM->jitConfig, jProfilerMainThread);
+        static bool disableAnalysis = feGetEnv("TR_DisableAnalysisWork") != NULL;
+        if (!disableAnalysis)
+            task->performAnalysis(javaVM->jitConfig, jProfilerMainThread);
 
         // TODO: Currently we check the size of the list containing methods to be patched to initiate patching
         // Need to add parameters to track last time patching was done and size of active profile info list
