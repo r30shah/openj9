@@ -1075,7 +1075,9 @@ int32_t TR_JProfilingBlock::perform()
     if (trace())
         dumpCounterDependencies(log, componentCounters);
     // modify the method to add tests to trigger recompilation at runtime
-    addRecompilationTests(blockFrequencyInfo);
+    static bool disableRecompThroughMethods = feGetEnv("TR_DisableJProfRecompThroughMethods") != NULL;
+    if (!disableRecompThroughMethods)
+        addRecompilationTests(blockFrequencyInfo);
     return 1;
 }
 
