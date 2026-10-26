@@ -59,6 +59,7 @@ int J9::CodeGenPhase::getNumPhases() { return static_cast<int>(TR::CodeGenPhase:
 void J9::CodeGenPhase::performPatchableJProfCodeGenPhase(TR::CodeGenerator *cg, TR::CodeGenPhase *phase)
 {
     TR::Compilation *comp = cg->comp();
+    static bool patchProfilingCodeInitially = feGetEnv("TR_DisablePatchProfilingCode") != NULL;
     if (comp->getOptimizationPlan()->insertPatchableJProfiling() && comp->getRecompilationInfo() != NULL) {
         uintptr_t key = reinterpret_cast<uintptr_t>(comp->getRecompilationInfo()->getJittedBodyInfo());
         TR_BlockFrequencyInfo *info = TR_BlockFrequencyInfo::getCurrent(comp);
@@ -76,6 +77,8 @@ void J9::CodeGenPhase::performPatchableJProfCodeGenPhase(TR::CodeGenerator *cg, 
                 TR_JProfBlockFrequencyCounterSites *patchSites = TR_JProfBlockFrequencyCounterSites::make(comp->fe(),
                     comp->trPersistentMemory(), key, sites, comp->getMetadataAssumptionList());
                 info->addJProfBlockFrequencyCounterPatchSites(patchSites);
+                if (patchProfilingCodeInitially)
+                    patchSites->compensate(comp->fe(), true, 0);
             }
         }
         TR_ValueProfileInfo *valueInfo = TR_ValueProfileInfo::getCurrent(comp);
@@ -92,6 +95,8 @@ void J9::CodeGenPhase::performPatchableJProfCodeGenPhase(TR::CodeGenerator *cg, 
                 TR_JProfValueSites *valueProfSites = TR_JProfValueSites::make(comp->fe(), comp->trPersistentMemory(),
                     key, sites, comp->getMetadataAssumptionList());
                 valueInfo->addJProfValueSites(valueProfSites);
+                if (patchProfilingCodeInitially)
+                    valueProfSites->compensate(comp->fe(), true, 0);
             }
         }
     }
