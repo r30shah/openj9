@@ -1422,7 +1422,11 @@ bool TR_J9EstimateCodeSize::realEstimateCodeSize(TR_CallTarget *calltarget, TR_C
         OMR::Logger *log = comp()->log();
         log->printf("RAHIL Trace - cfg propagateColdInfo - %s\n", callGraphEnabled ? "true" : "false");
     }
-    cfg.propagateColdInfo(callGraphEnabled, calltarget->_calleeMethod); // propagate coldness but also generate frequency information
+    static bool jProfWithDisableInlining = feGetEnv("TR_DisableInliningWithJProfSet") != NULL;
+    if (jProfWithDisableInlining)
+        cfg.propagateColdInfo(callGraphEnabled, calltarget->_calleeMethod); // propagate coldness but also generate frequency information
+    else
+        cfg.propagateColdInfo(callGraphEnabled); // propagate coldness but also generate frequency information
     // for blocks if call graph profiling is enabled
 
     if (tracer()->heuristicLevel()) {
