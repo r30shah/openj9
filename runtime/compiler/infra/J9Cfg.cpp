@@ -135,7 +135,7 @@ bool J9::CFG::setFrequencies(TR_ResolvedMethod *method)
         OMR::Logger *log = comp()->log();
         log->printf("RAHIL: J9CFG Setting frequency - comp()->hasBlockFrequencyInfo = %s, hasJPI = %s\n", comp()->hasBlockFrequencyInfo() ? "true" : "false", hasJPI ? "true" : "false");
     }
-    if (externFreq && comp()->hasBlockFrequencyInfo()
+    if (comp()->getMethodHotness() >= warm && externFreq && comp()->hasBlockFrequencyInfo()
         && ((!hasJPI && (this == comp()->getFlowGraph()))
             || (hasJPI && ((*(TR_BlockFrequencyInfo::getEnableJProfilingRecompilation())) == -1)))) {
         if (!self()->consumePseudoRandomFrequencies()) {
