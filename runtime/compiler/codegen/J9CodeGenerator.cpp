@@ -1939,7 +1939,7 @@ void J9::CodeGenerator::doInstructionSelection()
             if (self()->getAddStorageReferenceHints())
                 self()->addStorageReferenceHints(node);
 #endif
-
+            logprintf(traceCG, log, "CallSites Size = %d\n", comp->getNumInlinedCallSites());
             if (doEvaluation)
                 self()->evaluate(node);
 
