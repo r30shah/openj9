@@ -2168,6 +2168,8 @@ bool TR_CallSiteInfo::hasSameBytecodeInfo(TR_ByteCodeInfo &persistentBytecodeInf
     //
     int32_t persistentCallSite = persistentBytecodeInfo.getCallerIndex();
     int32_t currentCallSite = currentBytecodeInfo.getCallerIndex();
+    if (currentCallSite >= comp->getNumInlinedCallSites())
+        return false;
 
     TR_ASSERT(persistentCallSite < static_cast<int32_t>(_numCallSites & 0x7FFFFFFF),
         "Unexpected call site will overflow. persistentCallSite = %d, _numCallSites = %d", persistentCallSite,
