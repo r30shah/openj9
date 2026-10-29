@@ -1059,9 +1059,10 @@ static uint32_t getInstanceOfOrCheckCastTopProfiledClass(TR::CodeGenerator *cg, 
     if (!valueProfileInfo || comp->compileRelocatableCode()) {
         return 0;
     }
-
+    logprintf(trace, log, "Before getting value Info - size = %d\n", comp->getNumInlinedCallSites());
     TR_AddressInfo *valueInfo = static_cast<TR_AddressInfo *>(valueProfileInfo->getValueInfo(bcInfo, comp, AddressInfo));
 //        TR_ValueProfileInfoManager::justInterpreterProfileInfo));
+    logprintf(trace, log, "After getting value Info - size = %d\n", comp->getNumInlinedCallSites());
     if (!valueInfo || valueInfo->getNumProfiledValues() == 0) {
         return 0;
     }
