@@ -8684,10 +8684,12 @@ TR::Register *J9::Z::TreeEvaluator::VMgenCoreInstanceofEvaluator(TR::Node *node,
     float topClassProbability = 0.0;
     InstanceOfOrCheckCastSequences sequences[InstanceOfOrCheckCastMaxSequences];
     uint32_t numberOfProfiledClass;
+    logprintf(trace, log, "In instanceOf - callSite Size = %d\n", comp->getNumInlinedCallSites());
     uint32_t numSequencesRemaining
         = calculateInstanceOfOrCheckCastSequences(node, sequences, &compileTimeGuessClass, cg, profiledClassesList,
             &numberOfProfiledClass, maxProfiledClasses, &topClassProbability, &topClassWasCastClass);
     TR_S390ScratchRegisterManager *srm = cg->generateScratchRegisterManager(2);
+    logprintf(trace, log, "In instanceOf after test list - callSite Size = %d\n", comp->getNumInlinedCallSites());
 
     /**
      * This evaluator at max allocates 6 GPRs in addition to a pool of 2 scratch
