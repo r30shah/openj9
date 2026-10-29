@@ -2209,6 +2209,8 @@ int32_t TR_CallSiteInfo::hasSamePartialBytecodeInfo(TR_ByteCodeInfo &persistentB
     int32_t callSite1 = currentBytecodeInfo.getCallerIndex();
     int32_t callSite2 = persistentBytecodeInfo.getCallerIndex();
     int matchLevelCount = 0;
+    if (callSite1 >= comp->getNumInlinedCallSites())
+        return matchLevelCount;
     while (callSite1 >= 0 && callSite2 >= 0) {
         TR_InlinedCallSite &callSiteInfo1 = comp->getInlinedCallSite(callSite1);
         TR_InlinedCallSite &callSiteInfo2 = _callSites[callSite2];
