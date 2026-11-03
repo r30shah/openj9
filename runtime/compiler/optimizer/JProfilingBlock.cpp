@@ -849,6 +849,7 @@ void TR_JProfilingBlock::addRecompilationTests(TR_BlockFrequencyInfo *blockFrequ
          *  ...
          *
          */
+        TR::Block *guard1 = NULL;
         if (!isProfilingCompilation && comp()->getOption(TR_EnablePatchableJProfiling)) {
             guard1 = TR::Block::createEmptyBlock(node, comp(), originalFirstBlock->getFrequency());
             TR::SymbolReference *enableRecompTriggerSymRef = comp()->getSymRefTab()->createKnownStaticDataSymbolRef(TR_BlockFrequencyInfo::getEnableJProfilingRecompTrigger(), TR::Int32);
