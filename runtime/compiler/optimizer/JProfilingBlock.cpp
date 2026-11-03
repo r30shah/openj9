@@ -857,7 +857,7 @@ void TR_JProfilingBlock::addRecompilationTests(TR_BlockFrequencyInfo *blockFrequ
             enableRecompTriggerSymRef->getSymbol()->setIsRecompQueuedFlag();
             enableRecompTriggerSymRef->getSymbol()->setNotDataAddress();
             TR::Node *enableRecompTriggerLoad = TR::Node::createWithSymRef(node, TR::iload, 0, enableRecompTriggerSymRef);
-            TR::Node *enableRecompTriggerTest = TR::Node::createif(TR::ificmpeq, enableLoad, TR::Node::iconst(node, 0),originalFirstBlock->getEntry());
+            TR::Node *enableRecompTriggerTest = TR::Node::createif(TR::ificmpeq, enableRecompTriggerLoad, TR::Node::iconst(node, 0), originalFirstBlock->getEntry());
             TR::TreeTop *enableRecompTriggerTT = TR::TreeTop::create(comp(), enableRecompTriggerTest);
             enableRecompTriggerTest->setIsProfilingCode();
             guard1->append(enableRecompTriggerTT);
