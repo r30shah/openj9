@@ -1411,6 +1411,9 @@ void TR_ValueProfileInfo::resetLowFreqValues(OMR::Logger *log)
 
 int32_t TR_BlockFrequencyInfo::_enableJProfilingRecompilation = -1;
 
+// Disable the JProfilingRecompTrigger Initially
+int32_t TR_BlockFrequencyInfo::_enableJProfilingRecompTrigger = 0;
+
 TR_BlockFrequencyInfo::TR_BlockFrequencyInfo(TR_CallSiteInfo *callSiteInfo, int32_t numBlocks, TR_ByteCodeInfo *blocks,
     int32_t *frequencies)
     : _callSiteInfo(callSiteInfo)

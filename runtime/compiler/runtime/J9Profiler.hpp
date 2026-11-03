@@ -752,6 +752,12 @@ public:
 
     static void enableJProfilingRecompilation() { _enableJProfilingRecompilation = -1; }
 
+    static int32_t *getEnableJProfilingRecompTrigger() { return &_enableJProfilingRecompTrigger; }
+
+    static void enableJProfilingRecompTrigger() { _enableJProfilingRecompTrigger = 1; }
+
+    static void disableJProfilingRecompTrigger() { _enableJProfilingRecompTrigger = 0; }
+
     void setIsQueuedForRecompilation() { _isQueuedForRecompilation = -1; }
 
     bool isQueuedForRecompilation() { return (_isQueuedForRecompilation == -1); }
@@ -859,6 +865,8 @@ private:
     TR_BitVector **_counterDerivationInfo;
     int32_t _entryBlockNumber;
     static int32_t _enableJProfilingRecompilation;
+
+    static int32_t _enableJProfilingRecompTrigger;
     // Following flag is checked at runtime to know if we have queued this method for recompilation and skip the
     // profiling code
     int32_t _isQueuedForRecompilation;
