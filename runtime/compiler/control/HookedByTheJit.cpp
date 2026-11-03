@@ -5316,14 +5316,12 @@ static void jitStateLogic(J9JITConfig *jitConfig, TR::CompilationInfo *compInfo,
         if (TR::Options::getCmdLineOptions()->getOption(TR_EnablePatchableJProfiling)) {
             TR_JProfilerThreadsDispatcher *dispatcher = ((TR_JitPrivateConfig *)(jitConfig->privateConfig))->jProfilerThreadsDispatcher;
             if (dispatcher != NULL) {
-                if (newState == STEADY_STATE || newState == DEEPSTEADY_STATE) {
-                    dispatcher->setAnalysisThreadSleepTime(180000);
-                    dispatcher->setAnalysisCutOff(20000);
-                    dispatcher->setAnalysisTaskListSizeToTriggerPatching(1);
-                } else {
-                    dispatcher->setAnalysisThreadSleepTime(60000);
-                    dispatcher->setAnalysisCutOff(20000);
-                    dispatcher->setAnalysisTaskListSizeToTriggerPatching(1);
+                if (oldState != newState) {
+                    if (newState == STEADY_STATE || newState == DEEPSTEADY_STATE) {
+                        TR_BlockFrequencyInfo::enableJProfilingRecompTrigger();
+                    } else if (newState == STARTUP_STATE || newState == RAMPUP_STATE || newState == IDLE_STATE) {
+                        TR_BlockFrequencyInfo::disableJProfilingRecompTrigger();
+                    }
                 }
             }
         }
