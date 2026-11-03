@@ -38,7 +38,7 @@
 #include "optimizer/TransformUtil.hpp"
 #include "codegen/CodeGenerator.hpp"
 
-// Global thresholds for the number of method enters required to trip
+// Global thresholds for the number of  enters required to trip
 // method recompilation - these are adjusted in the JIT hook control logic
 int32_t TR_JProfilingBlock::nestedLoopRecompileThreshold = 10;
 int32_t TR_JProfilingBlock::loopRecompileThreshold = 250;
@@ -831,22 +831,47 @@ void TR_JProfilingBlock::addRecompilationTests(TR_BlockFrequencyInfo *blockFrequ
     if (root != NULL) {
         TR::Block *originalFirstBlock = comp()->getStartBlock();
 
-        TR::Block *guardBlock1 = TR::Block::createEmptyBlock(node, comp(), originalFirstBlock->getFrequency());
-        if (isProfilingCompilation) {
-            // If this is profiling compilation we do not need to check if jProfiling is enabled or not at runtime,
-            // In this case we only check if we have queued for recompilation before comparing against method invocation
-            // count.
-            TR::SymbolReference *symRef = comp()->getSymRefTab()->createKnownStaticDataSymbolRef(
-                blockFrequencyInfo->getIsQueuedForRecompilation(), TR::Int32);
-            symRef->getSymbol()->setIsRecompQueuedFlag();
-            symRef->getSymbol()->setNotDataAddress();
-            TR::Node *enableLoad = TR::Node::createWithSymRef(node, TR::iload, 0, symRef);
-            TR::Node *enableTest = TR::Node::createif(TR::ificmpeq, enableLoad, TR::Node::iconst(node, -1),
-                originalFirstBlock->getEntry());
-            TR::TreeTop *enableTree = TR::TreeTop::create(comp(), enableTest);
-            enableTest->setIsProfilingCode();
-            guardBlock1->append(enableTree);
+        /**
+         *  BBStart <guardBlock1>
+         *      ificmpeq -> goto originalBlock
+         *          iload <enableRecompTriggerSymRef>
+         *          iconst 0
+         *  BBEnd <guardBlock1>
+         *  BBStart <guardBlock2>
+         *      ificmpeq ->goto originalBlock
+         *          iload <isQueuedForRecompilation>
+         *          iconst 0
+         *  BBEnd <guardBlock2>
+         *  BBStart <recompilation call block>
+         *      ...
+         *  BBEnd
+         *  BBStart <originalBlock>
+         *  ...
+         *
+         */
+        if (!isProfilingCompilation && comp()->getOption(TR_EnablePatchableJProfiling)) {
+            guard1 = TR::Block::createEmptyBlock(node, comp(), originalFirstBlock->getFrequency());
+            TR::SymbolReference *enableRecompTriggerSymRef = comp()->getSymRefTab()->createKnownStaticDataSymbolRef(TR_BlockFrequencyInfo::getEnableJProfilingRecompTrigger(), TR::Int32);
+            // TODO: Need to change the symbol type - isRecompQueuedFlag is for testing only
+            enableRecompTriggerSymRef->getSymbol()->setIsRecompQueuedFlag();
+            enableRecompTriggerSymRef->getSymbol()->setNotDataAddress();
+            TR::Node *enableRecompTriggerLoad = TR::Node::createWihSymRef(node, TR::iload, 0, enableRecompTriggerSymRef);
+            TR::Node *enableRecompTriggerTest = TR::Node::createif(TR::ificmpeq, enableLoad, TR::Node::iconst(node, 0),originalFirstBlock->getEntry());
+            TR::TreeTop *enableRecompTriggerTT = TR::TreeTop::create(comp(), enableRecompTriggerTest);
+            enableRecompTriggerTest->setIsProfilingCode();
+            guard1->append(enableRecompTriggerTT);
         }
+        TR::Block *guardBlock1 = TR::Block::createEmptyBlock(node, comp(), originalFirstBlock->getFrequency());
+        TR::SymbolReference *symRef = comp()->getSymRefTab()->createKnownStaticDataSymbolRef(
+            blockFrequencyInfo->getIsQueuedForRecompilation(), TR::Int32);
+        symRef->getSymbol()->setIsRecompQueuedFlag();
+        symRef->getSymbol()->setNotDataAddress();
+        TR::Node *enableLoad = TR::Node::createWithSymRef(node, TR::iload, 0, symRef);
+        TR::Node *enableTest = TR::Node::createif(TR::ificmpeq, enableLoad, TR::Node::iconst(node, -1),
+            originalFirstBlock->getEntry());
+        TR::TreeTop *enableTree = TR::TreeTop::create(comp(), enableTest);
+        enableTest->setIsProfilingCode();
+            guardBlock1->append(enableTree);
 
         static int32_t jProfilingCompileThreshold = comp()->getOptions()->getJProfilingMethodRecompThreshold();
         logprintf(trace(), log, "Profiling Compile Threshold for method = %d\n", recompilationThreshold);
@@ -869,9 +894,16 @@ void TR_JProfilingBlock::addRecompilationTests(TR_BlockFrequencyInfo *blockFrequ
 
         comp()->getRecompilationInfo()->getJittedBodyInfo()->setUsesJProfiling();
         TR::CFG *cfg = comp()->getFlowGraph();
-        logprints(trace(), log, "adding edge start to guard\n");
-        cfg->addEdge(cfg->getStart(), guardBlock1);
-        logprints(trace(), log, "insert before guard to bump\n");
+        if (guard1 != NULL) {
+            logprints(trace(), log, "adding edge start to guard1\n");
+            cfg->addEdge(cfg->getStart(), guard1);
+            cfg->insertBefore(guard1, guardBlock1);
+            comp()->getJittedMethodSymbol()->setFirstTreeTop(guard1->getEntry());
+        } else {
+            cfg->addEdge(cfg->getStart(), guardBlock1);
+            comp()->getJittedMethodSymbol()->setFirstTreeTop(guardBlock1->getEntry());
+        }
+
         cfg->insertBefore(guardBlock1, guardBlock2);
         cfg->insertBefore(guardBlock2, callRecompileBlock);
         logprints(trace(), log, "insertbefore call to original\n");
@@ -879,8 +911,6 @@ void TR_JProfilingBlock::addRecompilationTests(TR_BlockFrequencyInfo *blockFrequ
 
         logprints(trace(), log, "remove start to original\n");
         cfg->removeEdge(cfg->getStart(), originalFirstBlock);
-        logprints(trace(), log, "set first\n");
-        comp()->getJittedMethodSymbol()->setFirstTreeTop(guardBlock1->getEntry());
         if (trace())
             comp()->dumpMethodTrees(log, "Trees after JProfiling");
     } else {
