@@ -856,7 +856,7 @@ void TR_JProfilingBlock::addRecompilationTests(TR_BlockFrequencyInfo *blockFrequ
             // TODO: Need to change the symbol type - isRecompQueuedFlag is for testing only
             enableRecompTriggerSymRef->getSymbol()->setIsRecompQueuedFlag();
             enableRecompTriggerSymRef->getSymbol()->setNotDataAddress();
-            TR::Node *enableRecompTriggerLoad = TR::Node::createWihSymRef(node, TR::iload, 0, enableRecompTriggerSymRef);
+            TR::Node *enableRecompTriggerLoad = TR::Node::createWithSymRef(node, TR::iload, 0, enableRecompTriggerSymRef);
             TR::Node *enableRecompTriggerTest = TR::Node::createif(TR::ificmpeq, enableLoad, TR::Node::iconst(node, 0),originalFirstBlock->getEntry());
             TR::TreeTop *enableRecompTriggerTT = TR::TreeTop::create(comp(), enableRecompTriggerTest);
             enableRecompTriggerTest->setIsProfilingCode();
