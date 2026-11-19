@@ -67,7 +67,7 @@ void J9::CodeGenPhase::performPatchableJProfCodeGenPhase(TR::CodeGenerator *cg, 
             TR::list<TR::Instruction *> *instrList = cg->getJProfilingCounterBumpInstructionList();
             if (!instrList->empty()) {
                 TR::JProfBFPatchSites *sites = new (comp->trPersistentMemory()) TR::JProfBFPatchSites(
-                    comp->trPersistentMemory(), instrList->size(), cg->getMaxLengthOfIncMemoryInstruction());
+                    comp->trPersistentMemory(), instrList->size(), cg->getMaxLengthOfPatchableIncMemoryInstruction());
                 for (auto iter = instrList->begin(); iter != instrList->end(); ++iter) {
                     uint8_t *location = (*iter)->getBinaryEncoding();
                     uint8_t instrLength = (*iter)->getBinaryLength();
