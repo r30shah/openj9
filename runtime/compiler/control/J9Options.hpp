@@ -543,6 +543,8 @@ public:
     static uint32_t _numOfMethodsToTriggerPatching;
     static uint32_t _numOfJProfilerThreads;
 
+    static uint32_t _patchableJProfAnalysisListSize;
+    static uint32_t _patchableJProfNumberOfPools;
     static bool _aggressiveLockReservation;
 
     static bool _xrsSync;

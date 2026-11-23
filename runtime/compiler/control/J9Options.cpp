@@ -272,6 +272,8 @@ uint32_t J9::Options::_patchableJProfilingRecompCutOffNestedLoop = 10;
 uint32_t J9::Options::_patchableJProfilingPatchingAgeCutOff = 50000;
 uint32_t J9::Options::_numOfMethodsToTriggerPatching = 10000;
 uint32_t J9::Options::_numOfJProfilerThreads = 1;
+uint32_t J9::Options::_patchableJProfNumberOfPools = 64;
+uint32_t J9::Options::_patchableJProfAnalysisListSize = 512;
 
 // These numbers are cast into floats divided by 10000
 uint32_t J9::Options::_hwprofilerWarmOptLevelThreshold = 1; // 0.0001
@@ -1244,6 +1246,9 @@ TR::OptionTable OMR::Options::_feOptions[] = {
     { "oldAgeUnderLowMemory=", " \tDefines what an old JITServer cache entry means when memory is low",
      TR::Options::setStaticNumeric, (intptr_t)&TR::Options::_oldAgeUnderLowMemory, 0, "F%d" },
 #endif  /* defined(J9VM_OPT_JITSERVER) */
+    { "patchableJProfAnalysisListSize=",
+     "O<nnn<\tNumber of the methods that can at a time collect profiling", TR::Options::setStaticNumeric, (intptr_t)&TR::Options::_patchableJProfAnalysisListSize, 0, "F%d",
+     NOT_IN_SUBSET },
     { "patchableJProfilingPatchingAgeCutOff=",
      "O<nnn<\tCutoff age in milliseconds for method to be patched to disable JProfiling", TR::Options::setStaticNumeric, (intptr_t)&TR::Options::_patchableJProfilingPatchingAgeCutOff, 0, "F%d",
      NOT_IN_SUBSET },
@@ -1258,6 +1263,9 @@ TR::OptionTable OMR::Options::_feOptions[] = {
      NOT_IN_SUBSET },
     { "patchableJProfilingRecompilationFreq=", "O<nnn<\tFrequency to queue up method for recompilation",
      TR::Options::setStaticNumeric, (intptr_t)&TR::Options::_patchableJProfilingRecompilationFreq, 0, "F%d",
+     NOT_IN_SUBSET },
+    { "patchableJProfNumberOfPools=",
+     "O<nnn<\tNumber of the pools to create to hold profiling method list", TR::Options::setStaticNumeric, (intptr_t)&TR::Options::_patchableJProfNumberOfPools, 0, "F%d",
      NOT_IN_SUBSET },
     { "profileAllTheTime=", "R<nnn>\tInterpreter profiling will be on all the time", TR::Options::setStaticNumeric,
      (intptr_t)&TR::Options::_profileAllTheTime, 0, "F%d", NOT_IN_SUBSET },
