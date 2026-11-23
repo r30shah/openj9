@@ -1190,6 +1190,8 @@ public:
      */
     static bool patchMethod(TR_J9VMBase *vm, TR_PersistentProfileInfo *info);
 
+    static bool patchMethod(TR_J9VMBase *vm, TR_PersistentProfileInfo *info, bool disableProfiling);
+
     /**
      * @brief Get the Size of the list
      *
