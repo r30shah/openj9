@@ -762,6 +762,8 @@ public:
 
     bool isQueuedForRecompilation() { return (_isQueuedForRecompilation == -1); }
 
+    static bool isRecompilationAllowed() { return (_enableJProfilingRecompTrigger == -1); }
+
     int32_t *getIsQueuedForRecompilation() { return &_isQueuedForRecompilation; }
 
     TR::Node *generateBlockRawCountCalculationSubTree(TR::Compilation *comp, int32_t blockNumber, TR::Node *node);
@@ -866,7 +868,7 @@ private:
     int32_t _entryBlockNumber;
     static int32_t _enableJProfilingRecompilation;
 
-    static int32_t _enableJProfilingRecompTrigger;
+    static volatile int32_t _enableJProfilingRecompTrigger;
     // Following flag is checked at runtime to know if we have queued this method for recompilation and skip the
     // profiling code
     int32_t _isQueuedForRecompilation;
@@ -1227,12 +1229,21 @@ public:
         , _infoInvalidatedAsInActive(0)
         , _totalMethodsAddedForAnalysis(0)
         , _activeProfilingListTail(NULL)
+        , _indexOfInfoArrayToAddNext(0)
+        , _indexOfActivelyCollectingProfilingGroup(-1)
     {
         _recompilationCutOff = TR::Options::_patchableJProfilingRecompilationFreq;
         _ageCutOffForPatching = TR::Options::_patchableJProfilingPatchingAgeCutOff;
         _numOfMethodsToTriggerPatching = TR::Options::_numOfMethodsToTriggerPatching;
         _listUpdateMonitor = TR::Monitor::create("JIT-JProfilerAnalysisTaskListMonitor");
-        _analysisCutOff = 1024;
+        _analysisCutOff = TR::Options::_patchableJProfAnalysisListSize;
+        _numberOfListGroupToCreate = TR::Options::_patchableJProfNumberOfPools;
+        _arrayOfProfilingMethodInfo = static_cast<ProfilingMethodInfo **>(jitPersistentAlloc(sizeof(ProfilingMethodInfo *) * _numberOfListGroupToCreate));
+        for (int i = 0; i < _numberOfListGroupToCreate; i++) {
+            _arrayOfProfilingMethodInfo[i] = new (PERSISTENT_NEW) ProfilingMethodInfo();
+            _arrayOfProfilingMethodInfo[i]->_methodListTail = NULL;
+            _arrayOfProfilingMethodInfo[i]->numberOfPatchedMethods = 0;
+        }
     }
 
     /**
@@ -1248,7 +1259,7 @@ public:
      * @param prev TR_PersistentProfileInfo of the previous method in the list
      * @param info TR_PersistentProfileInfo of the method to remove from list
      */
-    void removeProfilingInfoFromListOfActiveProfilingInfo(TR_PersistentProfileInfo *prev,
+    void removeProfilingInfoFromListOfActiveProfilingInfo(ProfilingMethodInfo *profilingMethodInfoList, TR_PersistentProfileInfo *prev,
         TR_PersistentProfileInfo *info);
 
     /**
@@ -1325,6 +1336,18 @@ public:
     void setAnalysisCutOff(uint32_t val) { _analysisCutOff = val; }
 
 protected:
+    typedef struct ProfilingMethodInfo {
+        TR_LinkHead<TR_PersistentProfileInfo> _methodList;
+        TR_PersistentProfileInfo *_methodListTail;
+        int32_t numberOfPatchedMethods;
+    } ProfilingMethodInfo;
+
+    ProfilingMethodInfo **_arrayOfProfilingMethodInfo;
+    //ProfilingMethodInfo _arrayOfProfilingMethodInfo[64];
+    int32_t _indexOfInfoArrayToAddNext;
+    int32_t _indexOfActivelyCollectingProfilingGroup;
+
+    int32_t _numberOfListGroupToCreate;
     TR_LinkHead<TR_PersistentProfileInfo> _activeProfilingList;
     TR_PersistentProfileInfo *_activeProfilingListTail;
 

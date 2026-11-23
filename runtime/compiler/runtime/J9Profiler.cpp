@@ -2999,6 +2999,18 @@ uint32_t TR_JProfilerPatchingTask::patchAllMethods(TR_J9VMBase *vm)
     return numberOfPatchedMethods;
 }
 
+bool TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase *vm, TR_PersistentProfileInfo *info, bool disableProfiling)
+{
+    if (info->isActive()) {
+        if (info->getValueProfileInfo() != NULL && info->getValueProfileInfo()->getJProfValueSites() != NULL) {
+            info->getValueProfileInfo()->getJProfValueSites()->compensate(vm, disableProfiling, 0);
+        }
+        info->getBlockFrequencyInfo()->getJProfBlockFrequencyCounterSites()->compensate(vm, disableProfiling, 0);
+        return true;
+    }
+    return false;
+}
+
 bool TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase *vm, TR_PersistentProfileInfo *info)
 {
     if (info->isActive()) {
@@ -3037,29 +3049,32 @@ void TR_JProfilerAnalysisTask::addProfilingInfoToListOfActiveProfilingInfo(TR_Pe
     // There is a possibility that, the info is marked inactive and gets cleaned up. In that case,
     // We may have stale copy of the info which is not active anymore and reclaimed.
     _listUpdateMonitor->enter();
-    _activeProfilingList.insertAfter(_activeProfilingListTail, info);
-    _activeProfilingListTail = info;
+    ProfilingMethodInfo *methodInfoElement = _arrayOfProfilingMethodInfo[_indexOfInfoArrayToAddNext];
+    methodInfoElement->_methodList.insertAfter(methodInfoElement._methodListTail, info);
+    methodInfoElement->_methodListTail = info;
+    //_activeProfilingList.insertAfter(_activeProfilingListTail, info);
+    //_activeProfilingListTail = info;
     _totalMethodsAddedForAnalysis++;
     char message[128];
-    sprintf(message, "Added method to list of active profiling info - current size = %d",
-        _activeProfilingList.getSize());
+    sprintf(message, "Added method to list of active profiling info - Added in the listID %d",
+        _indexOfInfoArrayToAddNext);
+    logVerboseProfilingMessage(message, info);
+    _indexOfInfoArrayToAddNext = (_indexOfInfoArrayToAddNext + 1) % _numberOfListGroupToCreate;
+    _listUpdateMonitor->exit();
+}
+
+void TR_JProfilerAnalysisTask::removeProfilingInfoFromListOfActiveProfilingInfo(ProfilingMethodInfo *profilingMethodInfoList, TR_PersistentProfileInfo *prev, TR_PersistentProfileInfo *info)
+{
+    _listUpdateMonitor->enter();
+    if (info == profilingMethodInfoList->_methodListTail)
+        profilingMethodInfoList->_methodListTail = prev;
+    profilingMethodInfoList->_methodList.removeAfter(prev, info);
+    char message[128];
+    sprintf(message, "Removed method to list of active profiling info");
     logVerboseProfilingMessage(message, info);
     _listUpdateMonitor->exit();
 }
 
-void TR_JProfilerAnalysisTask::removeProfilingInfoFromListOfActiveProfilingInfo(TR_PersistentProfileInfo *prev,
-    TR_PersistentProfileInfo *info)
-{
-    _listUpdateMonitor->enter();
-    if (info == _activeProfilingListTail)
-        _activeProfilingListTail = prev;
-    _activeProfilingList.removeAfter(prev, info);
-    char message[128];
-    sprintf(message, "Removed method to list of active profiling info - current size = %d",
-        _activeProfilingList.getSize());
-    logVerboseProfilingMessage(message, info);
-    _listUpdateMonitor->exit();
-}
 
 bool TR_JProfilerAnalysisTask::recompileMethod(J9JITConfig *jitConfig, TR_PersistentProfileInfo *info,
     J9VMThread *vmThread, TR_Hotness recompHotness)
@@ -3113,93 +3128,134 @@ bool TR_JProfilerAnalysisTask::recompileMethod(J9JITConfig *jitConfig, TR_Persis
 
 void TR_JProfilerAnalysisTask::performAnalysis(J9JITConfig *jitConfig, J9VMThread *vmThread)
 {
+    // Check if needs to traverse to patch the list.
+    int32_t indexOfTheListToDisableProfiling = _indexOfActivelyCollectingProfilingGroup;
+    _indexOfActivelyCollectingProfilingGroup = (_indexOfActivelyCollectingProfilingGroup + 1) % _numberOfListGroupToCreate;
+
     if (TR::Options::getVerboseOption(TR_VerboseProfiling)) {
         TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING,
-            "Starting the analysis of the profile info list, elapsed Time = %lu, currentActiveListSize = %d, "
-            "patchCandidateSize = %d",
-            TR::CompilationInfo::get(jitConfig)->getPersistentInfo()->getElapsedTime(), _activeProfilingList.getSize(),
-            _listOfProfileInfoToBePatched.getSize());
+            "Starting the analysis of the profile info list, elapsed Time = %lu, listID for disabling = %d, "
+            "listID for enabling = %d",
+            TR::CompilationInfo::get(jitConfig)->getPersistentInfo()->getElapsedTime(), indexOfTheListToDisableProfiling,
+            _indexOfActivelyCollectingProfilingGroup);
     }
 
-    uint32_t processedNodes = 0;
+    if (indexOfTheListToDisableProfiling >= 0) {
+        ProfilingMethodInfo *profilingMethodInfoList = _arrayOfProfilingMethodInfo[indexOfTheListToDisableProfiling];
+        TR_PersistentProfileInfo *prev = NULL;
+        TR_PersistentProfileInfo *current = profilingMethodInfoList->_methodList.getFirst();
+        int32_t visitedMethods = 0;
+        while (current != NULL && visitedMethods < profilingMethodInfoList->numberOfPatchedMethods) {
+            TR_PersistentProfileInfo *next = current->getNext();
+            TR_PersistentProfileInfo *nextPrev = current;
+            if (current->isActive()) {
+                // Information is active. Check if the method is queued for recompilation.
+                if (current->getBlockFrequencyInfo()->isQueuedForRecompilation()) {
+                    removeProfilingInfoFromListOfActiveProfilingInfo(profilingMethodInfoList, prev, current);
+                    nextPrev = prev;
+                } else {
+                    TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase::get(jitConfig, NULL), current, true);
+                    // If recompilation is allows, check the max frequency and queue the method for recompilation
+                    if (TR_BlockFrequencyInfo::isRecompilationAllowed()) {
+                        TR_BlockFrequencyInfo *bfi = current->getBlockFrequencyInfo();
+                        if (bfi->getMaxRawCount() >= _recompilationCutOff) {
+                            bool rc = recompileMethod(jitConfig, current, vmThread, warm);
+                            if (TR::Options::getVerboseOption(TR_VerboseProfiling)) {
+                                J9UTF8 *className;
+                                J9UTF8 *name;
+                                J9UTF8 *signature;
+                                J9Method *method = (J9Method *)TR::Recompilation::getJittedBodyInfoFromPC(
+                                    current->getBlockFrequencyInfo()->getStartPCOfBodyCollectingProfilingData())
+                                                    ->getMethodInfo()
+                                                    ->getMethodInfo();
+                                getClassNameSignatureFromMethod(method, className, name, signature);
+                                TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING,
+                                    "Called recompile Method for %.*s.%.*s%.*s with %s", J9UTF8_LENGTH(className),
+                                    (char *)J9UTF8_DATA(className), J9UTF8_LENGTH(name), (char *)J9UTF8_DATA(name),
+                                    J9UTF8_LENGTH(signature), (char *)J9UTF8_DATA(signature), rc ? "Success" : "Failure");
+                            }
+                            if (rc) {
+                                // Remove method from list if successfully queued up for recompilation.
+                                removeProfilingInfoFromListOfActiveProfilingInfo(profilingMethodInfoList, prev, current);
+                                nextPrev = prev;
+                                // If failed to queue-up keep in the list, let it try next time.
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Method is not active, it may have been recompiled / redefined. Remove it from the list and continue.
+                removeProfilingInfoFromListOfActiveProfilingInfo(profilingMethodInfoList, prev, current);
+                nextPrev = prev;
+            }
+        current = next;
+        prev = nextPrev;
+        visitedMethods++;
+        }
+        profilingMethodInfoList->numberOfPatchedMethods = 0;
+    }
+
+    // Now going through the list to enable the profiling info.
+    ProfilingMethodInfo *enableProfilingMethodInfoList = _arrayOfProfilingMethodInfo[_indexOfActivelyCollectingProfilingGroup];
     TR_PersistentProfileInfo *prev = NULL;
-    TR_PersistentProfileInfo *current = _activeProfilingList.getFirst();
-    while (current != NULL && processedNodes < _analysisCutOff) {
+    TR_PersistentProfileInfo *current = enableProfilingMethodInfoList->_methodList.getFirst();
+    int32_t visitedMethods = 0;
+    while (current != NULL && visitedMethods < _analysisCutOff) {
         TR_PersistentProfileInfo *next = current->getNext();
         TR_PersistentProfileInfo *nextPrev = current;
         if (current->isActive()) {
-            if (!current->getBlockFrequencyInfo()->isQueuedForRecompilation()) {
-                TR_BlockFrequencyInfo *bfi = current->getBlockFrequencyInfo();
-                int32_t maxFreq = bfi->getMaxRawCount();
-                if (maxFreq >= _recompilationCutOff) {
-                    removeProfilingInfoFromListOfActiveProfilingInfo(prev, current);
-                    nextPrev = prev;
-                    static bool patchRecompCandidate = feGetEnv("TR_PatchRecompCandidateFirst") != NULL;
-                    if (patchRecompCandidate) {
-                        TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase::get(jitConfig, NULL), current);
+            // Method is active.
+            if (current->getBlockFrequencyInfo()->isQueuedForRecompilation()) {
+                removeProfilingInfoFromListOfActiveProfilingInfo(enableProfilingMethodInfoList, prev, current);
+                nextPrev = prev;
+            } else {
+                bool shouldPatchToEnableProfiling = true;
+                if (TR_BlockFrequencyInfo::isRecompilationAllowed()) {
+                    TR_BlockFrequencyInfo *bfi = current->getBlockFrequencyInfo();
+                    if (bfi->getMaxRawCount() >= _recompilationCutOff) {
+                        shouldPatchToEnableProfiling = false;
+                        bool rc = recompileMethod(jitConfig, current, vmThread, warm);
+                        if (TR::Options::getVerboseOption(TR_VerboseProfiling)) {
+                            J9UTF8 *className;
+                            J9UTF8 *name;
+                            J9UTF8 *signature;
+                            J9Method *method = (J9Method *)TR::Recompilation::getJittedBodyInfoFromPC(
+                                current->getBlockFrequencyInfo()->getStartPCOfBodyCollectingProfilingData())
+                                                    ->getMethodInfo()
+                                                    ->getMethodInfo();
+                            getClassNameSignatureFromMethod(method, className, name, signature);
+                            TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING,
+                                "Called recompile Method for %.*s.%.*s%.*s with %s", J9UTF8_LENGTH(className),
+                                (char *)J9UTF8_DATA(className), J9UTF8_LENGTH(name), (char *)J9UTF8_DATA(name),
+                                J9UTF8_LENGTH(signature), (char *)J9UTF8_DATA(signature), rc ? "Success" : "Failure");
+                        }
+                        if (rc) {
+                            // Method queued for recompilation, remove it from the list.
+                            removeProfilingInfoFromListOfActiveProfilingInfo(enableProfilingMethodInfoList, prev, current);
+                            nextPrev = prev;
+                        } else {
+                            // It can not queue up for recompilation, we still have it in the list - do not patch the method
+                            // but increment the visitCount so that disabling routine can vist all the method processes in this
+                            // enabled pass.
+                            visitedMethods++;
+                        }
                     }
-                    bool rc = recompileMethod(jitConfig, current, vmThread, warm);
-                    _methodsRecompiledToWarm++;
-                    if (TR::Options::getVerboseOption(TR_VerboseProfiling)) {
-                        J9UTF8 *className;
-                        J9UTF8 *name;
-                        J9UTF8 *signature;
-                        J9Method *method = (J9Method *)TR::Recompilation::getJittedBodyInfoFromPC(
-                            current->getBlockFrequencyInfo()->getStartPCOfBodyCollectingProfilingData())
-                                               ->getMethodInfo()
-                                               ->getMethodInfo();
-                        getClassNameSignatureFromMethod(method, className, name, signature);
-                        TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING,
-                            "Called recompile Method for %.*s.%.*s%.*s with %s", J9UTF8_LENGTH(className),
-                            (char *)J9UTF8_DATA(className), J9UTF8_LENGTH(name), (char *)J9UTF8_DATA(name),
-                            J9UTF8_LENGTH(signature), (char *)J9UTF8_DATA(signature), rc ? "Success" : "Failure");
-                    }
-                } else {
-                    uint64_t ageOfMethod
-                        = (TR::CompilationInfo::get(jitConfig)->getCpuUtil()->getVmTotalCpuTime() / 1000000)
-                        - bfi->getTimestampDataCollectionStarted();
-                    if (TR::Options::getVerboseOption(TR_VerboseProfiling)) {
-                        J9UTF8 *className;
-                        J9UTF8 *name;
-                        J9UTF8 *signature;
-                        J9Method *method = (J9Method *)TR::Recompilation::getJittedBodyInfoFromPC(
-                            current->getBlockFrequencyInfo()->getStartPCOfBodyCollectingProfilingData())
-                                               ->getMethodInfo()
-                                               ->getMethodInfo();
-                        getClassNameSignatureFromMethod(method, className, name, signature);
-                        TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "Age of method %.*s.%.*s%.*s : %lu, patchListSize = %d",
-                            J9UTF8_LENGTH(className), (char *)J9UTF8_DATA(className), J9UTF8_LENGTH(name),
-                            (char *)J9UTF8_DATA(name), J9UTF8_LENGTH(signature), (char *)J9UTF8_DATA(signature),
-                            ageOfMethod, _listOfProfileInfoToBePatched.getSize());
-                    }
-                    if (ageOfMethod > _ageCutOffForPatching) {
-                        removeProfilingInfoFromListOfActiveProfilingInfo(prev, current);
-                        nextPrev = prev;
-                        // TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase::get(jitConfig, NULL), current, true);
-                        _listOfProfileInfoToBePatched.add(current);
-                        _methodsAddedToPatchList++;
-                    }
+                }
+                if (shouldPatchToEnableProfiling) {
+                    // Only patch method to enable profiling if recompilation is not allowed
+                    // or method was not warm enough to trigger recompilation
+                    TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase::get(jitConfig, NULL), current, false);
+                    visitedMethods++;
                 }
             }
         } else {
-            // If the method has been redefined / class is unloaded, profiling info would be marked inactive.
-            // Do not patch or even recompile method using JProfiling, let the new method reach proper invocation count
-            // to get compiled, for now remove the information from Active Profiling Info List.
-            _infoInvalidatedAsInActive++;
-            removeProfilingInfoFromListOfActiveProfilingInfo(prev, current);
+            removeProfilingInfoFromListOfActiveProfilingInfo(enableProfilingMethodInfoList, prev, current);
             nextPrev = prev;
         }
         current = next;
         prev = nextPrev;
-        processedNodes++;
     }
-    if (TR::Options::getVerboseOption(TR_VerboseProfiling)) {
-        TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING,
-            "Finished the analysis of the profile info list, elapsed Time = %lu, currentActiveListSize = %d, "
-            "patchCandidateSize = %d",
-            TR::CompilationInfo::get(jitConfig)->getPersistentInfo()->getElapsedTime(), _activeProfilingList.getSize(),
-            _listOfProfileInfoToBePatched.getSize());
-    }
+    enableProfilingMethodInfoList->numberOfPatchedMethods = visitedMethods;
 }
 
 bool TR_JProfilerAnalysisTask::inspectListOfMethodsToBePatchedAndPreparePatchingTask(
@@ -3295,54 +3351,9 @@ void TR_JProfilerThreadsDispatcher::analysisThreadEntryPoint(J9JavaVM *javaVM, u
             break;
         }
         _workerThreadMonitor->exit();
-        static bool disableAnalysis = feGetEnv("TR_DisableAnalysisWork") != NULL;
-        if (!disableAnalysis)
-            task->performAnalysis(javaVM->jitConfig, jProfilerMainThread);
 
-        // TODO: Currently we check the size of the list containing methods to be patched to initiate patching
-        // Need to add parameters to track last time patching was done and size of active profile info list
-        // To trigger another patching phase.
-        if (task->inspectListOfMethodsToBePatchedAndPreparePatchingTask(patchingTaskList, _maxJProfilerThreadCount,
-                javaVM->jitConfig)) {
-            TR_J9VMBase *vm = TR_J9VMBase::get(javaVM->jitConfig, NULL);
-            bool threadHadNoVMAccess = (!(jProfilerMainThread->publicFlags & J9_PUBLIC_FLAGS_VM_ACCESS));
-            if (threadHadNoVMAccess)
-                javaVM->internalVMFunctions->internalAcquireVMAccess(jProfilerMainThread);
-            javaVM->internalVMFunctions->acquireExclusiveVMAccess(jProfilerMainThread);
-            _totalExclusivePatchPhase += 1;
-
-            _workerThreadMonitor->enter();
-            _threadsReservedForPatchingWork = true;
-            _numberOfThreadsToWakeUpForPatching = _maxJProfilerThreadCount - 1;
-            _totalThreadCountForSynchronization = _maxJProfilerThreadCount;
-            _synchronizationThreadCount = 0;
-            if (TR::Options::getVerboseOption(TR_VerboseProfiling)) {
-                TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING,
-                    "Acquired Exclusive Access, waking up threads - _numberOfThreadsToWakeUpForPatching = %d, "
-                    "_totalThreadCountForSynchronization = %d",
-                    _numberOfThreadsToWakeUpForPatching, _totalThreadCountForSynchronization);
-            }
-            _workerThreadMonitor->notifyAll();
-            _workerThreadMonitor->exit();
-            if (TR::Options::getVerboseOption(TR_VerboseProfiling)) {
-                TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING,
-                    "Patching started in Analysis Thread - Number of methods to patch = %d",
-                    patchingTaskList[threadID]->getSize());
-            }
-            uint32_t numberOfMethodsPatched
-                = patchingTaskList[threadID]->patchAllMethods(TR_J9VMBase::get(javaVM->jitConfig, NULL));
-            if (TR::Options::getVerboseOption(TR_VerboseProfiling))
-                TR_VerboseLog::writeLineLocked(TR_Vlog_PROFILING, "JProfiler Analysis Thread Patched %d methods",
-                    numberOfMethodsPatched);
-            synchronizeJProfilerThreads(threadID);
-            _threadsReservedForPatchingWork = false;
-            _totalThreadCountForSynchronization = 0;
-            javaVM->internalVMFunctions->releaseExclusiveVMAccess(jProfilerMainThread);
-            if (threadHadNoVMAccess)
-                javaVM->internalVMFunctions->internalReleaseVMAccess(jProfilerMainThread);
-        }
+        task->performAnalysis(javaVM->jitConfig, jProfilerMainThread);
     }
-    task->printCounts();
     cleanUpThread(javaVM, threadID);
 }
 
@@ -3540,5 +3551,5 @@ void TR_JProfilerThreadsDispatcher::initializeDispatcher(uint32_t numberOfJProfi
     for (auto threadID = 0; threadID < numberOfJProfilerThreads; ++threadID) {
         patchingTaskList[threadID] = new (PERSISTENT_NEW) TR_JProfilerPatchingTask();
     }
-    _analysisThreadSleepTime = 180000;
+    _analysisThreadSleepTime = 800;
 }
