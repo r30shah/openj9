@@ -1223,6 +1223,12 @@ class TR_JProfilerAnalysisTask {
 public:
     TR_PERSISTENT_ALLOC(TR_Memory::JProfiler);
 
+    typedef struct ProfilingMethodInfo {
+        TR_LinkHead<TR_PersistentProfileInfo> _methodList;
+        TR_PersistentProfileInfo *_methodListTail;
+        int32_t numberOfPatchedMethods;
+    } ProfilingMethodInfo;
+
     TR_JProfilerAnalysisTask()
         : _methodsAddedToPatchList(0)
         , _methodsRecompiledToWarm(0)
@@ -1336,11 +1342,7 @@ public:
     void setAnalysisCutOff(uint32_t val) { _analysisCutOff = val; }
 
 protected:
-    typedef struct ProfilingMethodInfo {
-        TR_LinkHead<TR_PersistentProfileInfo> _methodList;
-        TR_PersistentProfileInfo *_methodListTail;
-        int32_t numberOfPatchedMethods;
-    } ProfilingMethodInfo;
+
 
     ProfilingMethodInfo **_arrayOfProfilingMethodInfo;
     //ProfilingMethodInfo _arrayOfProfilingMethodInfo[64];
