@@ -752,7 +752,7 @@ public:
 
     static void enableJProfilingRecompilation() { _enableJProfilingRecompilation = -1; }
 
-    static int32_t *getEnableJProfilingRecompTrigger() { return &_enableJProfilingRecompTrigger; }
+    static int32_t *getEnableJProfilingRecompTrigger() { return const_cast<int32_t *>(&_enableJProfilingRecompTrigger); }
 
     static void enableJProfilingRecompTrigger() { _enableJProfilingRecompTrigger = 1; }
 
@@ -762,7 +762,7 @@ public:
 
     bool isQueuedForRecompilation() { return (_isQueuedForRecompilation == -1); }
 
-    static bool isRecompilationAllowed() { return (_enableJProfilingRecompTrigger == -1); }
+    static bool isRecompilationAllowed() { return (_enableJProfilingRecompTrigger == 1); }
 
     int32_t *getIsQueuedForRecompilation() { return &_isQueuedForRecompilation; }
 
