@@ -3050,7 +3050,7 @@ void TR_JProfilerAnalysisTask::addProfilingInfoToListOfActiveProfilingInfo(TR_Pe
     // We may have stale copy of the info which is not active anymore and reclaimed.
     _listUpdateMonitor->enter();
     ProfilingMethodInfo *methodInfoElement = _arrayOfProfilingMethodInfo[_indexOfInfoArrayToAddNext];
-    methodInfoElement->_methodList.insertAfter(methodInfoElement._methodListTail, info);
+    methodInfoElement->_methodList.insertAfter(methodInfoElement->_methodListTail, info);
     methodInfoElement->_methodListTail = info;
     //_activeProfilingList.insertAfter(_activeProfilingListTail, info);
     //_activeProfilingListTail = info;
