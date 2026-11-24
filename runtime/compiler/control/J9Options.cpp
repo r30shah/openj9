@@ -273,7 +273,7 @@ uint32_t J9::Options::_patchableJProfilingPatchingAgeCutOff = 50000;
 uint32_t J9::Options::_numOfMethodsToTriggerPatching = 10000;
 uint32_t J9::Options::_numOfJProfilerThreads = 1;
 uint32_t J9::Options::_patchableJProfNumberOfPools = 64;
-uint32_t J9::Options::_analysisThreadSleepTime = 1000;
+uint32_t J9::Options::_analysisThreadSleepTime = 120000;
 uint32_t J9::Options::_patchableJProfAnalysisListSize = 512;
 
 // These numbers are cast into floats divided by 10000

@@ -5315,11 +5315,26 @@ static void jitStateLogic(J9JITConfig *jitConfig, TR::CompilationInfo *compInfo,
         }
         if (TR::Options::getCmdLineOptions()->getOption(TR_EnablePatchableJProfiling)) {
             TR_JProfilerThreadsDispatcher *dispatcher = ((TR_JitPrivateConfig *)(jitConfig->privateConfig))->jProfilerThreadsDispatcher;
-            if (dispatcher != NULL) {
+            if (dispatcher != NULL && dispatcher->getIsInitialized()) {
                 if (oldState != newState) {
+                    // When in steady state - Reduce the sleep time
+                    // And wake up the thread.
+                    // In Other state, keep the sleep time high.
                     if (newState == STEADY_STATE || newState == DEEPSTEADY_STATE) {
+                        // We have entered the STEADY_STATE or DEEPSTEADY_STATE
+                        // Set analysis thread sleep time to 1000 ms to allow
+                        // Profiling code to be patched to enable profiling.
+                        dispatcher->enableAnalysisWork(true);
+                        dispatcher->setAnalysisThreadSleepTime(1000);
+                        // Wake up the thread.
+                        dispatcher->wakeUpAnalysisThread();
+                        // Enable Recompilation through methods as well.
                         TR_BlockFrequencyInfo::enableJProfilingRecompTrigger();
                     } else if (newState == STARTUP_STATE || newState == RAMPUP_STATE || newState == IDLE_STATE) {
+                        // We are in start-up / ramp-up / idle.
+                        // Do not profile/ do not recompile / also do not run JProfiler Thread.
+                        dispatcher->enableAnalysisWork(false);
+                        dispatcher->setAnalysisThreadSleepTime(120000);
                         TR_BlockFrequencyInfo::disableJProfilingRecompTrigger();
                     }
                 }

@@ -2511,6 +2511,7 @@ TR_PersistentProfileInfo::TR_PersistentProfileInfo(uint8_t *&buffer)
     : _next(NULL)
     , _active(true)
     , _refCount(1)
+    , numberOfTimesPatched(0)
 {
     SerializedPPI *serializedData = reinterpret_cast<SerializedPPI *>(buffer);
     buffer += sizeof(SerializedPPI);
@@ -3128,6 +3129,8 @@ bool TR_JProfilerAnalysisTask::recompileMethod(J9JITConfig *jitConfig, TR_Persis
 
 void TR_JProfilerAnalysisTask::performAnalysis(J9JITConfig *jitConfig, J9VMThread *vmThread)
 {
+    if (!analysisTaskEnabled)
+        return;
     // Check if needs to traverse to patch the list.
     int32_t indexOfTheListToDisableProfiling = _indexOfActivelyCollectingProfilingGroup;
     _indexOfActivelyCollectingProfilingGroup = (_indexOfActivelyCollectingProfilingGroup + 1) % _numberOfListGroupToCreate;
@@ -3242,10 +3245,16 @@ void TR_JProfilerAnalysisTask::performAnalysis(J9JITConfig *jitConfig, J9VMThrea
                     }
                 }
                 if (shouldPatchToEnableProfiling) {
-                    // Only patch method to enable profiling if recompilation is not allowed
-                    // or method was not warm enough to trigger recompilation
-                    TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase::get(jitConfig, NULL), current, false);
-                    visitedMethods++;
+                    if (current->getNumberOfTimesPatched() > 2) {
+                        removeProfilingInfoFromListOfActiveProfilingInfo(enableProfilingMethodInfoList, prev, current);
+                        nextPrev = prev;
+                    } else {
+                        // Only patch method to enable profiling if recompilation is not allowed
+                        // or method was not warm enough to trigger recompilation
+                        TR_JProfilerPatchingTask::patchMethod(TR_J9VMBase::get(jitConfig, NULL), current, false);
+                        current->incNumberOfTimesPatched();
+                        visitedMethods++;
+                    }
                 }
             }
         } else {
@@ -3344,6 +3353,7 @@ void TR_JProfilerThreadsDispatcher::analysisThreadEntryPoint(J9JavaVM *javaVM, u
 
     J9VMThread *jProfilerMainThread = getJProfilerVMThread(threadID);
     while (stateTable[threadID] == Run) {
+        analysisActive = false;
         j9thread_sleep_interruptable(_analysisThreadSleepTime, 0);
         _workerThreadMonitor->enter();
         if (_inShutdown || stateTable[threadID] == Stop) {
@@ -3351,7 +3361,7 @@ void TR_JProfilerThreadsDispatcher::analysisThreadEntryPoint(J9JavaVM *javaVM, u
             break;
         }
         _workerThreadMonitor->exit();
-
+        analysisActive = true;
         task->performAnalysis(javaVM->jitConfig, jProfilerMainThread);
     }
     cleanUpThread(javaVM, threadID);
@@ -3440,9 +3450,18 @@ void TR_JProfilerThreadsDispatcher::startThreads(J9JavaVM *javaVM)
                 _dispatcherMonitor->wait();
             } while (info.initializationComplete == JPROFILER_THREAD_INIT);
             // printf("Started thread %d, initialization complete\n",jProfilerThreadID);
+            if (isMainThread(jProfilerThreadID))
+                isInitialized = true;
         }
     }
     _dispatcherMonitor->exit();
+}
+
+void TR_JProfilerThreadsDispatcher::wakeUpAnalysisThread()
+{
+    if (!_inShutdown && stateTable[0] != Stop && !analysisActive) {
+        j9thread_interrupt(getJProfilerOSThreadFromIndex(0));
+    }
 }
 
 void TR_JProfilerThreadsDispatcher::stopThreads(J9JavaVM *javaVM)
@@ -3552,4 +3571,5 @@ void TR_JProfilerThreadsDispatcher::initializeDispatcher(uint32_t numberOfJProfi
         patchingTaskList[threadID] = new (PERSISTENT_NEW) TR_JProfilerPatchingTask();
     }
     _analysisThreadSleepTime = TR::Options::_analysisThreadSleepTime;
+    analysisActive = false;
 }

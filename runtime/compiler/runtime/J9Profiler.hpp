@@ -131,6 +131,7 @@ public:
         , _next(NULL)
         , _active(false)
         , _refCount(1)
+        , numberOfTimesPatched(0)
     {
         for (int i = 0; i < PROFILING_INVOCATION_COUNT; i++) {
             _profilingFrequency[i] = frequency;
@@ -177,7 +178,9 @@ public:
             _profilingCount[i] = c / PROFILING_INVOCATION_COUNT;
         _maxCount = c;
     }
+    void incNumberOfTimesPatched() { numberOfTimesPatched++; }
 
+    int32_t getNumberOfTimesPatched() { return numberOfTimesPatched; }
     void setProfilingCount(int32_t *c)
     {
         for (int i = 0; i < PROFILING_INVOCATION_COUNT; i++)
@@ -286,6 +289,8 @@ private:
 
     // Flag to determine whether the information is being actively updated
     bool _active;
+
+    int32_t numberOfTimesPatched;
 };
 
 ///////////////////////////
@@ -1246,6 +1251,7 @@ public:
         _listUpdateMonitor = TR::Monitor::create("JIT-JProfilerAnalysisTaskListMonitor");
         _analysisCutOff = TR::Options::_patchableJProfAnalysisListSize;
         _numberOfListGroupToCreate = TR::Options::_patchableJProfNumberOfPools;
+        analysisTaskEnabled = false;
         _arrayOfProfilingMethodInfo = static_cast<ProfilingMethodInfo **>(jitPersistentAlloc(sizeof(ProfilingMethodInfo *) * _numberOfListGroupToCreate));
         for (int i = 0; i < _numberOfListGroupToCreate; i++) {
             _arrayOfProfilingMethodInfo[i] = new (PERSISTENT_NEW) ProfilingMethodInfo();
@@ -1343,9 +1349,10 @@ public:
      */
     void setAnalysisCutOff(uint32_t val) { _analysisCutOff = val; }
 
+    void setAnalysisTaskEnabled(bool val) { analysisTaskEnabled = val; }
 protected:
 
-
+    volatile bool analysisTaskEnabled;
     ProfilingMethodInfo **_arrayOfProfilingMethodInfo;
     //ProfilingMethodInfo _arrayOfProfilingMethodInfo[64];
     int32_t _indexOfInfoArrayToAddNext;
@@ -1400,7 +1407,7 @@ public:
         Stop
     };
 
-    TR_JProfilerThreadsDispatcher() {}
+    TR_JProfilerThreadsDispatcher() { isInitialized = false; }
 
     ~TR_JProfilerThreadsDispatcher();
 
@@ -1545,13 +1552,18 @@ public:
      */
     void setAnalysisCutOff(uint32_t val) { task->setAnalysisCutOff(val); }
 
+    void wakeUpAnalysisThread();
+
+    void enableAnalysisWork(bool val) { task->setAnalysisTaskEnabled(val); }
+
+    bool getIsInitialized() { return isInitialized; }
+
 protected:
     j9thread_t *jProfilerOSThreadList;
 
     J9VMThread **jProfilerVMThreadList;
 
     State *stateTable;
-
     uint32_t _maxJProfilerThreadCount;
 
     TR_JProfilerAnalysisTask *task;
@@ -1564,6 +1576,9 @@ private:
     volatile bool _threadsReservedForPatchingWork;
 
     volatile uint32_t _analysisThreadSleepTime;
+
+    volatile bool isInitialized;
+    volatile bool analysisActive;
 
     uint32_t _numberOfThreadsToWakeUpForPatching;
 
