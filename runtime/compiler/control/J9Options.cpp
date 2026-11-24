@@ -273,6 +273,7 @@ uint32_t J9::Options::_patchableJProfilingPatchingAgeCutOff = 50000;
 uint32_t J9::Options::_numOfMethodsToTriggerPatching = 10000;
 uint32_t J9::Options::_numOfJProfilerThreads = 1;
 uint32_t J9::Options::_patchableJProfNumberOfPools = 64;
+uint32_t J9::Options::_analysisThreadSleepTime = 1000;
 uint32_t J9::Options::_patchableJProfAnalysisListSize = 512;
 
 // These numbers are cast into floats divided by 10000
@@ -896,6 +897,9 @@ TR::OptionTable OMR::Options::_feOptions[] = {
     { "activeThreadsThresholdForInterpreterSampling=",
      "M<nnn>\tSampling does not affect invocation count beyond this threshold", TR::Options::setStaticNumeric,
      (intptr_t)&TR::Options::_activeThreadsThreshold, 0, "F%d", NOT_IN_SUBSET },
+    { "analysisThreadSleepTime=",
+     "O<nnn<\tanalysisThread Sleep Time", TR::Options::setStaticNumeric, (intptr_t)&TR::Options::_analysisThreadSleepTime, 0, "F%d",
+     NOT_IN_SUBSET },
 #if defined(J9VM_OPT_JITSERVER)
     { "aotCacheDisableGeneratedClassSupport",
      " \tDisable support for generated classes such as lambdas in JITServer AOT cache", TR::Options::setStaticBool,

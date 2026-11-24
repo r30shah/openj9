@@ -545,6 +545,8 @@ public:
 
     static uint32_t _patchableJProfAnalysisListSize;
     static uint32_t _patchableJProfNumberOfPools;
+    static uint32_t _analysisThreadSleepTime;
+
     static bool _aggressiveLockReservation;
 
     static bool _xrsSync;
