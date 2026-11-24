@@ -3551,5 +3551,5 @@ void TR_JProfilerThreadsDispatcher::initializeDispatcher(uint32_t numberOfJProfi
     for (auto threadID = 0; threadID < numberOfJProfilerThreads; ++threadID) {
         patchingTaskList[threadID] = new (PERSISTENT_NEW) TR_JProfilerPatchingTask();
     }
-    _analysisThreadSleepTime = 800;
+    _analysisThreadSleepTime = TR::Options::_analysisThreadSleepTime;
 }
